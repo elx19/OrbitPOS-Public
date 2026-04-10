@@ -7,13 +7,18 @@ const {
   getUpdaterState,
   checkForOrbitUpdates,
   downloadOrbitUpdate,
-  installOrbitUpdate
+  installOrbitUpdate,
+  onUpdaterEvent
 } = require('./updater');
 
 let mainWindow;
 let customerDisplayWindow;
 let backendProcess;
 let backendServer;
+let startupUpdateCheckTimer = null;
+let startupUpdatePromptPending = false;
+let promptedUpdateVersion = null;
+let promptedInstallVersion = null;
 let customerDisplayState = {
   businessName: 'OrbitPOS',
   saleType: 'cash',
@@ -130,6 +135,125 @@ function loadRenderer(windowInstance, search = '') {
   return windowInstance.loadFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'), {
     search
   });
+}
+
+async function promptToDownloadDetectedUpdate(state) {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return;
+  }
+
+  const detectedVersion = state?.latestVersion || 'nueva';
+  if (promptedUpdateVersion === detectedVersion) {
+    return;
+  }
+
+  promptedUpdateVersion = detectedVersion;
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: 'question',
+    buttons: ['Descargar ahora', 'Luego'],
+    defaultId: 0,
+    cancelId: 1,
+    title: 'Actualizacion disponible',
+    message: `OrbitPOS encontro la version ${detectedVersion}.`,
+    detail: 'Deseas descargar la actualizacion ahora?'
+  });
+
+  if (result.response !== 0) {
+    appendStartupLog(`Usuario pospuso la descarga de la actualizacion ${detectedVersion}.`);
+    return;
+  }
+
+  appendStartupLog(`Usuario acepto descargar la actualizacion ${detectedVersion}.`);
+
+  try {
+    await downloadOrbitUpdate();
+  } catch (error) {
+    appendStartupLog(`Error descargando actualizacion ${detectedVersion}: ${error.stack || error.message}`);
+    await dialog.showMessageBox(mainWindow, {
+      type: 'error',
+      title: 'No fue posible descargar la actualizacion',
+      message: 'OrbitPOS no pudo descargar la nueva version.',
+      detail: error.message || 'Error desconocido al descargar la actualizacion.'
+    });
+  }
+}
+
+async function promptToInstallDownloadedUpdate(state) {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return;
+  }
+
+  const detectedVersion = state?.latestVersion || 'nueva';
+  if (promptedInstallVersion === detectedVersion) {
+    return;
+  }
+
+  promptedInstallVersion = detectedVersion;
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: 'question',
+    buttons: ['Instalar y reiniciar', 'Despues'],
+    defaultId: 0,
+    cancelId: 1,
+    title: 'Actualizacion lista',
+    message: `La version ${detectedVersion} ya esta lista para instalarse.`,
+    detail: 'Deseas instalarla ahora y reiniciar OrbitPOS?'
+  });
+
+  if (result.response !== 0) {
+    appendStartupLog(`Usuario pospuso la instalacion de la actualizacion ${detectedVersion}.`);
+    return;
+  }
+
+  appendStartupLog(`Usuario acepto instalar la actualizacion ${detectedVersion}.`);
+  installOrbitUpdate();
+}
+
+function attachStartupUpdatePrompts() {
+  onUpdaterEvent('update-available', (state) => {
+    if (!startupUpdatePromptPending) {
+      return;
+    }
+
+    startupUpdatePromptPending = false;
+    void promptToDownloadDetectedUpdate(state);
+  });
+
+  onUpdaterEvent('update-not-available', () => {
+    startupUpdatePromptPending = false;
+  });
+
+  onUpdaterEvent('update-downloaded', (state) => {
+    void promptToInstallDownloadedUpdate(state);
+  });
+}
+
+function scheduleStartupUpdateCheck() {
+  if (!app.isPackaged || startupUpdateCheckTimer) {
+    return;
+  }
+
+  const currentUpdaterState = getUpdaterState();
+  if (!currentUpdaterState.configured) {
+    appendStartupLog('Actualizador sin configurar; se omite revision automatica al iniciar.');
+    return;
+  }
+
+  startupUpdateCheckTimer = setTimeout(async () => {
+    startupUpdateCheckTimer = null;
+    startupUpdatePromptPending = true;
+    appendStartupLog('Iniciando revision automatica de actualizaciones al arranque.');
+
+    try {
+      const state = await checkForOrbitUpdates();
+      if (!state.updateAvailable) {
+        startupUpdatePromptPending = false;
+      }
+      appendStartupLog(`Revision automatica finalizada. updateAvailable=${state.updateAvailable} downloaded=${state.downloaded}`);
+    } catch (error) {
+      startupUpdatePromptPending = false;
+      appendStartupLog(`Error en revision automatica de actualizaciones: ${error.stack || error.message}`);
+    }
+  }, 6500);
 }
 
 function isSupportedLocalUpdate(filePath) {
@@ -253,6 +377,7 @@ function createMainWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize();
     mainWindow.show();
+    scheduleStartupUpdateCheck();
   });
 
   if (isDev && devServerUrl) {
@@ -402,6 +527,7 @@ app.whenReady().then(() => {
   try {
     appendStartupLog('Inicializando updater.');
     initializeUpdater();
+    attachStartupUpdatePrompts();
     appendStartupLog('Updater inicializado.');
   } catch (error) {
     appendStartupLog(`Error inicializando updater: ${error.stack || error.message}`);

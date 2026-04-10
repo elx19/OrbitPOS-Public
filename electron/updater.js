@@ -1,3 +1,4 @@
+const { EventEmitter } = require('events');
 const { app } = require('electron');
 const { autoUpdater } = require('electron-updater');
 
@@ -7,6 +8,8 @@ const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
 const DEFAULT_UPDATE_GITHUB_RELEASE_TYPE = 'release';
 
 let listenersAttached = false;
+let currentCheckPromise = null;
+const updaterEvents = new EventEmitter();
 
 const updaterState = {
   currentVersion: app.getVersion(),
@@ -25,6 +28,14 @@ const updaterState = {
   notes: 'Actualizador pendiente de configurar.',
   error: null
 };
+
+function emitUpdaterEvent(eventName) {
+  updaterEvents.emit(eventName, { ...updaterState });
+  updaterEvents.emit('state-changed', {
+    eventName,
+    state: { ...updaterState }
+  });
+}
 
 function normalizeUpdaterError(provider, error) {
   const rawMessage = String(error?.message || error || '').trim();
@@ -109,6 +120,7 @@ function attachListeners() {
     updaterState.checking = true;
     updaterState.error = null;
     updaterState.notes = 'Buscando actualizaciones...';
+    emitUpdaterEvent('checking-for-update');
   });
 
   autoUpdater.on('update-available', (info) => {
@@ -119,6 +131,7 @@ function attachListeners() {
     updaterState.latestVersion = info?.version || updaterState.latestVersion;
     updaterState.notes = `Nueva version disponible: ${updaterState.latestVersion}.`;
     pushNotification(`Nueva actualizacion disponible: ${updaterState.latestVersion}.`);
+    emitUpdaterEvent('update-available');
   });
 
   autoUpdater.on('update-not-available', (info) => {
@@ -129,12 +142,14 @@ function attachListeners() {
     updaterState.progress = 0;
     updaterState.latestVersion = info?.version || updaterState.currentVersion;
     updaterState.notes = 'Ya tienes la version mas reciente instalada.';
+    emitUpdaterEvent('update-not-available');
   });
 
   autoUpdater.on('download-progress', (progress) => {
     updaterState.downloading = true;
     updaterState.progress = Number(progress?.percent || 0);
     updaterState.notes = `Descargando actualizacion (${updaterState.progress.toFixed(0)}%).`;
+    emitUpdaterEvent('download-progress');
   });
 
   autoUpdater.on('update-downloaded', (info) => {
@@ -143,6 +158,7 @@ function attachListeners() {
     updaterState.latestVersion = info?.version || updaterState.latestVersion;
     updaterState.notes = `Actualizacion ${updaterState.latestVersion} lista para instalar.`;
     pushNotification(`Actualizacion ${updaterState.latestVersion} lista para instalar.`);
+    emitUpdaterEvent('update-downloaded');
   });
 
   autoUpdater.on('error', (error) => {
@@ -151,6 +167,7 @@ function attachListeners() {
     updaterState.error = error?.message || 'Error desconocido del updater.';
     updaterState.notes = updaterState.error;
     pushNotification(`Error del actualizador: ${updaterState.error}`);
+    emitUpdaterEvent('error');
   });
 }
 
@@ -166,6 +183,11 @@ function getUpdaterState() {
 }
 
 async function checkForOrbitUpdates() {
+  if (currentCheckPromise) {
+    return currentCheckPromise;
+  }
+
+  currentCheckPromise = (async () => {
   const {
     provider,
     channel,
@@ -220,6 +242,13 @@ async function checkForOrbitUpdates() {
   }
 
   return updaterState;
+  })();
+
+  try {
+    return await currentCheckPromise;
+  } finally {
+    currentCheckPromise = null;
+  }
 }
 
 async function downloadOrbitUpdate() {
@@ -248,10 +277,18 @@ function installOrbitUpdate() {
   return updaterState;
 }
 
+function onUpdaterEvent(eventName, listener) {
+  updaterEvents.on(eventName, listener);
+  return () => {
+    updaterEvents.off(eventName, listener);
+  };
+}
+
 module.exports = {
   initializeUpdater,
   getUpdaterState,
   checkForOrbitUpdates,
   downloadOrbitUpdate,
-  installOrbitUpdate
+  installOrbitUpdate,
+  onUpdaterEvent
 };
