@@ -1,0 +1,97 @@
+{
+  "name": "orbitpos",
+  "version": "2.0.0",
+  "private": true,
+  "author": "JRTech",
+  "description": "Sistema de terminal de venta al publico OrbitPOS",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/elx19/OrbitPOS-Public.git"
+  },
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:backend\" \"npm:dev:frontend\" \"npm:dev:electron\"",
+    "dev:backend": "nodemon --watch backend backend/server.js",
+    "dev:frontend": "vite --config vite.config.js",
+    "dev:electron": "wait-on http://localhost:3030 http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 BACKEND_URL=http://localhost:3030 electron .",
+    "native:rebuild:electron": "electron-rebuild -f --build-from-source -v 35.7.5 -m . -w better-sqlite3,serialport",
+    "native:rebuild:node": "npm rebuild better-sqlite3 serialport",
+    "manual:generate": "node scripts/generate-user-manual.js",
+    "release:clean-data": "node scripts/clean-release-runtime-data.js",
+    "qa:commercial": "node scripts/test-commercial-qa.js",
+    "updates:manifest": "node scripts/generate-update-manifest.js",
+    "build": "vite build --config vite.config.js",
+    "build:electron": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder && npm run release:clean-data && npm run updates:manifest",
+    "build:github-release": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --publish always",
+    "build:portable": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --win portable && npm run release:clean-data && npm run updates:manifest",
+    "build:unpacked": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --win dir && npm run release:clean-data && npm run updates:manifest",
+    "start": "cross-env NODE_ENV=production electron ."
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.10.0",
+    "cors": "^2.8.5",
+    "electron-updater": "^6.8.3",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "knex": "^3.1.0",
+    "node-machine-id": "^1.1.12",
+    "node-thermal-printer": "^4.5.0",
+    "pdfkit": "^0.18.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.1",
+    "recharts": "^2.15.1",
+    "serialport": "^13.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.4",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^35.3.0",
+    "electron-builder": "^25.1.8",
+    "nodemon": "^3.1.10",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.3.5",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.jrtech.orbitpos",
+    "productName": "OrbitPOS",
+    "files": [
+      "backend/**/*",
+      "electron/**/*",
+      "frontend/dist/**/*",
+      "shared/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "release"
+    },
+    "win": {
+      "icon": "OrbitPOS.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "OrbitPOS"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "elx19",
+        "repo": "OrbitPOS-Public",
+        "releaseType": "release"
+      }
+    ]
+  }
+}
