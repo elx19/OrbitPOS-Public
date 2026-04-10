@@ -104,6 +104,7 @@ function initDatabase() {
       name TEXT NOT NULL,
       barcode TEXT UNIQUE,
       category TEXT,
+      image_path TEXT,
       cost_price REAL DEFAULT 0,
       sale_price REAL NOT NULL,
       stock REAL DEFAULT 0,
@@ -385,6 +386,10 @@ function ensureSchemaMigrations() {
 
   if (!tableHasColumn('payments', 'receipt_number')) {
     db.exec('ALTER TABLE payments ADD COLUMN receipt_number TEXT');
+  }
+
+  if (!tableHasColumn('products', 'image_path')) {
+    db.exec('ALTER TABLE products ADD COLUMN image_path TEXT');
   }
 
   ensureUpdaterConfigurationDefaults();

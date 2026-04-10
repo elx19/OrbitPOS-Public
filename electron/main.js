@@ -463,6 +463,25 @@ ipcMain.handle('dialog:pick-logo', async () => {
   return result.filePaths[0];
 });
 
+ipcMain.handle('dialog:pick-product-image', async () => {
+  const result = await dialog.showOpenDialog(mainWindow || undefined, {
+    title: 'Seleccionar imagen del producto',
+    properties: ['openFile'],
+    filters: [
+      {
+        name: 'Imagenes',
+        extensions: ['png', 'jpg', 'jpeg', 'webp', 'bmp']
+      }
+    ]
+  });
+
+  if (result.canceled || !result.filePaths?.length) {
+    return null;
+  }
+
+  return result.filePaths[0];
+});
+
 ipcMain.handle('dialog:pick-backup', async () => {
   const result = await dialog.showOpenDialog(mainWindow || undefined, {
     title: 'Seleccionar backup de OrbitPOS',

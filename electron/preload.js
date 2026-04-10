@@ -6,7 +6,14 @@ contextBridge.exposeInMainWorld('orbit', {
   version: packageJson.version,
   files: {
     pickLogo: () => ipcRenderer.invoke('dialog:pick-logo'),
+    pickProductImage: () => ipcRenderer.invoke('dialog:pick-product-image'),
     pickBackup: () => ipcRenderer.invoke('dialog:pick-backup')
+  },
+  customerDisplay: {
+    open: () => ipcRenderer.invoke('customer-display:open'),
+    close: () => ipcRenderer.invoke('customer-display:close'),
+    getStatus: () => ipcRenderer.invoke('customer-display:status'),
+    update: (payload) => ipcRenderer.send('customer-display:update', payload)
   },
   updater: {
     getStatus: () => ipcRenderer.invoke('updater:status'),

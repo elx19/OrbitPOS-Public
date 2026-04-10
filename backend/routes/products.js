@@ -41,6 +41,7 @@ router.post('/', requireAdmin, (request, response) => {
     name,
     barcode = '',
     category = '',
+    image_path = '',
     cost_price = 0,
     sale_price,
     stock = 0,
@@ -60,13 +61,14 @@ router.post('/', requireAdmin, (request, response) => {
   try {
     const result = getDb().prepare(`
       INSERT INTO products (
-        name, barcode, category, cost_price, sale_price, stock, min_stock, unit, weighed, supplier_id, active
+        name, barcode, category, image_path, cost_price, sale_price, stock, min_stock, unit, weighed, supplier_id, active
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       name,
       barcode || null,
       category,
+      image_path || null,
       Number(cost_price),
       Number(sale_price),
       Number(stock),
@@ -108,6 +110,7 @@ router.put('/:id', requireAdmin, (request, response) => {
     name: request.body?.name ?? existing.name,
     barcode: request.body?.barcode ?? existing.barcode,
     category: request.body?.category ?? existing.category,
+    image_path: request.body?.image_path ?? existing.image_path,
     cost_price: Number(request.body?.cost_price ?? existing.cost_price),
     sale_price: Number(request.body?.sale_price ?? existing.sale_price),
     stock: Number(request.body?.stock ?? existing.stock),
@@ -121,13 +124,14 @@ router.put('/:id', requireAdmin, (request, response) => {
   const transaction = getDb().transaction(() => {
     getDb().prepare(`
       UPDATE products
-      SET name = ?, barcode = ?, category = ?, cost_price = ?, sale_price = ?,
+      SET name = ?, barcode = ?, category = ?, image_path = ?, cost_price = ?, sale_price = ?,
           stock = ?, min_stock = ?, unit = ?, weighed = ?, supplier_id = ?, active = ?
       WHERE id = ?
     `).run(
       payload.name,
       payload.barcode || null,
       payload.category,
+      payload.image_path || null,
       payload.cost_price,
       payload.sale_price,
       payload.stock,

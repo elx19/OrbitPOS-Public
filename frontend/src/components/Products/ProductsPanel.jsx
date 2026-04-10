@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiRequest } from '../../lib/api';
+import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import Button from '../ui/Button';
 import { Field, Input, Select } from '../ui/Field';
 import Panel from '../ui/Panel';
@@ -9,14 +10,34 @@ const emptyForm = {
   name: '',
   barcode: '',
   category: '',
+  image_path: '',
   cost_price: '',
   sale_price: '',
-  stock: '',
+  stock: '1',
   min_stock: '5',
   unit: 'unidad',
   weighed: false,
   active: true
 };
+
+function ProductImagePreview({ product, className = 'h-16 w-16 rounded-[18px]' }) {
+  const imageUrl = resolveAssetUrl(product?.image_path);
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt={product?.name || 'Producto'}
+        className={`${className} shrink-0 border border-white/70 object-cover shadow-sm`}
+      />
+    );
+  }
+
+  return (
+    <div className={`${className} flex shrink-0 items-center justify-center border border-white/70 bg-ink/10 text-sm font-bold text-ink shadow-sm`}>
+      {getInitials(product?.name || 'Producto')}
+    </div>
+  );
+}
 
 export default function ProductsPanel({ token, onActivity }) {
   const [products, setProducts] = useState([]);
@@ -51,6 +72,18 @@ export default function ProductsPanel({ token, onActivity }) {
     loadProducts();
   }, [token]);
 
+  async function chooseProductImage() {
+    try {
+      const filePath = await window.orbit?.files?.pickProductImage?.();
+      if (!filePath) {
+        return;
+      }
+      setForm((current) => ({ ...current, image_path: filePath }));
+    } catch (error) {
+      setMessage('No fue posible seleccionar la imagen del producto.');
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setSaving(true);
@@ -59,6 +92,7 @@ export default function ProductsPanel({ token, onActivity }) {
     try {
       const payload = {
         ...form,
+        image_path: String(form.image_path || '').trim(),
         cost_price: Number(form.cost_price || 0),
         sale_price: Number(form.sale_price || 0),
         stock: Number(form.stock || 0),
@@ -99,10 +133,10 @@ export default function ProductsPanel({ token, onActivity }) {
             <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Inventario</div>
             <h2 className="mt-2 text-3xl font-bold text-ink">Productos y control base</h2>
             <p className="mt-3 text-sm text-slate-600">
-              Organiza tu catalogo, ajusta precios y controla el stock minimo sin perder visibilidad del listado.
+              Organiza tu catalogo, define un stock inicial real y agrega imagen al producto para venderlo mas facil desde el POS.
             </p>
           </div>
-          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
+          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[560px]">
             <div className="rounded-[24px] bg-white/78 px-5 py-4">
               <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Productos</div>
               <div className="mt-2 text-2xl font-bold text-ink">{products.length}</div>
@@ -119,7 +153,7 @@ export default function ProductsPanel({ token, onActivity }) {
         </div>
       </Panel>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(320px,0.96fr),minmax(0,1.04fr)]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(340px,0.92fr),minmax(0,1.08fr)]">
         <Panel className="overflow-hidden">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -145,39 +179,51 @@ export default function ProductsPanel({ token, onActivity }) {
           </div>
 
           <div className="soft-scrollbar mt-6 max-h-[calc(100vh-21rem)] space-y-3 overflow-auto pr-1">
-            {visibleProducts.length ? visibleProducts.map((product) => (
-              <button
-                key={product.id}
-                type="button"
-                onClick={() => setForm({
-                  ...product,
-                  cost_price: String(product.cost_price),
-                  sale_price: String(product.sale_price),
-                  stock: String(product.stock),
-                  min_stock: String(product.min_stock),
-                  weighed: Boolean(product.weighed),
-                  active: Boolean(product.active)
-                })}
-                className={`w-full rounded-[24px] p-4 text-left transition ${
-                  selectedProduct?.id === product.id ? 'bg-ink text-white shadow-soft' : 'bg-white/78 hover:bg-white'
-                }`}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="truncate font-semibold">{product.name}</div>
-                    <div className={`mt-1 text-xs ${selectedProduct?.id === product.id ? 'text-white/75' : 'text-slate-500'}`}>
-                      {product.category || 'Sin categoria'} | {product.barcode || 'Sin codigo'}
+            {visibleProducts.length ? visibleProducts.map((product) => {
+              const isSelected = selectedProduct?.id === product.id;
+              return (
+                <button
+                  key={product.id}
+                  type="button"
+                  onClick={() => setForm({
+                    ...product,
+                    image_path: product.image_path || '',
+                    cost_price: String(product.cost_price),
+                    sale_price: String(product.sale_price),
+                    stock: String(product.stock),
+                    min_stock: String(product.min_stock),
+                    weighed: Boolean(product.weighed),
+                    active: Boolean(product.active)
+                  })}
+                  className={`w-full rounded-[24px] p-4 text-left transition ${
+                    isSelected ? 'bg-ink text-white shadow-soft' : 'bg-white/78 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <ProductImagePreview
+                      product={product}
+                      className={`h-16 w-16 rounded-[18px] ${isSelected ? 'border-white/20 bg-white/10 text-white' : ''}`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold">{product.name}</div>
+                          <div className={`mt-1 text-xs ${isSelected ? 'text-white/75' : 'text-slate-500'}`}>
+                            {product.category || 'Sin categoria'} | {product.barcode || 'Sin codigo'}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold">RD$ {Number(product.sale_price).toFixed(2)}</div>
+                          <div className={`mt-1 text-xs ${isSelected ? 'text-white/75' : Number(product.stock) <= Number(product.min_stock) ? 'text-red-600' : 'text-slate-500'}`}>
+                            Stock: {product.stock}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-semibold">RD$ {Number(product.sale_price).toFixed(2)}</div>
-                    <div className={`mt-1 text-xs ${selectedProduct?.id === product.id ? 'text-white/75' : Number(product.stock) <= Number(product.min_stock) ? 'text-red-600' : 'text-slate-500'}`}>
-                      Stock: {product.stock}
-                    </div>
-                  </div>
-                </div>
-              </button>
-            )) : (
+                </button>
+              );
+            }) : (
               <div className="rounded-[24px] bg-white/78 px-4 py-5 text-sm text-slate-500">
                 No se encontraron productos con ese criterio.
               </div>
@@ -214,28 +260,58 @@ export default function ProductsPanel({ token, onActivity }) {
           </div>
 
           <form onSubmit={handleSubmit} className="mt-6 grid gap-5">
-            <Field label="Nombre">
-              <Input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} />
-            </Field>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Codigo de barras">
-                <Input value={form.barcode} onChange={(event) => setForm((current) => ({ ...current, barcode: event.target.value }))} />
-              </Field>
-              <Field label="Categoria">
-                <Input value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))} />
-              </Field>
-              <Field label="Costo">
-                <Input type="number" step="0.01" value={form.cost_price} onChange={(event) => setForm((current) => ({ ...current, cost_price: event.target.value }))} />
-              </Field>
-              <Field label="Precio venta">
-                <Input type="number" step="0.01" value={form.sale_price} onChange={(event) => setForm((current) => ({ ...current, sale_price: event.target.value }))} />
-              </Field>
-              <Field label="Stock">
-                <Input type="number" step="0.01" value={form.stock} onChange={(event) => setForm((current) => ({ ...current, stock: event.target.value }))} />
-              </Field>
-              <Field label="Stock minimo">
-                <Input type="number" step="0.01" value={form.min_stock} onChange={(event) => setForm((current) => ({ ...current, min_stock: event.target.value }))} />
-              </Field>
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr),260px]">
+              <div className="grid gap-5">
+                <Field label="Nombre">
+                  <Input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} />
+                </Field>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Codigo de barras">
+                    <Input value={form.barcode} onChange={(event) => setForm((current) => ({ ...current, barcode: event.target.value }))} />
+                  </Field>
+                  <Field label="Categoria">
+                    <Input value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))} />
+                  </Field>
+                  <Field label="Costo">
+                    <Input type="number" step="0.01" value={form.cost_price} onChange={(event) => setForm((current) => ({ ...current, cost_price: event.target.value }))} />
+                  </Field>
+                  <Field label="Precio venta">
+                    <Input type="number" step="0.01" value={form.sale_price} onChange={(event) => setForm((current) => ({ ...current, sale_price: event.target.value }))} />
+                  </Field>
+                  <Field label="Stock inicial" hint="Se usa para vender de inmediato">
+                    <Input type="number" step="0.01" value={form.stock} onChange={(event) => setForm((current) => ({ ...current, stock: event.target.value }))} />
+                  </Field>
+                  <Field label="Stock minimo">
+                    <Input type="number" step="0.01" value={form.min_stock} onChange={(event) => setForm((current) => ({ ...current, min_stock: event.target.value }))} />
+                  </Field>
+                </div>
+              </div>
+
+              <div className="rounded-[24px] bg-white/76 p-4">
+                <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Imagen del producto</div>
+                <div className="mt-4 flex justify-center">
+                  <ProductImagePreview product={form} className="h-40 w-40 rounded-[24px]" />
+                </div>
+                <div className="mt-4 space-y-3">
+                  <Button className="w-full" variant="secondary" onClick={chooseProductImage}>
+                    Seleccionar imagen
+                  </Button>
+                  <Button
+                    className="w-full"
+                    variant="ghost"
+                    onClick={() => setForm((current) => ({ ...current, image_path: '' }))}
+                  >
+                    Quitar imagen
+                  </Button>
+                  <Field label="Ruta de imagen" hint="Opcional">
+                    <Input
+                      value={form.image_path}
+                      onChange={(event) => setForm((current) => ({ ...current, image_path: event.target.value }))}
+                      placeholder="C:\\Imagenes\\producto.png"
+                    />
+                  </Field>
+                </div>
+              </div>
             </div>
 
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr),240px]">
