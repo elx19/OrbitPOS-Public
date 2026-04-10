@@ -3,7 +3,7 @@ import Button from '../ui/Button';
 import Panel from '../ui/Panel';
 import { formatDate } from '../../lib/format';
 
-const APP_VERSION = window.orbit?.version || '2.0.1';
+const APP_VERSION = window.orbit?.version || '2.0.2';
 
 export default function HelpPanel({ license, machineId, token, onReconfigure }) {
   async function openManual() {

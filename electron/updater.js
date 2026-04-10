@@ -69,10 +69,28 @@ function normalizeUpdaterError(provider, error) {
   return rawMessage || 'No fue posible comprobar actualizaciones en este momento.';
 }
 
-function pushNotification(message) {
+function pushNotification(message, dedupeMinutes = 180) {
   try {
     const { getDb } = require('../backend/database');
-    getDb().prepare(`
+    const db = getDb();
+
+    if (dedupeMinutes > 0) {
+      const duplicate = db.prepare(`
+        SELECT id
+        FROM notifications
+        WHERE type = 'system'
+          AND message = ?
+          AND created_at >= datetime('now', ?)
+        ORDER BY created_at DESC
+        LIMIT 1
+      `).get(message, `-${Number(dedupeMinutes) || 180} minutes`);
+
+      if (duplicate) {
+        return;
+      }
+    }
+
+    db.prepare(`
       INSERT INTO notifications (type, message)
       VALUES ('system', ?)
     `).run(message);
@@ -146,7 +164,7 @@ function attachListeners() {
     updaterState.downloading = false;
     updaterState.latestVersion = info?.version || updaterState.latestVersion;
     updaterState.notes = `Nueva version disponible: ${updaterState.latestVersion}.`;
-    pushNotification(`Nueva actualizacion disponible: ${updaterState.latestVersion}.`);
+    pushNotification(`Nueva actualizacion disponible: ${updaterState.latestVersion}.`, 360);
     emitUpdaterEvent('update-available');
   });
 
@@ -173,7 +191,7 @@ function attachListeners() {
     updaterState.downloaded = true;
     updaterState.latestVersion = info?.version || updaterState.latestVersion;
     updaterState.notes = `Actualizacion ${updaterState.latestVersion} lista para instalar.`;
-    pushNotification(`Actualizacion ${updaterState.latestVersion} lista para instalar.`);
+    pushNotification(`Actualizacion ${updaterState.latestVersion} lista para instalar.`, 360);
     emitUpdaterEvent('update-downloaded');
   });
 
@@ -182,7 +200,7 @@ function attachListeners() {
     updaterState.downloading = false;
     updaterState.error = error?.message || 'Error desconocido del updater.';
     updaterState.notes = updaterState.error;
-    pushNotification(`Error del actualizador: ${updaterState.error}`);
+    pushNotification(`Error del actualizador: ${updaterState.error}`, 720);
     emitUpdaterEvent('error');
   });
 }

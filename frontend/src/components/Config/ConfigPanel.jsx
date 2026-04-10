@@ -10,7 +10,7 @@ import { getInitials, resolveAssetUrl } from '../../lib/assets';
 const DEFAULT_UPDATE_PROVIDER = 'github';
 const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
-const APP_VERSION = window.orbit?.version || '2.0.1';
+const APP_VERSION = window.orbit?.version || '2.0.2';
 
 const themeOptions = [
   {
