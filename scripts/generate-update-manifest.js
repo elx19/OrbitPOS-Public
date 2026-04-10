@@ -14,6 +14,7 @@ const githubInstallerPath = path.join(releaseDir, githubInstallerName);
 const githubBlockMapName = `${githubInstallerName}.blockmap`;
 const githubBlockMapPath = path.join(releaseDir, githubBlockMapName);
 const latestPath = path.join(releaseDir, 'latest.yml');
+const stablePath = path.join(releaseDir, 'stable.yml');
 
 function sha512Base64(filePath) {
   const hash = crypto.createHash('sha512');
@@ -58,6 +59,7 @@ function generateManifest() {
   ].join('\n');
 
   fs.writeFileSync(latestPath, `${manifest}\n`, 'utf8');
+  fs.writeFileSync(stablePath, `${manifest}\n`, 'utf8');
   return latestPath;
 }
 

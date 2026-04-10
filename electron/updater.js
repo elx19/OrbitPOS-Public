@@ -10,6 +10,7 @@ const DEFAULT_UPDATE_GITHUB_RELEASE_TYPE = 'release';
 let listenersAttached = false;
 let currentCheckPromise = null;
 const updaterEvents = new EventEmitter();
+const SAFE_ERROR_EVENT = 'updater-error';
 
 const updaterState = {
   currentVersion: app.getVersion(),
@@ -30,17 +31,32 @@ const updaterState = {
 };
 
 function emitUpdaterEvent(eventName) {
-  updaterEvents.emit(eventName, { ...updaterState });
+  const safeEventName = eventName === 'error' ? SAFE_ERROR_EVENT : eventName;
+  updaterEvents.emit(safeEventName, { ...updaterState });
   updaterEvents.emit('state-changed', {
-    eventName,
+    eventName: safeEventName,
     state: { ...updaterState }
   });
+}
+
+function resolveUpdaterChannel(provider, configuredChannel) {
+  const normalizedChannel = String(configuredChannel || 'stable').trim().toLowerCase();
+
+  if (provider === 'github') {
+    return normalizedChannel === 'beta' ? 'beta' : 'latest';
+  }
+
+  return normalizedChannel || 'stable';
 }
 
 function normalizeUpdaterError(provider, error) {
   const rawMessage = String(error?.message || error || '').trim();
 
   if (provider === 'github') {
+    if (/stable\.yml/i.test(rawMessage) && /\b404\b/.test(rawMessage)) {
+      return 'La release publica no incluye el manifiesto estable del actualizador. Publica stable.yml junto a latest.yml en GitHub Releases.';
+    }
+
     if (/releases\.atom/i.test(rawMessage) && /\b404\b/.test(rawMessage)) {
       return 'GitHub Releases no puede comprobar actualizaciones desde un repositorio privado. Para clientes finales usa un repositorio publico de updates o cambia a Servidor generico.';
     }
@@ -212,8 +228,9 @@ async function checkForOrbitUpdates() {
     return updaterState;
   }
 
-  autoUpdater.channel = channel;
-  autoUpdater.allowPrerelease = channel === 'beta';
+  const updaterChannel = resolveUpdaterChannel(provider, channel);
+  autoUpdater.channel = updaterChannel;
+  autoUpdater.allowPrerelease = updaterChannel === 'beta';
 
   if (provider === 'github') {
     autoUpdater.setFeedURL({
