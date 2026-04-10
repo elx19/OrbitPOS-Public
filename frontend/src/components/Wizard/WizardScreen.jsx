@@ -5,7 +5,7 @@ import { Field, Input, Select, TextArea } from '../ui/Field';
 import { apiRequest } from '../../lib/api';
 import securityQuestions from '../../../../shared/security-questions.json';
 
-const APP_VERSION = window.orbit?.version || '2.0.2';
+const APP_VERSION = window.orbit?.version || '2.0.3';
 
 const currencies = [
   ['DOP', 'Peso dominicano (RD$)'],

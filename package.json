@@ -1,12 +1,12 @@
 {
   "name": "orbitpos",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "private": true,
   "author": "JRTech",
   "description": "Sistema de terminal de venta al publico OrbitPOS",
   "repository": {
     "type": "git",
-    "url": "https://github.com/elx19/OrbitPOS-Public.git"
+    "url": "https://github.com/elx19/OrbitPOS.git"
   },
   "main": "electron/main.js",
   "scripts": {
@@ -20,11 +20,13 @@
     "release:clean-data": "node scripts/clean-release-runtime-data.js",
     "qa:commercial": "node scripts/test-commercial-qa.js",
     "updates:manifest": "node scripts/generate-update-manifest.js",
+    "updates:publish": "node scripts/publish-update-feed.js",
+    "updates:serve": "node update-server/server.js",
     "build": "vite build --config vite.config.js",
-    "build:electron": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder && npm run release:clean-data && npm run updates:manifest",
+    "build:electron": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder && npm run release:clean-data && npm run updates:manifest && npm run updates:publish",
     "build:github-release": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --publish always",
     "build:portable": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --win portable && npm run release:clean-data && npm run updates:manifest",
-    "build:unpacked": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --win dir && npm run release:clean-data && npm run updates:manifest",
+    "build:unpacked": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --win dir && npm run release:clean-data && npm run updates:manifest && npm run updates:publish",
     "start": "cross-env NODE_ENV=production electron ."
   },
   "dependencies": {
