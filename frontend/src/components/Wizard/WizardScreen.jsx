@@ -5,6 +5,8 @@ import { Field, Input, Select, TextArea } from '../ui/Field';
 import { apiRequest } from '../../lib/api';
 import securityQuestions from '../../../../shared/security-questions.json';
 
+const APP_VERSION = window.orbit?.version || '2.0.1';
+
 const currencies = [
   ['DOP', 'Peso dominicano (RD$)'],
   ['USD', 'Dolar estadounidense ($)'],
@@ -289,7 +291,7 @@ export default function WizardScreen({
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-[24px] bg-white/78 p-5">
                 <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Sistema</div>
-                <div className="mt-3 text-lg font-bold text-ink">OrbitPOS 2.0.0</div>
+                <div className="mt-3 text-lg font-bold text-ink">OrbitPOS {APP_VERSION}</div>
                 <div className="mt-2 text-sm text-slate-600">Desarrollado por JRTech</div>
               </div>
               <div className="rounded-[24px] bg-white/78 p-5">

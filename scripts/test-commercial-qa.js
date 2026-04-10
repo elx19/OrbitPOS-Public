@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const packageJson = require('../package.json');
 
 const securityQuestions = require('../shared/security-questions.json');
 const { createLicenseKey } = require('../shared/license-core');
@@ -219,7 +220,7 @@ async function runCommercialQa() {
       businessName: 'OrbitPOS QA Comercial',
       licenseType: 'monthly',
       edition: 'standard',
-      versionMinCompatible: '2.0.0'
+      versionMinCompatible: packageJson.version
     });
     const activated = await apiRequest(apiBaseUrl, '/api/license/activate', {
       method: 'POST',

@@ -5,6 +5,8 @@ import { Field, Input } from '../ui/Field';
 import { apiRequest } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
 
+const APP_VERSION = window.orbit?.version || '2.0.1';
+
 export default function LicensePanel({ token, license, machineId, onActivated }) {
   const [licenseKey, setLicenseKey] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -122,7 +124,7 @@ export default function LicensePanel({ token, license, machineId, onActivated })
           </div>
           <div className="rounded-3xl bg-white/80 p-5 md:col-span-2">
             <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Compatibilidad minima</div>
-            <div className="mt-3 text-sm font-semibold text-slate-800">{license?.versionMinCompatible || '2.0.0'}</div>
+            <div className="mt-3 text-sm font-semibold text-slate-800">{license?.versionMinCompatible || APP_VERSION}</div>
           </div>
         </div>
       </Panel>

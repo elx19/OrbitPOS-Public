@@ -36,6 +36,7 @@ const rdTimeFormatter = new Intl.DateTimeFormat('es-DO', {
   minute: '2-digit',
   hour12: true
 });
+const APP_VERSION = window.orbit?.version || '2.0.1';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -382,7 +383,7 @@ export default function AppShell({
                 <div className={classNames('mt-1 truncate font-bold', compactSidebar ? 'text-xl' : 'text-2xl')}>
                   {businessName}
                 </div>
-                <div className="mt-1 text-sm text-white/72">Version {meta?.version || '2.0.0'}</div>
+                <div className="mt-1 text-sm text-white/72">Version {meta?.version || APP_VERSION}</div>
               </div>
             </div>
 

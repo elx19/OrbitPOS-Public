@@ -6,6 +6,8 @@ import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import { formatDate } from '../../lib/format';
 
+const APP_VERSION = window.orbit?.version || '2.0.1';
+
 function describeLicense(license) {
   if (license?.isActive) {
     return {
@@ -173,7 +175,7 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
       <Panel className="screen-shell grid min-h-screen w-full gap-8 overflow-hidden p-3 lg:grid-cols-[1.05fr,0.95fr]">
         <div className="rounded-[26px] bg-gradient-to-br from-ink via-slate-900 to-lagoon p-8 text-white">
           <div className="inline-flex rounded-full border border-white/20 px-4 py-1 text-xs uppercase tracking-[0.28em] text-white/80">
-            OrbitPOS v2.0.0
+            OrbitPOS v{APP_VERSION}
           </div>
           <div className="mt-6 flex items-center gap-4">
             {businessLogoUrl && logoVisible ? (

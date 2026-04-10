@@ -2,6 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const AdmZip = require('adm-zip');
+const packageJson = require('../../package.json');
 const {
   DATA_DIR,
   getConfigValue,
@@ -148,7 +149,7 @@ async function createLocalBackup(destination = getConfigValue('backup_path', pat
       backupType: 'full-system',
       createdAt: new Date().toISOString(),
       businessName: getConfigValue('business_name', 'Mi Negocio'),
-      version: '2.0.0',
+      version: packageJson.version,
       contents: [
         'base de datos',
         'configuracion',

@@ -1,8 +1,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const packageJson = require('../package.json');
 
 contextBridge.exposeInMainWorld('orbit', {
   backendUrl: process.env.BACKEND_URL || 'http://localhost:3030',
-  version: '2.0.0',
+  version: packageJson.version,
   files: {
     pickLogo: () => ipcRenderer.invoke('dialog:pick-logo'),
     pickBackup: () => ipcRenderer.invoke('dialog:pick-backup')

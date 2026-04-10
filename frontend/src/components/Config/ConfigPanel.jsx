@@ -10,6 +10,7 @@ import { getInitials, resolveAssetUrl } from '../../lib/assets';
 const DEFAULT_UPDATE_PROVIDER = 'github';
 const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
+const APP_VERSION = window.orbit?.version || '2.0.1';
 
 const themeOptions = [
   {
@@ -110,8 +111,8 @@ function buildForm(config) {
 }
 
 const defaultUpdaterStatus = {
-  currentVersion: '2.0.0',
-  latestVersion: '2.0.0',
+  currentVersion: APP_VERSION,
+  latestVersion: APP_VERSION,
   provider: DEFAULT_UPDATE_PROVIDER,
   githubOwner: DEFAULT_UPDATE_GITHUB_OWNER,
   githubRepo: DEFAULT_UPDATE_GITHUB_REPO,
@@ -555,7 +556,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
           </div>
             <div className="rounded-[24px] bg-white/80 p-5 text-sm text-slate-600">
               <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Version actual</div>
-              <div className="mt-2 text-lg font-bold text-ink">{meta?.version || '2.0.0'}</div>
+              <div className="mt-2 text-lg font-bold text-ink">{meta?.version || APP_VERSION}</div>
               <div className="mt-2">Canal: {form.update_channel}</div>
               <div className="mt-1">Origen: {form.update_provider === 'github' ? 'GitHub Releases' : 'Servidor generico'}</div>
             </div>
@@ -1009,8 +1010,8 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
             <div className="mt-5 grid gap-4">
                 <ConfigCard title="Estado del actualizador" description="Resumen de la version instalada, version detectada y estado actual.">
                   <div className="grid gap-3 text-sm text-slate-600 md:grid-cols-2">
-                    <div>Version instalada: {updaterStatus.currentVersion || meta?.version || '2.0.0'}</div>
-                    <div>Version detectada: {updaterStatus.latestVersion || meta?.version || '2.0.0'}</div>
+                    <div>Version instalada: {updaterStatus.currentVersion || meta?.version || APP_VERSION}</div>
+                    <div>Version detectada: {updaterStatus.latestVersion || meta?.version || APP_VERSION}</div>
                     <div>Proveedor: {updaterStatus.provider === 'github' ? 'GitHub Releases' : 'Servidor generico'}</div>
                     <div>Canal: {updaterStatus.channel || form.update_channel}</div>
                     <div>Servidor configurado: {updaterStatus.configured ? 'Si' : 'No'}</div>

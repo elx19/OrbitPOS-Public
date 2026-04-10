@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
+const packageJson = require('../package.json');
 
 const outputDir = path.join(__dirname, '..', 'assets', 'manuals');
 const outputPath = path.join(outputDir, 'OrbitPOS_Manual_Usuario.pdf');
@@ -87,7 +88,7 @@ const sections = [
     body: [
       'Correo: jrr6867@gmail.com',
       'WhatsApp: +1 (809) 404-2070',
-      'Version del sistema: OrbitPOS 2.0.0'
+      `Version del sistema: OrbitPOS ${packageJson.version}`
     ]
   }
 ];

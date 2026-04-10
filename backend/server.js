@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const packageJson = require('../package.json');
 const { initDatabase } = require('./database');
 const { refreshLicenseState, createLicenseRouter } = require('./license');
 const { createWizardRouter } = require('./wizard');
@@ -19,14 +20,14 @@ app.get('/api/health', (request, response) => {
   response.json({
     ok: true,
     service: 'OrbitPOS API',
-    version: '2.0.0'
+    version: packageJson.version
   });
 });
 
 app.get('/api/meta', (request, response) => {
   response.json({
     name: 'OrbitPOS',
-    version: '2.0.0',
+    version: packageJson.version,
     updater: getUpdaterStatus()
   });
 });

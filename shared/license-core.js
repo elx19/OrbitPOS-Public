@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const packageJson = require('../package.json');
 
 const LICENSE_PREFIX = 'ORB2';
 const LICENSE_DAYS_BY_TYPE = {
@@ -55,7 +56,7 @@ function createLicenseKey({
   licenseType,
   expiresAt,
   edition = 'standard',
-  versionMinCompatible = '2.0.0',
+  versionMinCompatible = packageJson.version,
   serial = buildLicenseSerial(),
   issuedAt = new Date().toISOString()
 }) {
@@ -65,7 +66,7 @@ function createLicenseKey({
     licenseType: normalizeLicenseType(licenseType),
     expiresAt: expiresAt || calculateExpiration(licenseType),
     issuedAt,
-    version: '2.0.0',
+    version: packageJson.version,
     versionMinCompatible,
     edition: String(edition || 'standard').trim().toLowerCase(),
     serial: String(serial || buildLicenseSerial()).trim()
@@ -126,7 +127,7 @@ function decodeLicenseKey(licenseKey) {
   return {
     ...payload,
     edition: String(payload.edition || 'standard').trim().toLowerCase(),
-    versionMinCompatible: payload.versionMinCompatible || payload.version || '2.0.0',
+    versionMinCompatible: payload.versionMinCompatible || payload.version || packageJson.version,
     serial: String(payload.serial || '').trim() || 'SIN-SERIAL'
   };
 }

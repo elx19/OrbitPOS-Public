@@ -1,6 +1,6 @@
 ; OrbitPOS - Instalador base Inno Setup
 #define MyAppName "OrbitPOS"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.0.1"
 #define MyAppPublisher "JRTech"
 #define MyAppExeName "OrbitPOS.exe"
 

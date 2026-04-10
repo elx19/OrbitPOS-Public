@@ -3,6 +3,8 @@ import Button from '../ui/Button';
 import Panel from '../ui/Panel';
 import { formatDate } from '../../lib/format';
 
+const APP_VERSION = window.orbit?.version || '2.0.1';
+
 export default function HelpPanel({ license, machineId, token, onReconfigure }) {
   async function openManual() {
     try {
@@ -35,7 +37,7 @@ export default function HelpPanel({ license, machineId, token, onReconfigure }) 
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Ayuda y soporte</div>
-            <h2 className="mt-3 text-3xl font-bold text-ink">OrbitPOS v2.0.0</h2>
+            <h2 className="mt-3 text-3xl font-bold text-ink">OrbitPOS v{APP_VERSION}</h2>
             <p className="mt-3 text-sm text-slate-600">
               Accede al manual, soporte JRTech y datos tecnicos de la instalacion desde un mismo centro de ayuda.
             </p>
