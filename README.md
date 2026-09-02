@@ -1,62 +1,53 @@
-# OrbitPOS Public
+# OrbitPOS
 
-Sistema de terminal de venta al publico desarrollado con Electron, React, Express y SQLite.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. La versión distribuida actualmente es **5.1.2** para Windows.
 
-Este repositorio publico contiene solo el sistema principal. No incluye:
+## Lenguaje y tecnología
 
-- generador de licencias
-- documentos internos de desarrollo
-- secretos comerciales de licenciamiento
-- feed local / servidor generico legado
+El proyecto utiliza **JavaScript y JSX**; no está desarrollado en TypeScript.
 
-## Incluye
+- Node.js 22.12+.
+- Electron 41.10.7.
+- React 18.3.1 y Vite 6.4.3.
+- Express 5.2.1.
+- SQLite con better-sqlite3 13.0.3.
+- serialport 13.0.0 para dispositivos seriales.
+- electron-updater 6.8.9 para actualizaciones.
 
-- app de escritorio con Electron
-- frontend React + Vite
-- backend Express + SQLite
-- wizard inicial
-- demo de 30 dias
-- ventas, caja, creditos, devoluciones, productos, compras, clientes, usuarios y reportes
-- backups y restauracion
-- plantillas de impresion editables
-- actualizaciones por GitHub Releases
+El frontend está escrito con React/JSX y el backend y proceso principal de Electron están escritos en JavaScript. La base de datos opera localmente en el equipo donde se instala OrbitPOS.
 
-## Seguridad de licencias en esta version publica
+## Release actual
 
-La logica de activacion comercial requiere una clave privada fuera del repositorio.
+Descarga el instalador o el portable desde [OrbitPOS v5.1.2](https://github.com/elx19/OrbitPOS-Public/releases/tag/v5.1.2).
 
-Configura esta variable antes de usar licencias firmadas:
+La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
-```bash
-ORBITPOS_LICENSE_SECRET=tu_clave_privada
-```
+## Perfiles de negocio
 
-Si no configuras esa variable, el sistema puede ejecutarse en modo demo, pero no validara activaciones comerciales firmadas.
+El wizard inicial permite configurar la instalación para:
 
-Puedes copiar el ejemplo base desde:
+- comercio general;
+- colmado;
+- boutique, con variantes de talla y color;
+- ferretería, con unidades y fracciones;
+- farmacia pequeña, con lotes, vencimientos y FEFO;
+- restaurante, con menú, mesas, comandas, cocina y modificadores;
+- venta por peso, con tara, precisión, báscula y etiquetas;
+- celulares y reparaciones, con IMEI, garantías y órdenes de servicio.
 
-- [.env.example](./.env.example)
+Las funciones visibles dependen del perfil elegido y de la configuración del negocio.
 
-## Estructura
+## Funciones principales
 
-```text
-OrbitPOS/
-├── assets/
-├── backend/
-├── electron/
-├── frontend/
-├── installer/
-├── scripts/
-├── shared/
-├── package.json
-└── vite.config.js
-```
+Ventas, caja, inventario, categorías, compras, proveedores, clientes, crédito y abonos, devoluciones, cotizaciones, descuentos, listas de precios, gastos, reportes, usuarios, sucursales, backups, restauración, tickets editables, pesaje, restaurantes, celulares y reparaciones.
+
+La aplicación incluye validaciones para inventario, crédito, devoluciones, auditoría de cambios y operación offline controlada. La prueba física de impresora, lector, báscula y etiquetas debe hacerse en el equipo final antes de distribuirla a clientes.
 
 ## Requisitos
 
-- Node.js 20+
-- npm 10+
-- Windows recomendado para empaquetado Electron
+- Windows para el instalador, portable y dispositivos.
+- Node.js 22.12+ y npm 10+ si se desea ejecutar el proyecto desde código.
+- La instalación normal para usuarios finales solo requiere descargar el instalador de la release.
 
 ## Desarrollo local
 
@@ -65,7 +56,7 @@ npm install
 npm run dev
 ```
 
-## Builds
+Build web y de escritorio:
 
 ```bash
 npm run build
@@ -74,21 +65,28 @@ npm run build:portable
 npm run build:unpacked
 ```
 
-## Publicacion de updates
-
-El proyecto esta preparado para publicar actualizaciones con GitHub Releases.
+Publicación de una nueva release:
 
 ```bash
 npm run build:github-release
 ```
 
-## Notas
+La publicación requiere credenciales de GitHub en la máquina del publicador. Nunca guardes tokens, claves privadas, bases de datos ni backups dentro del repositorio.
 
-- la base de datos nueva inicia limpia, sin productos precargados
-- el usuario inicial es `admin/admin`
-- el generador comercial de licencias se mantiene privado
+## Estructura del código
 
-## Licencia del codigo
+```text
+OrbitPOS/
+├── backend/      # API Express, servicios y SQLite
+├── electron/     # proceso de escritorio y actualizador
+├── frontend/     # React, JSX y Vite
+├── shared/       # perfiles y lógica compartida
+├── assets/       # recursos visuales
+└── scripts/      # build, migraciones y pruebas
+```
 
-Codigo fuente publico de referencia y distribucion controlada por JRTech.
-Todos los derechos reservados.
+El generador comercial de licencias, documentos internos y secretos de JRTech se mantienen fuera de este repositorio público.
+
+## Licencia
+
+Software propietario de JRTech. Todos los derechos reservados. La publicación del código o de los instaladores no concede derechos de redistribución, modificación o sublicencia.
