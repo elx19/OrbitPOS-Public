@@ -51,6 +51,8 @@ La aplicación incluye validaciones para inventario, crédito, devoluciones, aud
 
 ## Desarrollo local
 
+Este repositorio se usa principalmente para distribuir las releases de Windows. La fuente canónica de desarrollo y sus comandos actualizados se mantienen en el repositorio privado [OrbitPOS-Pro](https://github.com/elx19/OrbitPOS-Pro); los archivos fuente públicos que existan aquí son una referencia y no sustituyen esa fuente.
+
 ```bash
 npm install
 npm run dev
