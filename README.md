@@ -58,6 +58,8 @@ npm install
 npm run dev
 ```
 
+El backend de desarrollo se ejecuta con Node 22 mediante `npm run dev:backend`, porque `better-sqlite3` debe coincidir con el ABI nativo usado por la aplicación. Si necesitas reinicio automático al editar backend y ya tienes Node 22 activo, usa `npm run dev:backend:watch`.
+
 Build web y de escritorio:
 
 ```bash
