@@ -261,7 +261,7 @@ export default function CreditsPanel({ token, onActivity }) {
                   <div className="rounded-[24px] bg-white/78 p-5">
                     <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Abono actual</div>
                     <div className="mt-2 text-2xl font-bold text-emerald-700">{formatCurrency(paymentTotal)}</div>
-                    <div className="mt-1 text-sm text-slate-500">Monto en preparacion</div>
+                    <div className="mt-1 text-sm text-slate-500">Monto listo para registrar</div>
                   </div>
                 </div>
 

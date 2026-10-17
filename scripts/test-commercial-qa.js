@@ -158,6 +158,18 @@ async function runCommercialQa() {
       wizardCompleted: wizardStatus.payload.config?.wizardCompleted || false
     });
 
+    const disabledScaleRead = await apiRequest(apiBaseUrl, '/api/wizard/read-scale', {
+      method: 'POST',
+      body: {
+        enabled: false,
+        port: '',
+        baudRate: 9600
+      }
+    });
+    assertCondition(disabledScaleRead.payload.success === false, 'La lectura de bascula desactivada debe informar que no esta disponible.');
+    assertCondition(disabledScaleRead.payload.enabled === false, 'La lectura de bascula desactivada no devolvio su estado.');
+    recordStep('Lectura de bascula desactivada controlada');
+
     const adminQuestion = securityQuestions[0];
     assertCondition(Boolean(adminQuestion), 'No hay preguntas de seguridad precargadas.');
 

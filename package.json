@@ -1,6 +1,6 @@
 {
   "name": "orbitpos",
-  "version": "2.1.0-alpha.22",
+  "version": "2.1.0-alpha.23",
   "private": true,
   "author": "JRTech",
   "description": "Sistema de terminal de venta al publico OrbitPOS",
@@ -22,8 +22,9 @@
     "license:decode": "node scripts/license-generator.js decode",
     "license:verify": "node scripts/license-generator.js verify",
     "qa:license": "node scripts/test-license-generator.js",
+    "qa:hardware": "node scripts/test-hardware.js",
     "qa:packaged": "node scripts/test-packaged-runtime.js",
-    "qa:production": "npm run qa:license && npm run qa:commercial:node22 && npm run qa:packaged && npm run qa:release",
+    "qa:production": "npm run qa:license && npm run qa:hardware && npm run qa:commercial:node22 && npm run qa:packaged && npm run qa:release",
     "qa:release": "node scripts/verify-release.js",
     "release:clean-data": "node scripts/clean-release-runtime-data.js",
     "qa:commercial": "node scripts/test-commercial-qa.js",

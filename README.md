@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.22** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.23** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.22.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.23.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.22` añade QA automatizada del ejecutable empaquetado: arranca OrbitPOS en un puerto temporal, valida salud y metadatos de versión, y limpia los datos de prueba. `qa:production` reúne la verificación del generador de licencias, QA comercial, runtime empaquetado y artefactos de release. La navegación navy compacta, las tarjetas blancas, las acciones emerald y la carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) quedan versionadas junto con cada hito funcional.
+La línea `v2.1.0-alpha.23` completa el flujo de venta por peso: lee lecturas seriales de básculas en kg, g, lb y oz, convierte el resultado a kg y permite aplicarlo directamente a productos pesados del carrito. `qa:production` también valida el hardware sin dispositivo mediante parser y estado desactivado. La navegación navy compacta, las tarjetas blancas, las acciones emerald y la carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) quedan versionadas junto con cada hito funcional.
 
 ## Generador de licencias
 

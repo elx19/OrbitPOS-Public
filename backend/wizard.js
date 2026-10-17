@@ -4,7 +4,7 @@ const { getDb, getConfigEntries, setConfigEntries, createAuditLog } = require('.
 const { startDemo, activateLicenseKey, getMachineId, refreshLicenseState } = require('./license');
 const { listPrinters, testPrinter, autoDetectPrinter } = require('./helpers/printer');
 const { listSerialPorts, testScannerConnection, autoDetectScanner } = require('./helpers/barcode');
-const { testScaleConnection, autoDetectScale } = require('./helpers/scale');
+const { testScaleConnection, autoDetectScale, readScaleWeight } = require('./helpers/scale');
 const securityQuestions = require('../shared/security-questions.json');
 
 function mapWizardConfig(config, adminUser = null) {
@@ -148,6 +148,14 @@ function createWizardRouter() {
     try {
       const result = await testScaleConnection(request.body || {});
       response.json(result);
+    } catch (error) {
+      response.status(400).json({ message: error.message });
+    }
+  });
+
+  router.post('/read-scale', async (request, response) => {
+    try {
+      response.json(await readScaleWeight(request.body || {}));
     } catch (error) {
       response.status(400).json({ message: error.message });
     }

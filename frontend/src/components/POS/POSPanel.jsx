@@ -21,7 +21,15 @@ function ProductVisual({ product, className = 'h-16 w-16 rounded-[18px]' }) {
   return <div className={`${className} flex shrink-0 items-center justify-center border border-white/70 bg-ink/10 text-sm font-bold text-ink shadow-sm`}>{getInitials(product?.name || 'Producto')}</div>;
 }
 
-export default function POSPanel({ token, taxRate = 18, businessName = 'Mi Negocio', onActivity }) {
+export default function POSPanel({
+  token,
+  taxRate = 18,
+  businessName = 'Mi Negocio',
+  scaleEnabled = false,
+  scalePort = '',
+  scaleBaudRate = 9600,
+  onActivity
+}) {
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [register, setRegister] = useState(null);
@@ -44,6 +52,7 @@ export default function POSPanel({ token, taxRate = 18, businessName = 'Mi Negoc
   const [visibleProductCount, setVisibleProductCount] = useState(24);
   const [openingAmount, setOpeningAmount] = useState('0');
   const [openingRegister, setOpeningRegister] = useState(false);
+  const [readingScaleId, setReadingScaleId] = useState(null);
   const previewCacheRef = useRef(new Map());
   const deferredQuery = useDeferredValue(query);
 
@@ -175,6 +184,30 @@ export default function POSPanel({ token, taxRate = 18, businessName = 'Mi Negoc
     }));
   }
 
+  async function readScaleForProduct(productId) {
+    setReadingScaleId(productId);
+    setMessage('Leyendo peso de la bascula...');
+    try {
+      const result = await apiRequest('/api/wizard/read-scale', {
+        method: 'POST',
+        body: {
+          enabled: scaleEnabled,
+          port: scalePort,
+          baudRate: scaleBaudRate
+        }
+      });
+      if (!result.success || !Number.isFinite(Number(result.weightKg)) || Number(result.weightKg) <= 0) {
+        throw new Error(result.message || 'La bascula no devolvio un peso valido.');
+      }
+      updateCartItem(productId, { quantity: Number(result.weightKg).toFixed(3) });
+      setMessage(`Peso aplicado al carrito: ${Number(result.weightKg).toFixed(3)} kg.`);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setReadingScaleId(null);
+    }
+  }
+
   const removeFromCart = (productId) => setCart((current) => current.filter((item) => item.id !== productId));
   async function openCustomerDisplay() { try { await window.orbit?.customerDisplay?.open?.(); setCustomerDisplayOpen(true); } catch { setMessage('No fue posible abrir la pantalla cliente.'); } }
   async function closeCustomerDisplay() { try { await window.orbit?.customerDisplay?.close?.(); setCustomerDisplayOpen(false); } catch { setMessage('No fue posible cerrar la pantalla cliente.'); } }
@@ -293,7 +326,16 @@ export default function POSPanel({ token, taxRate = 18, businessName = 'Mi Negoc
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="truncate font-semibold text-slate-800">{item.name}</div><div className="mt-1 text-xs text-slate-500">{formatCurrency(item.sale_price)} c/u | Disponible {item.stock}</div></div><Button variant="ghost" onClick={() => removeFromCart(item.id)}>Quitar</Button></div>
                     <div className="mt-4 grid gap-3">
-                      <Field label="Cantidad"><Input type="number" step={item.weighed ? '0.01' : '1'} min="0.01" max={item.stock} value={item.quantity} onChange={(event) => updateCartItem(item.id, { quantity: event.target.value })} /></Field>
+                      <Field label="Cantidad"><Input type="number" step={item.weighed ? '0.001' : '1'} min="0.01" max={item.stock} value={item.quantity} onChange={(event) => updateCartItem(item.id, { quantity: event.target.value })} /></Field>
+                      {item.weighed ? (
+                        <Button
+                          variant="secondary"
+                          disabled={readingScaleId === item.id}
+                          onClick={() => readScaleForProduct(item.id)}
+                        >
+                          {readingScaleId === item.id ? 'Leyendo bascula...' : scaleEnabled ? 'Leer bascula' : 'Configurar bascula'}
+                        </Button>
+                      ) : null}
                       <Field label="Descuento item"><Input type="number" step="0.01" min="0" value={item.discount} onChange={(event) => updateCartItem(item.id, { discount: event.target.value })} /></Field>
                     </div>
                   </div>
