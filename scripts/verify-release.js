@@ -33,11 +33,15 @@ function readManifest(manifestPath) {
   const fileMatch = content.match(/^\s*- url:\s*(.+)$/m);
   const hashMatch = content.match(/^\s*sha512:\s*(.+)$/m);
   const sizeMatch = content.match(/^\s*size:\s*(\d+)$/m);
+  const pathMatch = content.match(/^path:\s*(.+)$/m);
+  const blockMapSizeMatch = content.match(/^blockMapSize:\s*(\d+)$/m);
   return {
     version: versionMatch?.[1]?.trim(),
     fileName: fileMatch?.[1]?.trim(),
     sha512: hashMatch?.[1]?.trim(),
-    size: sizeMatch ? Number(sizeMatch[1]) : null
+    size: sizeMatch ? Number(sizeMatch[1]) : null,
+    path: pathMatch?.[1]?.trim(),
+    blockMapSize: blockMapSizeMatch ? Number(blockMapSizeMatch[1]) : null
   };
 }
 
@@ -62,19 +66,75 @@ function checkReleaseArtifacts() {
   const installerRelative = `release/OrbitPOS Setup ${version}.exe`;
   const installer = requireFile(installerRelative);
   const manifest = requireFile('release/latest.yml');
+  const stableManifest = requireFile('release/stable.yml');
   requireFile('release/win-unpacked/OrbitPOS.exe');
   const releaseNotes = requireFile(`docs/releases/${version}.md`);
 
-  if (!installer || !manifest || !releaseNotes) return;
-  const metadata = readManifest(manifest);
+  if (!installer || !manifest || !stableManifest || !releaseNotes) return;
   const expectedFileName = `OrbitPOS.Setup.${version}.exe`;
   const actualHash = sha512Base64(installer);
   const actualSize = fs.statSync(installer).size;
+  const expectedBlockMapSize = fs.existsSync(`${installer}.blockmap`)
+    ? fs.statSync(`${installer}.blockmap`).size
+    : 0;
 
-  if (metadata.version !== version) failures.push(`latest.yml declara ${metadata.version || 'sin version'}.`);
-  if (metadata.fileName !== expectedFileName) failures.push(`latest.yml no apunta a ${expectedFileName}.`);
-  if (metadata.sha512 !== actualHash) failures.push('El SHA-512 del instalador no coincide con latest.yml.');
-  if (metadata.size !== actualSize) failures.push('El tamaño del instalador no coincide con latest.yml.');
+  const manifests = [
+    { relativePath: 'release/latest.yml', filePath: manifest },
+    { relativePath: 'release/stable.yml', filePath: stableManifest },
+    { relativePath: 'release/update-feed/orbitpos/latest.yml', filePath: requireFile('release/update-feed/orbitpos/latest.yml') },
+    { relativePath: 'release/update-feed/orbitpos/stable.yml', filePath: requireFile('release/update-feed/orbitpos/stable.yml') },
+    { relativePath: 'update-server/public/orbitpos/latest.yml', filePath: requireFile('update-server/public/orbitpos/latest.yml') },
+    { relativePath: 'update-server/public/orbitpos/stable.yml', filePath: requireFile('update-server/public/orbitpos/stable.yml') }
+  ].filter((entry) => entry.filePath);
+
+  const expectedMetadata = {
+    version,
+    fileName: expectedFileName,
+    sha512: actualHash,
+    size: actualSize,
+    path: expectedFileName,
+    blockMapSize: expectedBlockMapSize
+  };
+
+  manifests.forEach(({ relativePath, filePath }) => {
+    const metadata = readManifest(filePath);
+    if (metadata.version !== expectedMetadata.version) {
+      failures.push(`${relativePath} declara ${metadata.version || 'sin version'}.`);
+    }
+    if (metadata.fileName !== expectedMetadata.fileName) {
+      failures.push(`${relativePath} no apunta a ${expectedFileName}.`);
+    }
+    if (metadata.path !== expectedMetadata.path) {
+      failures.push(`${relativePath} tiene un path distinto al instalador publicado.`);
+    }
+    if (metadata.sha512 !== expectedMetadata.sha512) {
+      failures.push(`El SHA-512 de ${relativePath} no coincide con el instalador.`);
+    }
+    if (metadata.size !== expectedMetadata.size) {
+      failures.push(`El tamaño declarado en ${relativePath} no coincide con el instalador.`);
+    }
+    if (metadata.blockMapSize !== expectedMetadata.blockMapSize) {
+      failures.push(`El blockMapSize de ${relativePath} no coincide con el artefacto local.`);
+    }
+  });
+
+  const feedDirectories = [
+    'release/update-feed/orbitpos',
+    'update-server/public/orbitpos'
+  ];
+  feedDirectories.forEach((relativeDirectory) => {
+    const feedInstaller = requireFile(`${relativeDirectory}/${expectedFileName}`);
+    if (!feedInstaller) return;
+    const feedStats = fs.statSync(feedInstaller);
+    if (feedStats.size !== actualSize || sha512Base64(feedInstaller) !== actualHash) {
+      failures.push(`El instalador publicado en ${relativeDirectory} no coincide con release/${expectedFileName}.`);
+    }
+
+    const feedBlockMap = requireFile(`${relativeDirectory}/${expectedFileName}.blockmap`);
+    if (feedBlockMap && fs.statSync(feedBlockMap).size !== expectedBlockMapSize) {
+      failures.push(`El blockmap publicado en ${relativeDirectory} no coincide con el artefacto local.`);
+    }
+  });
 }
 
 function checkBrandAndReferences() {
