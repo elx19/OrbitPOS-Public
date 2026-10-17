@@ -12,7 +12,7 @@ import carniceriaIconUrl from '../../assets/business-types/carniceria.png';
 import embutidosIconUrl from '../../assets/business-types/embutidos.png';
 import mixtoIconUrl from '../../assets/business-types/mixto.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.21';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.22';
 
 function WizardIcon({ type }) {
   const paths = {

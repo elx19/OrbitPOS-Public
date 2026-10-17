@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.21** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.22** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.21.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.22.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.21` mejora el generador de licencias para operación segura: `verify` clasifica claves corruptas como inválidas con código 2, `machine-id` permite identificar el equipo sin exponer secretos y las salidas existentes no se reemplazan sin `--force`. La navegación navy compacta, las tarjetas blancas, las acciones emerald y la carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) quedan versionadas junto con cada hito funcional.
+La línea `v2.1.0-alpha.22` añade QA automatizada del ejecutable empaquetado: arranca OrbitPOS en un puerto temporal, valida salud y metadatos de versión, y limpia los datos de prueba. `qa:production` reúne la verificación del generador de licencias, QA comercial, runtime empaquetado y artefactos de release. La navegación navy compacta, las tarjetas blancas, las acciones emerald y la carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) quedan versionadas junto con cada hito funcional.
 
 ## Generador de licencias
 
@@ -94,7 +94,7 @@ node scripts/license-generator.js verify --secret-file C:\\secure\\orbitpos-lice
 
 Por seguridad, `--out` no reemplaza una licencia existente salvo que se indique `--force`; el archivo se escribe primero en una ruta temporal y luego se mueve de forma atómica.
 
-La prueba aislada del generador se ejecuta con `npm run qa:license`. La QA comercial completa y las pruebas físicas de dispositivos siguen siendo gates obligatorios antes de producción.
+La prueba aislada del generador se ejecuta con `npm run qa:license`. `npm run qa:packaged` arranca el ejecutable desempaquetado en un puerto temporal, comprueba `/api/health` y `/api/meta`, y limpia su base de datos de prueba. `npm run qa:production` agrupa la QA de licencia, comercial, runtime empaquetado y release. Las pruebas físicas de dispositivos siguen siendo gates obligatorios antes de producción.
 
 La integridad del artefacto se comprueba con `npm run qa:release`; valida el tag, el instalador, el hash del manifiesto, el ejecutable desempaquetado, la identidad visual y las referencias de todos los módulos.
 
