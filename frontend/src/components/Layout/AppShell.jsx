@@ -91,11 +91,11 @@ function NavIcon({ name, active = false, large = false }) {
   return (
     <span
       className={classNames(
-        'flex items-center justify-center rounded-2xl border transition',
-        large ? 'h-12 w-12' : 'h-10 w-10',
+        'orbit-icon transition',
+        large ? 'h-12 w-12' : 'h-9 w-9',
         active
-          ? 'border-white/18 bg-white/16 text-white'
-          : 'border-slate-200 bg-white/82 text-slate-700'
+          ? 'bg-white/12 text-white'
+          : 'text-current'
       )}
     >
       <svg
@@ -352,17 +352,17 @@ export default function AppShell({
   }
 
   return (
-    <div className="app-surface min-h-screen">
+    <div className="app-surface orbit-shell min-h-screen">
       <div className={classNames(
-        'app-frame grid min-h-screen w-full gap-2 p-2',
+        'app-frame grid min-h-screen w-full gap-4 p-4',
         compactSidebar ? 'xl:grid-cols-[270px,minmax(0,1fr)]' : 'xl:grid-cols-[292px,minmax(0,1fr)]'
       )}>
         <aside className={classNames(
-          'glass-panel flex min-h-[260px] flex-col rounded-[30px] xl:h-[calc(100vh-1rem)]',
+          'orbit-sidebar flex min-h-[260px] flex-col rounded-[24px] xl:h-[calc(100vh-2rem)]',
           compactSidebar ? 'p-3' : 'p-4'
         )}>
           <div className={classNames(
-            'theme-brand-panel rounded-[28px] text-white',
+            'orbit-sidebar-brand rounded-[18px] text-white',
             compactSidebar ? 'p-4' : 'p-5'
           )}>
             <div className="flex items-center gap-4">
@@ -407,20 +407,18 @@ export default function AppShell({
               return (
                 <section
                   key={group.key}
-                  className="rounded-[24px] border border-slate-200/70 bg-white/56 p-2 shadow-[0_12px_28px_-22px_rgba(23,32,51,0.45)]"
+                  className="rounded-[18px] border border-white/8 bg-white/5 p-2"
                 >
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.key)}
-                    className="flex w-full items-center justify-between gap-3 rounded-[20px] px-3 py-2 text-left transition hover:bg-white/70"
+                    className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-white/8"
                   >
                     <span className="flex items-center gap-3">
                       <NavIcon name={group.icon} />
-                      <span>
-                        <span className="block text-sm font-semibold text-slate-800">{group.label}</span>
-                      </span>
+                      <span className="orbit-nav-section">{group.label}</span>
                     </span>
-                    <span className="text-xs font-bold uppercase text-slate-400">{open ? 'Ocultar' : 'Abrir'}</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-500">{open ? '−' : '+'}</span>
                   </button>
 
                   {open ? (
@@ -434,11 +432,9 @@ export default function AppShell({
                             type="button"
                             onClick={() => selectModule(module.key)}
                             className={classNames(
-                              'w-full rounded-[20px] px-3 py-3 text-left transition',
-                              isActive
-                                ? 'bg-ink text-white shadow-soft ring-1 ring-white/18'
-                                : 'bg-white/78 text-slate-700 hover:bg-white'
+                              'orbit-nav-item w-full rounded-xl px-3 py-2.5 text-left transition',
                             )}
+                            data-active={isActive}
                           >
                             <span className="flex items-center justify-between gap-3">
                               <span className="flex items-center gap-3">
@@ -451,12 +447,7 @@ export default function AppShell({
                                 </span>
                               ) : null}
                             </span>
-                            <span className={classNames(
-                              'mt-2 block text-xs leading-5',
-                              isActive ? 'text-white/72' : 'text-slate-500'
-                            )}>
-                              {module.description}
-                            </span>
+                            <span className="hidden">{module.description}</span>
                           </button>
                         );
                       })}
@@ -467,11 +458,11 @@ export default function AppShell({
             })}
           </nav>
 
-          <div className="mt-4 flex items-center gap-3 rounded-[24px] border border-slate-200/70 bg-white/68 p-3">
+          <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-white/8 bg-white/6 p-3">
             <NavIcon name="help" />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold text-slate-800">Soporte JRTech</div>
-              <div className="truncate text-xs text-slate-500">Actualizacion, licencia y asistencia</div>
+              <div className="truncate text-sm font-semibold text-white">Soporte JRTech</div>
+              <div className="truncate text-xs text-slate-400">Actualizacion, licencia y asistencia</div>
             </div>
             <Button variant="secondary" onClick={onLogout}>
               Salir
@@ -479,9 +470,9 @@ export default function AppShell({
           </div>
         </aside>
 
-        <main className="glass-panel flex min-h-[calc(100vh-1rem)] min-w-0 flex-col rounded-[30px] p-4 md:p-5 xl:h-[calc(100vh-1rem)]">
+        <main className="flex min-h-[calc(100vh-2rem)] min-w-0 flex-col xl:h-[calc(100vh-2rem)]">
           <header className="flex flex-col gap-3 border-b border-slate-200/80 pb-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-slate-200/80 bg-white/64 px-4 py-3">
+            <div className="orbit-topbar flex flex-wrap items-center justify-between gap-3 rounded-[18px] px-4 py-3">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <span className="rounded-full bg-ink px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
                   {activeModuleDefinition?.label || 'Panel'}

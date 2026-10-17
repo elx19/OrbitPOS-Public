@@ -629,21 +629,21 @@ export default function WizardScreen({
   }
 
   return (
-    <div className="app-surface min-h-screen overflow-auto">
-      <div className="screen-shell w-full space-y-6 p-3">
+    <div className="app-surface min-h-screen overflow-auto px-4 py-6">
+      <div className="screen-shell orbit-wizard-card w-full max-w-6xl space-y-6 overflow-hidden p-6 lg:p-8">
         <div>
           <div className="text-xs uppercase tracking-[0.28em] text-slate-500">
             {isReview ? 'Configuracion completa' : `Paso ${step + 1} de 6`}
           </div>
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-white/65">
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-ember to-lagoon transition-all"
+              className="h-full rounded-full bg-emerald-500 transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
-        <Panel className="p-8">
+        <Panel className="orbit-wizard-form p-0">
           {renderStep()}
 
           {message ? (

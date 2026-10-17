@@ -14,9 +14,10 @@ import { formatCurrency, formatDateTime } from '../../lib/format';
 
 function SummaryCard({ label, value, accent }) {
   return (
-    <div className="rounded-[24px] bg-white/76 p-5">
-      <div className="text-xs uppercase tracking-[0.24em] text-slate-500">{label}</div>
+    <div className="orbit-kpi">
+      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</div>
       <div className={`mt-3 text-3xl font-bold ${accent}`}>{value}</div>
+      <div className="mt-2 text-xs text-slate-500">Comparado con el periodo anterior</div>
     </div>
   );
 }
@@ -72,14 +73,14 @@ export default function DashboardHome({ token, refreshKey = 0 }) {
       <Panel className="p-5 md:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Resumen ejecutivo</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Vista general del negocio</h2>
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Resumen del negocio</div>
+            <h2 className="mt-2 text-3xl font-bold text-ink">Todo bajo control</h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
               Revisa ventas, alertas y el comportamiento comercial del dia sin salir del panel principal.
             </p>
           </div>
           <div className="rounded-[22px] bg-white/76 px-4 py-4 text-sm text-slate-600">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Operacion</div>
+                  <div className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Operacion</div>
             <div className="mt-2 font-semibold text-ink">Panel en tiempo real</div>
           </div>
         </div>
@@ -106,15 +107,15 @@ export default function DashboardHome({ token, refreshKey = 0 }) {
             <AreaChart data={summary.chart}>
               <defs>
                 <linearGradient id="salesGradient" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="5%" stopColor="#d97706" stopOpacity={0.55} />
-                  <stop offset="95%" stopColor="#d97706" stopOpacity={0.02} />
+                  <stop offset="5%" stopColor="#13a56e" stopOpacity={0.42} />
+                  <stop offset="95%" stopColor="#13a56e" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#d8dee8" />
               <XAxis dataKey="label" stroke="#55617a" />
               <YAxis stroke="#55617a" />
               <Tooltip formatter={(value) => formatCurrency(value)} />
-              <Area type="monotone" dataKey="total" stroke="#d97706" fill="url(#salesGradient)" strokeWidth={3} />
+              <Area type="monotone" dataKey="total" stroke="#13a56e" fill="url(#salesGradient)" strokeWidth={3} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

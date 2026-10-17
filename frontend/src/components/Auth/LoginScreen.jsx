@@ -171,9 +171,9 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
   }
 
   return (
-    <div className="app-surface flex min-h-screen items-center justify-center overflow-auto">
-      <Panel className="screen-shell grid min-h-screen w-full gap-8 overflow-hidden p-3 lg:grid-cols-[1.05fr,0.95fr]">
-        <div className="rounded-[26px] bg-gradient-to-br from-ink via-slate-900 to-lagoon p-8 text-white">
+    <div className="app-surface flex min-h-screen items-center justify-center overflow-auto px-4 py-6">
+      <Panel className="orbit-login-card screen-shell grid w-full max-w-6xl gap-0 overflow-hidden p-0 lg:grid-cols-[1.05fr,0.95fr]">
+        <div className="orbit-login-brand p-8 lg:p-12">
           <div className="inline-flex rounded-full border border-white/20 px-4 py-1 text-xs uppercase tracking-[0.28em] text-white/80">
             OrbitPOS v{APP_VERSION}
           </div>
@@ -215,7 +215,7 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
           </div>
         </div>
 
-        <div className="rounded-[26px] bg-white/72 p-8">
+        <div className="orbit-login-form p-8 lg:p-12">
           {!showRecovery ? (
             <form onSubmit={handleSubmit}>
               <div className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">

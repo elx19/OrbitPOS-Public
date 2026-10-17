@@ -16,7 +16,7 @@ export function Input(props) {
   return (
     <input
       className={classNames(
-        'theme-input w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200'
+        'theme-input w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100'
       )}
       {...props}
     />
@@ -26,7 +26,7 @@ export function Input(props) {
 export function Select(props) {
   return (
     <select
-      className="theme-input w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+      className="theme-input w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
       {...props}
     />
   );
@@ -35,7 +35,7 @@ export function Select(props) {
 export function TextArea(props) {
   return (
     <textarea
-      className="theme-input w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+      className="theme-input w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
       {...props}
     />
   );
