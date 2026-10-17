@@ -6,7 +6,8 @@ const {
   LICENSE_DAYS_BY_TYPE,
   assertLicenseType,
   createLicenseKey,
-  decodeLicenseKey
+  decodeLicenseKey,
+  verifyLicensePayload
 } = require('../shared/license-core');
 
 function printUsage() {
@@ -24,6 +25,10 @@ Opciones de generate:
   --serial JR-...         Serial manual opcional
   --out ruta.txt           Guarda la clave sin imprimir secretos adicionales
   --json                   Devuelve respuesta JSON
+
+Opciones de verify:
+  --machine-id ID         Comprueba que la licencia pertenece a la maquina
+  --version 2.1.0         Comprueba la version minima compatible
 
 Tipos admitidos: ${Object.keys(LICENSE_DAYS_BY_TYPE).join(', ')}
 Requiere ORBITPOS_LICENSE_SECRET en el entorno del generador y del POS.
@@ -122,7 +127,16 @@ function run(command, options) {
       valid: true,
       payload: safePayload(payload)
     };
-    return options.json ? result : `Licencia valida\n${JSON.stringify(result.payload, null, 2)}`;
+    if (command === 'verify') {
+      result.verification = verifyLicensePayload(payload, {
+        machineId: options['machine-id'] || null,
+        appVersion: options.version || undefined
+      });
+      result.valid = result.verification.valid;
+    }
+    if (options.json) return result;
+    const status = command === 'verify' && !result.valid ? 'Licencia no valida' : 'Licencia valida';
+    return `${status}\n${JSON.stringify(command === 'verify' ? { ...result.payload, verification: result.verification } : result.payload, null, 2)}`;
   }
 
   throw new Error(`Comando no reconocido: ${command || '(ninguno)'}`);

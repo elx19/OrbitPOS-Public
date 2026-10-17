@@ -4,8 +4,9 @@ import Panel from '../ui/Panel';
 import { Field, Input, Select, TextArea } from '../ui/Field';
 import { apiRequest } from '../../lib/api';
 import securityQuestions from '../../../../shared/security-questions.json';
+import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.9';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.10';
 
 const currencies = [
   ['DOP', 'Peso dominicano (RD$)'],
@@ -278,6 +279,14 @@ export default function WizardScreen({
         return (
           <div className="space-y-6">
             <div className="rounded-[28px] bg-gradient-to-br from-ink via-slate-900 to-lagoon p-8 text-white">
+              <div className="flex items-center gap-4">
+                <img
+                  src={orbitposLogoUrl}
+                  alt="OrbitPOS"
+                  className="h-16 w-16 rounded-[20px] border border-white/20 bg-white/95 object-cover p-2"
+                />
+                <div className="text-xs uppercase tracking-[0.26em] text-white/70">Configuracion inicial</div>
+              </div>
               <div className="inline-flex rounded-full border border-white/20 px-4 py-1 text-xs uppercase tracking-[0.26em] text-white/80">
                 Paso 1 de 6
               </div>

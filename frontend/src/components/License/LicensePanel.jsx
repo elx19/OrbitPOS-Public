@@ -4,8 +4,9 @@ import Button from '../ui/Button';
 import { Field, Input } from '../ui/Field';
 import { apiRequest } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
+import orbitposLicenseUrl from '../../assets/orbitpos-license.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.9';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.10';
 
 export default function LicensePanel({ token, license, machineId, onActivated }) {
   const [licenseKey, setLicenseKey] = useState('');
@@ -80,12 +81,19 @@ export default function LicensePanel({ token, license, machineId, onActivated })
     <div className="space-y-6">
       <Panel>
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
+          <div className="flex max-w-3xl items-start gap-4">
+            <img
+              src={orbitposLicenseUrl}
+              alt="Activador OrbitPOS"
+              className="hidden h-20 w-20 shrink-0 rounded-[22px] bg-white/80 object-contain p-2 sm:block"
+            />
+            <div>
             <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Licenciamiento</div>
             <h2 className="mt-3 text-3xl font-bold text-ink">Estado de la licencia</h2>
             <p className="mt-3 text-sm text-slate-600">
               Consulta el estado actual, identifica esta instalacion por su machine ID y reemplaza la clave cuando sea necesario.
             </p>
+            </div>
           </div>
           <div className="rounded-[24px] bg-white/78 px-5 py-4 text-right">
             <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Resumen rapido</div>

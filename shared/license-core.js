@@ -54,6 +54,37 @@ function requireText(value, fieldName) {
   return normalized;
 }
 
+function normalizeDate(value, fieldName, { nullable = true } = {}) {
+  if (value === null || value === undefined || value === '') {
+    if (nullable) return null;
+    throw new Error(`El campo ${fieldName} es obligatorio.`);
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`El campo ${fieldName} no contiene una fecha valida.`);
+  }
+  return date.toISOString();
+}
+
+function compareVersions(leftVersion = '0.0.0', rightVersion = '0.0.0') {
+  const normalize = (version) => String(version).trim().replace(/^v/i, '').split('-')[0].split('.').map((part) => {
+    const parsed = Number(part);
+    return Number.isFinite(parsed) ? parsed : 0;
+  });
+  const leftParts = normalize(leftVersion);
+  const rightParts = normalize(rightVersion);
+  const totalParts = Math.max(leftParts.length, rightParts.length);
+
+  for (let index = 0; index < totalParts; index += 1) {
+    const left = leftParts[index] || 0;
+    const right = rightParts[index] || 0;
+    if (left > right) return 1;
+    if (left < right) return -1;
+  }
+  return 0;
+}
+
 function calculateExpiration(licenseType, startDate = new Date()) {
   const normalizedType = normalizeLicenseType(licenseType);
   const days = LICENSE_DAYS_BY_TYPE[normalizedType];
@@ -86,8 +117,8 @@ function createLicenseKey({
     machineId: normalizedMachineId,
     businessName: normalizedBusinessName,
     licenseType: normalizedLicenseType,
-    expiresAt: expiresAt || calculateExpiration(normalizedLicenseType),
-    issuedAt,
+    expiresAt: normalizeDate(expiresAt || calculateExpiration(normalizedLicenseType), 'expiresAt'),
+    issuedAt: normalizeDate(issuedAt, 'issuedAt', { nullable: false }),
     version: packageJson.version,
     versionMinCompatible: requireText(versionMinCompatible || packageJson.version, 'versionMinCompatible'),
     edition: normalizedEdition,
@@ -156,12 +187,20 @@ function decodeLicenseKey(licenseKey) {
 
     const payload = JSON.parse(decrypted.toString('utf8'));
     const normalizedLicenseType = assertLicenseType(payload.licenseType);
+    const normalizedIssuedAt = payload.issuedAt ? normalizeDate(payload.issuedAt, 'issuedAt', { nullable: false }) : null;
+    const normalizedExpiresAt = normalizeDate(payload.expiresAt, 'expiresAt');
+    if (normalizedIssuedAt && normalizedExpiresAt && new Date(normalizedExpiresAt) < new Date(normalizedIssuedAt)) {
+      throw new Error('La fecha de expiracion no puede ser anterior a la emision.');
+    }
+
     return {
       ...payload,
       schema: Number(payload.schema || 1),
       machineId: requireText(payload.machineId, 'machineId'),
       businessName: requireText(payload.businessName, 'businessName'),
       licenseType: normalizedLicenseType,
+      issuedAt: normalizedIssuedAt,
+      expiresAt: normalizedExpiresAt,
       edition: String(payload.edition || 'standard').trim().toLowerCase(),
       versionMinCompatible: payload.versionMinCompatible || payload.version || packageJson.version,
       serial: String(payload.serial || '').trim() || 'SIN-SERIAL'
@@ -174,6 +213,36 @@ function decodeLicenseKey(licenseKey) {
   }
 }
 
+function verifyLicensePayload(payload, { machineId = null, appVersion = packageJson.version, now = new Date() } = {}) {
+  const currentDate = new Date(now);
+  if (Number.isNaN(currentDate.getTime())) {
+    throw new Error('La fecha de verificacion no es valida.');
+  }
+
+  const expiresDate = payload.expiresAt ? new Date(payload.expiresAt) : null;
+  const issuedDate = payload.issuedAt ? new Date(payload.issuedAt) : null;
+  const expired = Boolean(expiresDate && expiresDate.getTime() <= currentDate.getTime());
+  const notYetIssued = Boolean(issuedDate && issuedDate.getTime() > currentDate.getTime());
+  const machineMatches = machineId ? String(payload.machineId) === String(machineId) : null;
+  const versionCompatible = payload.versionMinCompatible
+    ? compareVersions(appVersion, payload.versionMinCompatible) >= 0
+    : true;
+  const daysRemaining = expiresDate && !expired
+    ? Math.max(0, Math.ceil((expiresDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)))
+    : expiresDate ? 0 : null;
+
+  return {
+    valid: !expired && !notYetIssued && machineMatches !== false && versionCompatible,
+    cryptographicallyValid: true,
+    expired,
+    notYetIssued,
+    machineMatches,
+    versionCompatible,
+    daysRemaining,
+    checkedAt: currentDate.toISOString()
+  };
+}
+
 module.exports = {
   LICENSE_DAYS_BY_TYPE,
   LICENSE_SCHEMA_VERSION,
@@ -182,6 +251,9 @@ module.exports = {
   calculateExpiration,
   createLicenseKey,
   decodeLicenseKey,
+  verifyLicensePayload,
+  compareVersions,
+  normalizeDate,
   getLicenseSecret,
   assertLicenseType,
   normalizeLicenseType

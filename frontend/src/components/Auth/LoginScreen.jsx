@@ -5,8 +5,9 @@ import { Field, Input } from '../ui/Field';
 import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import { formatDate } from '../../lib/format';
+import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.9';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.10';
 
 function describeLicense(license) {
   if (license?.isActive) {
@@ -58,6 +59,7 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
   const [recoveryLoading, setRecoveryLoading] = useState(false);
   const businessLogoUrl = resolveAssetUrl(businessLogo);
   const initials = getInitials(businessName || 'OrbitPOS');
+  const displayLogoUrl = businessLogoUrl && logoVisible ? businessLogoUrl : orbitposLogoUrl;
   const licenseSummary = useMemo(() => describeLicense(license), [license]);
 
   async function handleSubmit(event) {
@@ -178,12 +180,12 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
             OrbitPOS v{APP_VERSION}
           </div>
           <div className="mt-6 flex items-center gap-4">
-            {businessLogoUrl && logoVisible ? (
+            {displayLogoUrl ? (
               <img
-                src={businessLogoUrl}
+                src={displayLogoUrl}
                 alt={`Logo de ${businessName || 'Mi Negocio'}`}
                 className="h-20 w-20 rounded-[24px] border border-white/15 bg-white/90 object-cover p-2"
-                onError={() => setLogoVisible(false)}
+                onError={() => businessLogoUrl && logoVisible && setLogoVisible(false)}
               />
             ) : (
               <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/15 bg-white/12 text-2xl font-bold">

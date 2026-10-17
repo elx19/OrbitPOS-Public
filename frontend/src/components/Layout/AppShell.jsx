@@ -4,6 +4,7 @@ import Button from '../ui/Button';
 import { classNames } from '../../lib/format';
 import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
+import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 
 const DashboardHome = lazy(() => import('../Dashboard/DashboardHome'));
 const ConfigPanel = lazy(() => import('../Config/ConfigPanel'));
@@ -36,7 +37,7 @@ const rdTimeFormatter = new Intl.DateTimeFormat('es-DO', {
   minute: '2-digit',
   hour12: true
 });
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.9';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.10';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -156,6 +157,7 @@ export default function AppShell({
   const businessName = config.business_name || 'Mi Negocio';
   const businessLogoUrl = resolveAssetUrl(config.business_logo);
   const businessInitials = getInitials(businessName);
+  const displayLogoUrl = businessLogoUrl && logoVisible ? businessLogoUrl : orbitposLogoUrl;
   const compactSidebar = String(config.sidebar_compact || '0') === '1';
   const sidebarLicenseLabel = license?.isDemo
     ? 'Demo activa'
@@ -366,12 +368,12 @@ export default function AppShell({
             compactSidebar ? 'p-4' : 'p-5'
           )}>
             <div className="flex items-center gap-4">
-              {businessLogoUrl && logoVisible ? (
+              {displayLogoUrl ? (
                 <img
-                  src={businessLogoUrl}
+                  src={displayLogoUrl}
                   alt={`Logo de ${businessName}`}
                   className="h-16 w-16 rounded-[22px] border border-white/14 bg-white/92 object-cover p-2"
-                  onError={() => setLogoVisible(false)}
+                  onError={() => businessLogoUrl && logoVisible && setLogoVisible(false)}
                 />
               ) : (
                 <div className="flex h-16 w-16 items-center justify-center rounded-[22px] border border-white/14 bg-white/12 text-lg font-bold">
