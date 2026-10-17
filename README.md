@@ -67,6 +67,23 @@ npm run build:portable
 npm run build:unpacked
 ```
 
+## Rediseño OrbitPOS 2.1
+
+La línea `v2.1.0-alpha.4` contiene la base visual del nuevo sistema: navegación navy compacta, tarjetas blancas, acciones emerald, login, wizard y referencias visuales para cada módulo en [`docs/ui-reference`](docs/ui-reference/README.md). Cada hito se conserva con commit y tag para poder volver a una versión funcional anterior.
+
+## Generador de licencias
+
+El generador operativo vive en `scripts/license-generator.js`. La clave privada nunca se guarda en el repositorio; define `ORBITPOS_LICENSE_SECRET` solo en la máquina autorizada para emitir licencias.
+
+```bash
+set ORBITPOS_LICENSE_SECRET=clave-privada-local
+node scripts/license-generator.js generate --machine-id ID --business "Tienda San Jose" --type monthly --json
+node scripts/license-generator.js verify --key ORB2.... --json
+node scripts/license-generator.js decode --key ORB2.... --json
+```
+
+La prueba aislada del generador se ejecuta con `npm run qa:license`. La QA comercial completa y las pruebas físicas de dispositivos siguen siendo gates obligatorios antes de producción.
+
 Publicación de una nueva release:
 
 ```bash
@@ -87,7 +104,7 @@ OrbitPOS/
 └── scripts/      # build, migraciones y pruebas
 ```
 
-El generador comercial de licencias, documentos internos y secretos de JRTech se mantienen fuera de este repositorio público.
+Los secretos de JRTech y la clave privada de emisión se mantienen fuera de este repositorio público.
 
 ## Licencia
 
