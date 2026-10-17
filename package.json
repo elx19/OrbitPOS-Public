@@ -1,6 +1,6 @@
 {
   "name": "orbitpos",
-  "version": "2.1.0-alpha.8",
+  "version": "2.1.0-alpha.9",
   "private": true,
   "author": "JRTech",
   "description": "Sistema de terminal de venta al publico OrbitPOS",
@@ -31,8 +31,8 @@
     "build": "vite build --config vite.config.js",
     "build:electron": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder && npm run release:clean-data && npm run updates:manifest && npm run updates:publish",
     "build:github-release": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --publish always",
-    "build:portable": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --win portable && npm run release:clean-data && npm run updates:manifest",
-    "build:unpacked": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --win dir && npm run release:clean-data && npm run updates:manifest && npm run updates:publish",
+    "build:portable": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --win portable && npm run release:clean-data",
+    "build:unpacked": "npm run release:clean-data && npm run native:rebuild:electron && npm run manual:generate && npm run build && electron-builder --win dir && npm run release:clean-data",
     "start": "cross-env NODE_ENV=production electron ."
   },
   "dependencies": {
@@ -84,7 +84,8 @@
     },
     "win": {
       "icon": "OrbitPOS.ico",
-      "target": "nsis"
+      "target": "nsis",
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,
