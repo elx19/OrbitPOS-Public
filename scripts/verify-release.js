@@ -91,6 +91,18 @@ function checkBrandAndReferences() {
     failures.push(`Se esperaban 19 referencias visuales PNG y se encontraron ${references.length}.`);
   }
 
+  const authoritativeDirectory = absolute('docs/ui-reference/authoritative');
+  if (!fs.existsSync(authoritativeDirectory) || !fs.statSync(authoritativeDirectory).isDirectory()) {
+    failures.push('Falta docs/ui-reference/authoritative con las referencias entregadas por el usuario.');
+  } else {
+    const authoritativeReferences = fs.readdirSync(authoritativeDirectory)
+      .filter((fileName) => fileName.toLowerCase().endsWith('.png'))
+      .sort();
+    if (authoritativeReferences.length !== 19) {
+      failures.push(`Se esperaban 19 referencias autoritativas PNG y se encontraron ${authoritativeReferences.length}.`);
+    }
+  }
+
   const distAssets = fs.existsSync(absolute('frontend/dist/assets'))
     ? fs.readdirSync(absolute('frontend/dist/assets'))
     : [];

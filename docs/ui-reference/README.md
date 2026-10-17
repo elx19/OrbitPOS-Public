@@ -1,5 +1,28 @@
 # OrbitPOS UI reference
 
+La carpeta `authoritative/` contiene las referencias visuales entregadas para esta iteracion. Esas 19 pantallas son la fuente visual prioritaria para la implementacion; las PNG del nivel superior conservan las primeras propuestas del rediseño.
+
+| Modulo | Referencia autoritativa |
+| --- | --- |
+| Wizard | `authoritative/wizard-reference.png` |
+| Login | `authoritative/login-reference.png` |
+| Ventas / POS | `authoritative/pos-reference.png` |
+| Productos e inventario | `authoritative/products-inventory-reference.png` |
+| Compras | `authoritative/purchases-reference.png` |
+| Reportes | `authoritative/reports-reference.png` |
+| Caja | `authoritative/cash-reference.png` |
+| Clientes | `authoritative/customers-reference.png` |
+| Proveedores | `authoritative/suppliers-reference.png` |
+| Descuentos | `authoritative/discounts-reference.png` |
+| Créditos | `authoritative/credits-reference.png` |
+| Devoluciones | `authoritative/returns-reference.png` |
+| Cotizaciones | `authoritative/quotes-reference.png` |
+| Notificaciones | `authoritative/notifications-reference.png` |
+| Usuarios | `authoritative/users-reference.png` |
+| Configuración | `authoritative/config-reference.png` |
+| Ayuda | `authoritative/help-reference.png` |
+| Licencia | `authoritative/license-reference.png` |
+
 These previews define the shared visual language for the 2.1 redesign:
 
 - `login-reference.png`: access screen, brand panel and license status.

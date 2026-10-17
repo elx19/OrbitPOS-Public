@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.12** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.13** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.12.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.13.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.12` contiene la base visual del nuevo sistema: navegación navy compacta, tarjetas blancas, acciones emerald, login, wizard y referencias visuales para cada módulo en [`docs/ui-reference`](docs/ui-reference/README.md). Cada hito se conserva con commit y tag para poder volver a una versión funcional anterior.
+La línea `v2.1.0-alpha.13` alinea el sistema completo con las referencias visuales autoritativas entregadas para login, wizard, ventas, inventario, compras, reportes, caja, clientes, proveedores, promociones, créditos, devoluciones, cotizaciones, notificaciones, usuarios, configuración, ayuda y licencia. La navegación navy compacta, las tarjetas blancas, las acciones emerald y la carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) quedan versionadas junto con cada hito funcional.
 
 ## Generador de licencias
 

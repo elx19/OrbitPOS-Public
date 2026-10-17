@@ -24,20 +24,7 @@ const NotificationsPanel = lazy(() => import('../Notifications/NotificationsPane
 const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 
-const rdDateFormatter = new Intl.DateTimeFormat('es-DO', {
-  timeZone: 'America/Santo_Domingo',
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric'
-});
-
-const rdTimeFormatter = new Intl.DateTimeFormat('es-DO', {
-  timeZone: 'America/Santo_Domingo',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: true
-});
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.12';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.13';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -47,23 +34,28 @@ const moduleGroups = [
 ];
 
 const moduleDefinitions = [
-  { key: 'dashboard', label: 'Dashboard', group: 'overview', icon: 'dashboard', description: 'Resumen general de ventas, alertas y actividad.', keywords: ['panel', 'inicio', 'resumen', 'ventas'] },
+  { key: 'dashboard', label: 'Inicio', group: 'overview', icon: 'dashboard', description: 'Resumen de ventas, inventario, caja y actividad.', keywords: ['panel', 'inicio', 'resumen', 'ventas'] },
   { key: 'notifications', label: 'Notificaciones', group: 'overview', icon: 'bell', description: 'Centro de alertas del sistema, stock y licencia.', keywords: ['alertas', 'avisos', 'centro'] },
-  { key: 'license', label: 'Licencia', group: 'system', icon: 'key', adminOnly: true, description: 'Activacion, renovacion y estado comercial del sistema.', keywords: ['activar', 'renovar', 'demo'] },
+  { key: 'license', label: 'Licencia', group: 'system', icon: 'key', adminOnly: true, description: 'Activa, renueva y diagnostica tu licencia OrbitPOS.', keywords: ['activar', 'renovar', 'demo'] },
   { key: 'config', label: 'Configuracion', group: 'system', icon: 'settings', adminOnly: true, description: 'Negocio, dispositivos, apariencia, backups y tickets.', keywords: ['ajustes', 'parametros', 'dispositivos'] },
-  { key: 'users', label: 'Usuarios', group: 'system', icon: 'users', adminOnly: true, description: 'Cuentas, roles, accesos y seguridad local.', keywords: ['empleados', 'roles', 'seguridad'] },
-  { key: 'help', label: 'Ayuda', group: 'system', icon: 'help', description: 'Manual, soporte JRTech y datos tecnicos.', keywords: ['manual', 'soporte', 'faq'] },
-  { key: 'pos', label: 'POS', group: 'sales', icon: 'cart', description: 'Venta rapida, carrito, cobro y emision de ticket.', keywords: ['venta', 'cobro', 'carrito', 'caja rapida'] },
+  { key: 'users', label: 'Usuarios y permisos', group: 'system', icon: 'users', adminOnly: true, description: 'Administra usuarios, roles y permisos de acceso.', keywords: ['empleados', 'roles', 'seguridad'] },
+  { key: 'help', label: 'Ayuda y soporte', group: 'system', icon: 'help', description: 'Guía, manual, soporte JRTech y diagnósticos.', keywords: ['manual', 'soporte', 'faq'] },
+  { key: 'pos', label: 'Ventas', group: 'sales', icon: 'cart', description: 'Registra ventas, cobra y emite comprobantes.', keywords: ['venta', 'cobro', 'carrito', 'caja rapida'] },
   { key: 'cash', label: 'Caja', group: 'sales', icon: 'cash', description: 'Apertura, cierre e historial de movimientos de caja.', keywords: ['apertura', 'cierre', 'arqueo'] },
-  { key: 'credits', label: 'Creditos', group: 'sales', icon: 'credit', description: 'Control de ventas a credito, abonos y saldos.', keywords: ['abonos', 'cuentas por cobrar', 'deuda'] },
+  { key: 'credits', label: 'Creditos y cuentas por cobrar', group: 'sales', icon: 'credit', description: 'Administra ventas a crédito, abonos y saldos.', keywords: ['abonos', 'cuentas por cobrar', 'deuda'] },
   { key: 'returns', label: 'Devoluciones', group: 'sales', icon: 'return', description: 'Registro de devoluciones totales o parciales.', keywords: ['reembolso', 'nota de devolucion'] },
   { key: 'quotes', label: 'Cotizaciones', group: 'sales', icon: 'quotes', description: 'Presupuestos, vigencia y conversion a venta.', keywords: ['presupuesto', 'propuesta'] },
   { key: 'customers', label: 'Clientes', group: 'sales', icon: 'customer', description: 'Ficha del cliente, historial y balance pendiente.', keywords: ['contactos', 'estado de cuenta'] },
-  { key: 'products', label: 'Productos', group: 'operations', icon: 'box', adminOnly: true, description: 'Catalogo, precios, stock e inventario base.', keywords: ['inventario', 'articulos', 'stock'] },
+  { key: 'products', label: 'Productos e inventario', group: 'operations', icon: 'box', adminOnly: true, description: 'Gestiona catálogo, precios, existencias y categorías.', keywords: ['inventario', 'articulos', 'stock'] },
   { key: 'suppliers', label: 'Proveedores', group: 'operations', icon: 'truck', adminOnly: true, description: 'Contactos de compra y relacion con inventario.', keywords: ['suplidores', 'compras'] },
   { key: 'purchases', label: 'Compras', group: 'operations', icon: 'clipboard', adminOnly: true, description: 'Entradas de inventario e historial por proveedor.', keywords: ['entrada', 'recepcion', 'orden'] },
-  { key: 'discounts', label: 'Descuentos', group: 'operations', icon: 'tag', adminOnly: true, description: 'Promociones automaticas y reglas comerciales.', keywords: ['promociones', 'ofertas'] },
+  { key: 'discounts', label: 'Descuentos y promociones', group: 'operations', icon: 'tag', adminOnly: true, description: 'Crea promociones y reglas comerciales.', keywords: ['promociones', 'ofertas'] },
   { key: 'reports', label: 'Reportes', group: 'operations', icon: 'report', description: 'Analisis de ventas, caja, inventario y creditos.', keywords: ['estadisticas', 'analitica', 'informes'] }
+];
+
+const navigationOrder = [
+  'dashboard', 'pos', 'products', 'purchases', 'customers', 'suppliers', 'reports',
+  'cash', 'credits', 'returns', 'quotes', 'discounts', 'notifications', 'users', 'config', 'help', 'license'
 ];
 
 const iconPaths = {
@@ -122,14 +114,6 @@ function ModuleLoadingCard({ label }) {
   );
 }
 
-function formatRDDate(date) {
-  return rdDateFormatter.format(date).replace('.', '');
-}
-
-function formatRDTime(date) {
-  return rdTimeFormatter.format(date).toLowerCase();
-}
-
 export default function AppShell({
   user,
   meta,
@@ -145,41 +129,19 @@ export default function AppShell({
   const [activeModule, setActiveModule] = useState('dashboard');
   const [activityVersion, setActivityVersion] = useState(0);
   const [notificationSummary, setNotificationSummary] = useState({ total: 0, unread: 0 });
-  const [expandedGroups, setExpandedGroups] = useState(() => ({
-    overview: true,
-    system: true,
-    sales: true,
-    operations: true
-  }));
   const [logoVisible, setLogoVisible] = useState(true);
   const [isPending, startTransition] = useTransition();
-  const [rdNow, setRdNow] = useState(() => new Date());
   const businessName = config.business_name || 'Mi Negocio';
   const businessLogoUrl = resolveAssetUrl(config.business_logo);
   const businessInitials = getInitials(businessName);
   const displayLogoUrl = businessLogoUrl && logoVisible ? businessLogoUrl : orbitposLogoUrl;
-  const compactSidebar = String(config.sidebar_compact || '0') === '1';
-  const sidebarLicenseLabel = license?.isDemo
-    ? 'Demo activa'
-    : license?.isActive
-      ? 'Licencia activa'
-      : license?.isExpired
-        ? 'Licencia vencida'
-        : 'Pendiente';
 
   const visibleModules = useMemo(
-    () => moduleDefinitions.filter((module) => !module.adminOnly || user.role === 'admin'),
+    () => moduleDefinitions
+      .filter((module) => !module.adminOnly || user.role === 'admin')
+      .sort((left, right) => navigationOrder.indexOf(left.key) - navigationOrder.indexOf(right.key)),
     [user.role]
   );
-
-  const visibleGroups = useMemo(() => (
-    moduleGroups
-      .map((group) => ({
-        ...group,
-        modules: visibleModules.filter((module) => module.group === group.key)
-      }))
-      .filter((group) => group.modules.length)
-  ), [visibleModules]);
 
   const activeModuleDefinition = useMemo(
     () => visibleModules.find((module) => module.key === activeModule) || visibleModules[0],
@@ -234,14 +196,6 @@ export default function AppShell({
   }, [businessLogoUrl]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setRdNow(new Date());
-    }, 30000);
-
-    return () => window.clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
     if (!activeModuleDefinition?.group) {
       return;
     }
@@ -270,13 +224,6 @@ export default function AppShell({
 
   function handleActivity() {
     setActivityVersion((current) => current + 1);
-  }
-
-  function toggleGroup(groupKey) {
-    setExpandedGroups((current) => ({
-      ...current,
-      [groupKey]: !current[groupKey]
-    }));
   }
 
   function selectModule(moduleKey) {
@@ -359,183 +306,100 @@ export default function AppShell({
         'app-frame grid min-h-screen w-full gap-4 p-4',
         compactSidebar ? 'xl:grid-cols-[270px,minmax(0,1fr)]' : 'xl:grid-cols-[292px,minmax(0,1fr)]'
       )}>
-        <aside className={classNames(
-          'orbit-sidebar flex min-h-[260px] flex-col rounded-[24px] xl:h-[calc(100vh-2rem)]',
-          compactSidebar ? 'p-3' : 'p-4'
-        )}>
-          <div className={classNames(
-            'orbit-sidebar-brand rounded-[18px] text-white',
-            compactSidebar ? 'p-4' : 'p-5'
-          )}>
-            <div className="flex items-center gap-4">
-              {displayLogoUrl ? (
-                <img
-                  src={displayLogoUrl}
-                  alt={`Logo de ${businessName}`}
-                  className="h-16 w-16 rounded-[22px] border border-white/14 bg-white/92 object-cover p-2"
-                  onError={() => businessLogoUrl && logoVisible && setLogoVisible(false)}
-                />
-              ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-[22px] border border-white/14 bg-white/12 text-lg font-bold">
-                  {businessInitials}
-                </div>
-              )}
-              <div className="min-w-0">
-                <div className="text-xs uppercase tracking-[0.24em] text-white/66">OrbitPOS</div>
-                <div className={classNames('mt-1 truncate font-bold', compactSidebar ? 'text-xl' : 'text-2xl')}>
-                  {businessName}
-                </div>
-                <div className="mt-1 text-sm text-white/72">Version {meta?.version || APP_VERSION}</div>
-              </div>
+        <aside className="orbit-sidebar flex min-h-[260px] flex-col xl:h-screen">
+          <div className="orbit-sidebar-brand">
+            <div className="orbit-brand-lockup">
+              <img
+                src={displayLogoUrl}
+                alt={`Logo de ${businessName}`}
+                className="orbit-brand-mark"
+                onError={() => businessLogoUrl && logoVisible && setLogoVisible(false)}
+              />
+              <div className="orbit-brand-name">Orbit<span>POS</span></div>
             </div>
-
-            <div className={classNames('mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1', compactSidebar ? 'text-xs' : 'text-sm')}>
-              <div className="rounded-[22px] bg-white/10 px-4 py-3">
-                <div className="text-[11px] uppercase tracking-[0.22em] text-white/58">Sesion</div>
-                <div className="mt-2 font-semibold">{user.name}</div>
-              </div>
-              <div className="rounded-[22px] bg-white/10 px-4 py-3">
-                <div className="text-[11px] uppercase tracking-[0.22em] text-white/58">Estado</div>
-                <div className="mt-2 font-semibold">{sidebarLicenseLabel}</div>
-              </div>
+            <div className="orbit-business-meta">
+              <div className="orbit-business-name">{businessName}</div>
+              <div className="orbit-business-subtitle">Colmado · Carniceria · Embutidos</div>
             </div>
-
           </div>
 
-          <nav className="soft-scrollbar mt-4 flex-1 space-y-3 overflow-auto pr-1">
-            {visibleGroups.map((group) => {
-              const open = expandedGroups[group.key] !== false;
-
+          <nav className="orbit-sidebar-nav soft-scrollbar flex-1 overflow-auto">
+            {visibleModules.map((module) => {
+              const isActive = activeModule === module.key;
               return (
-                <section
-                  key={group.key}
-                  className="rounded-[18px] border border-white/8 bg-white/5 p-2"
+                <button
+                  key={module.key}
+                  type="button"
+                  onClick={() => selectModule(module.key)}
+                  className="orbit-nav-item w-full text-left transition"
+                  data-active={isActive}
                 >
-                  <button
-                    type="button"
-                    onClick={() => toggleGroup(group.key)}
-                    className="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-white/8"
-                  >
+                  <span className="flex items-center justify-between gap-3">
                     <span className="flex items-center gap-3">
-                      <NavIcon name={group.icon} />
-                      <span className="orbit-nav-section">{group.label}</span>
+                      <NavIcon name={module.icon} active={isActive} />
+                      <span className="text-sm font-semibold">{module.label}</span>
                     </span>
-                    <span className="text-[10px] font-bold uppercase text-slate-500">{open ? '−' : '+'}</span>
-                  </button>
-
-                  {open ? (
-                    <div className="mt-2 space-y-2 px-1 pb-1">
-                      {group.modules.map((module) => {
-                        const isActive = activeModule === module.key;
-
-                        return (
-                          <button
-                            key={module.key}
-                            type="button"
-                            onClick={() => selectModule(module.key)}
-                            className={classNames(
-                              'orbit-nav-item w-full rounded-xl px-3 py-2.5 text-left transition',
-                            )}
-                            data-active={isActive}
-                          >
-                            <span className="flex items-center justify-between gap-3">
-                              <span className="flex items-center gap-3">
-                                <NavIcon name={module.icon} active={isActive} />
-                                <span className="text-sm font-semibold">{module.label}</span>
-                              </span>
-                              {module.key === 'notifications' && notificationSummary.unread > 0 ? (
-                                <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800">
-                                  {notificationSummary.unread}
-                                </span>
-                              ) : null}
-                            </span>
-                            <span className="hidden">{module.description}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : null}
-                </section>
+                    {module.key === 'notifications' && notificationSummary.unread > 0 ? (
+                      <span className="orbit-notification-count">{notificationSummary.unread}</span>
+                    ) : null}
+                  </span>
+                  <span className="hidden">{module.description}</span>
+                </button>
               );
             })}
           </nav>
 
-          <div className="mt-4 flex items-center gap-3 rounded-[18px] border border-white/8 bg-white/6 p-3">
-            <NavIcon name="help" />
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold text-white">Soporte JRTech</div>
-              <div className="truncate text-xs text-slate-400">Actualizacion, licencia y asistencia</div>
+          <div className="orbit-sidebar-footer">
+            <div className="orbit-store-switcher">
+              <span className="orbit-store-icon"><NavIcon name="warehouse" /></span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-white">{businessName}</span>
+                <span className="block truncate text-xs text-slate-400">Santo Domingo, RD · En linea</span>
+              </span>
             </div>
-            <Button variant="secondary" onClick={onLogout}>
-              Salir
-            </Button>
+            <button type="button" className="orbit-logout" onClick={onLogout}>
+              <NavIcon name="help" />
+              <span>Cerrar sesion</span>
+            </button>
           </div>
         </aside>
 
-        <main className="flex min-h-[calc(100vh-2rem)] min-w-0 flex-col xl:h-[calc(100vh-2rem)]">
-          <header className="flex flex-col gap-3 border-b border-slate-200/80 pb-4">
-            <div className="orbit-topbar flex flex-wrap items-center justify-between gap-3 rounded-[18px] px-4 py-3">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <span className="rounded-full bg-ink px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
-                  {activeModuleDefinition?.label || 'Panel'}
+        <main className="flex min-h-screen min-w-0 flex-col">
+          <header className="orbit-app-header">
+            <label className="orbit-global-search">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 20-4.5-4.5m2-5.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" /></svg>
+              <input aria-label="Buscar en OrbitPOS" placeholder="Buscar productos, clientes o facturas..." />
+            </label>
+            <div className="orbit-header-actions">
+              <button type="button" className="orbit-icon-button" aria-label="Notificaciones" onClick={() => selectModule('notifications')}>
+                <NavIcon name="bell" />
+                {notificationSummary.unread > 0 ? <span className="orbit-header-badge">{notificationSummary.unread}</span> : null}
+              </button>
+              <div className="orbit-user-menu">
+                <span className="orbit-user-avatar">{businessInitials}</span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-bold text-ink">{user.name}</span>
+                  <span className="block truncate text-xs text-slate-500">{user.role === 'admin' ? 'Administrador' : 'Cajero'}</span>
                 </span>
-                <span className="truncate text-sm font-semibold text-ink">{user.name}</span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-600">
-                <span>{formatRDDate(rdNow)}</span>
-                <span className="hidden text-slate-300 sm:inline">|</span>
-                <span>Hora RD {formatRDTime(rdNow)}</span>
-                <span className="hidden text-slate-300 sm:inline">|</span>
-                <span>Rol: {user.role}</span>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {isPending ? (
-                  <div className="rounded-full bg-white/82 px-3 py-1.5 text-xs font-semibold text-slate-700">
-                    Cargando modulo...
-                  </div>
-                ) : null}
-                {notificationSummary.unread > 0 ? (
-                  <div className="rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-white">
-                    Alertas {notificationSummary.unread}
-                  </div>
-                ) : null}
-                {license?.isDemo ? (
-                  <div className="rounded-full bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800">
-                    DEMO
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr),auto]">
-              <div className="rounded-[24px] border border-slate-200/70 bg-white/58 px-4 py-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  {activeGroupDefinition ? (
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
-                      {activeGroupDefinition.label}
-                    </span>
-                  ) : null}
-                  <span className="text-sm font-semibold text-ink">{activeModuleDefinition?.label}</span>
-                </div>
-                <div className="mt-2 text-sm leading-7 text-slate-600">
-                  {activeModuleDefinition?.description || 'Modulo activo del sistema.'}
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-slate-200/70 bg-white/58 px-4 py-4 text-sm text-slate-600">
-                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500">Estado general</div>
-                <div className="mt-2 font-semibold text-ink">
-                  {license?.isDemo
-                    ? 'Sistema en demo operativa'
-                    : license?.isActive
-                      ? 'Sistema con licencia activa'
-                      : 'Sistema pendiente de activacion'}
-                </div>
+                <span className="text-slate-400">⌄</span>
               </div>
             </div>
           </header>
+
+          <div className="orbit-page-heading">
+            <div>
+              <div className="orbit-breadcrumb">OrbitPOS <span>/</span> {activeGroupDefinition?.label || 'Sistema'}</div>
+              <h1>{activeModuleDefinition?.label || 'Panel'}</h1>
+              <p>{activeModuleDefinition?.description || 'Modulo activo del sistema.'}</p>
+            </div>
+            <div className="orbit-page-status">
+              {isPending ? <span className="orbit-status-chip">Cargando...</span> : null}
+              {license?.isDemo ? <span className="orbit-status-chip orbit-status-chip-warning">DEMO</span> : null}
+              <span className="orbit-status-chip orbit-status-chip-success">
+                {license?.isActive ? 'Licencia activa' : license?.isDemo ? 'Demo activa' : 'Pendiente'}
+              </span>
+            </div>
+          </div>
 
           {banner ? (
             <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -543,7 +407,7 @@ export default function AppShell({
             </div>
           ) : null}
 
-          <div className="soft-scrollbar mt-5 flex-1 overflow-auto pr-1">
+          <div className="soft-scrollbar orbit-content flex-1 overflow-auto">
             <Suspense fallback={<ModuleLoadingCard label={activeModuleDefinition?.label} />}>
               {renderContent()}
             </Suspense>

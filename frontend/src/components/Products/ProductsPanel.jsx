@@ -21,6 +21,7 @@ const emptyForm = {
 };
 
 const CATEGORY_OPTIONS = ['Abarrotes', 'Bebidas', 'Carnes', 'Embutidos', 'Lácteos', 'Limpieza'];
+const CATEGORY_FILTERS = ['Todos', ...CATEGORY_OPTIONS];
 
 function ProductImagePreview({ product, className = 'h-16 w-16 rounded-[18px]' }) {
   const imageUrl = resolveAssetUrl(product?.image_path);
@@ -44,6 +45,7 @@ function ProductImagePreview({ product, className = 'h-16 w-16 rounded-[18px]' }
 export default function ProductsPanel({ token, onActivity }) {
   const [products, setProducts] = useState([]);
   const [query, setQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('Todos');
   const [visibleProductCount, setVisibleProductCount] = useState(40);
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState('');
@@ -53,9 +55,14 @@ export default function ProductsPanel({ token, onActivity }) {
     () => products.filter((product) => Number(product.stock || 0) <= Number(product.min_stock || 0)).length,
     [products]
   );
+  const filteredProducts = useMemo(() => {
+    if (categoryFilter === 'Todos') return products;
+    const normalizedCategory = categoryFilter.toLowerCase();
+    return products.filter((product) => String(product.category || '').toLowerCase() === normalizedCategory);
+  }, [categoryFilter, products]);
   const visibleProducts = useMemo(
-    () => products.slice(0, visibleProductCount),
-    [products, visibleProductCount]
+    () => filteredProducts.slice(0, visibleProductCount),
+    [filteredProducts, visibleProductCount]
   );
 
   async function loadProducts(search = '', { forceFresh = false } = {}) {
@@ -175,8 +182,23 @@ export default function ProductsPanel({ token, onActivity }) {
             />
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-3 text-xs text-slate-500">
-            <span className="rounded-full bg-white/75 px-3 py-2">Resultados: {products.length}</span>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {CATEGORY_FILTERS.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={`orbit-category-chip ${categoryFilter === category ? 'is-active' : ''}`}
+                onClick={() => {
+                  setCategoryFilter(category);
+                  setVisibleProductCount(40);
+                }}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
+            <span className="rounded-full bg-white/75 px-3 py-2">Resultados: {filteredProducts.length}</span>
             <span className="rounded-full bg-white/75 px-3 py-2">Stock critico: {lowStockCount}</span>
           </div>
 
@@ -231,10 +253,10 @@ export default function ProductsPanel({ token, onActivity }) {
               </div>
             )}
           </div>
-          {products.length > visibleProductCount ? (
+          {filteredProducts.length > visibleProductCount ? (
             <div className="mt-4 flex items-center justify-between gap-3 rounded-[22px] bg-white/72 px-4 py-3">
               <div className="text-sm text-slate-600">
-                Mostrando {visibleProductCount} de {products.length} producto(s).
+                Mostrando {visibleProductCount} de {filteredProducts.length} producto(s).
               </div>
               <Button variant="secondary" onClick={() => setVisibleProductCount((current) => current + 30)}>
                 Mostrar mas

@@ -7,7 +7,7 @@ import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import { formatDate } from '../../lib/format';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.12';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.13';
 
 function describeLicense(license) {
   if (license?.isActive) {
@@ -176,9 +176,11 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
     <div className="app-surface flex min-h-screen items-center justify-center overflow-auto px-4 py-6">
       <Panel className="orbit-login-card screen-shell grid w-full max-w-6xl gap-0 overflow-hidden p-0 lg:grid-cols-[1.05fr,0.95fr]">
         <div className="orbit-login-brand p-8 lg:p-12">
-          <div className="inline-flex rounded-full border border-white/20 px-4 py-1 text-xs uppercase tracking-[0.28em] text-white/80">
-            OrbitPOS v{APP_VERSION}
+          <div className="orbit-login-wordmark">
+            <img src={orbitposLogoUrl} alt="OrbitPOS" />
+            <div>Orbit<span>POS</span></div>
           </div>
+          <div className="mt-3 text-xs text-white/58">Tu negocio en movimiento · v{APP_VERSION}</div>
           <div className="mt-6 flex items-center gap-4">
             {displayLogoUrl ? (
               <img
@@ -197,36 +199,32 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
               <div className="mt-2 text-2xl font-bold">{businessName || 'Mi Negocio'}</div>
             </div>
           </div>
-          <h1 className="mt-6 text-4xl font-bold leading-tight">
-            Terminal de venta profesional para caja, inventario y cobros.
+          <h1 className="mt-8 text-4xl font-bold leading-tight">
+            Tu negocio listo para <span className="text-emerald-300">vender</span>
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-7 text-white/78">
-            Inicia sesion para entrar al sistema y administrar ventas, clientes,
-            inventario, caja y configuracion general del negocio.
+            Administra tus ventas, inventario, caja y clientes desde una sola pantalla clara y rapida.
           </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-3xl bg-white/10 p-4">
-              <div className="text-xs uppercase tracking-[0.22em] text-white/60">Negocio</div>
-              <div className="mt-2 text-lg font-semibold">{businessName || 'Mi Negocio'}</div>
-            </div>
-            <div className="rounded-3xl bg-white/10 p-4">
-              <div className="text-xs uppercase tracking-[0.22em] text-white/60">Licencia</div>
-              <div className="mt-2 text-lg font-semibold">{licenseSummary.title}</div>
-              <div className="mt-1 text-sm text-white/74">{licenseSummary.detail}</div>
-            </div>
+          <div className="orbit-login-features">
+            <div className="orbit-login-feature"><span className="orbit-login-feature-icon">↗</span><span><b>Ventas rapidas</b><small>Atiende a tus clientes sin complicaciones.</small></span></div>
+            <div className="orbit-login-feature"><span className="orbit-login-feature-icon orbit-login-feature-icon-gold">□</span><span><b>Inventario inteligente</b><small>Controla tus productos en tiempo real.</small></span></div>
+            <div className="orbit-login-feature"><span className="orbit-login-feature-icon">▥</span><span><b>Control de caja</b><small>Mantén tus cuentas siempre claras.</small></span></div>
           </div>
         </div>
 
         <div className="orbit-login-form p-8 lg:p-12">
+          <div className="orbit-login-account-header">
+            <div className="orbit-login-account-avatar">{initials}</div>
+            <div><b>{businessName || 'Mi Negocio'}</b><small>Administrador</small></div>
+          </div>
           {!showRecovery ? (
             <form onSubmit={handleSubmit}>
               <div className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
                 Acceso al sistema
               </div>
-              <h2 className="mt-3 text-3xl font-bold text-ink">Iniciar sesion</h2>
+              <h2 className="mt-6 text-3xl font-bold text-ink">Bienvenido de nuevo</h2>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                En el primer acceso puedes entrar con las credenciales predeterminadas y luego
-                cambiarlas desde el wizard.
+                Inicia sesion para continuar.
               </p>
 
               <div className="mt-8 space-y-5">
@@ -234,7 +232,7 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
                   <Input
                     value={form.username}
                     onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))}
-                    placeholder="admin"
+                    placeholder="Administrador"
                   />
                 </Field>
 
@@ -243,7 +241,7 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
                     type="password"
                     value={form.password}
                     onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-                    placeholder="admin"
+                    placeholder="••••••••••"
                   />
                 </Field>
               </div>
@@ -255,7 +253,7 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
               ) : null}
 
               <Button type="submit" className="mt-8 w-full" disabled={submitting}>
-                {submitting ? 'Entrando...' : 'Entrar a OrbitPOS'}
+                {submitting ? 'Entrando...' : 'Entrar a OrbitPOS  →'}
               </Button>
 
               <button

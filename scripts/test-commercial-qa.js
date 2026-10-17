@@ -276,8 +276,63 @@ async function runCommercialQa() {
         active: true
       }
     });
+    const productGrocery = await apiRequest(apiBaseUrl, '/api/products', {
+      method: 'POST',
+      token,
+      body: {
+        name: 'Arroz QA 5 lb',
+        barcode: 'QA-ABARROTES-001',
+        category: 'Abarrotes',
+        cost_price: 120,
+        sale_price: 165,
+        stock: 60,
+        min_stock: 8,
+        unit: 'unidad',
+        weighed: false,
+        active: true
+      }
+    });
+    const productMeat = await apiRequest(apiBaseUrl, '/api/products', {
+      method: 'POST',
+      token,
+      body: {
+        name: 'Carne de res QA',
+        barcode: 'QA-CARNES-001',
+        category: 'Carnes',
+        cost_price: 180,
+        sale_price: 260,
+        stock: 25,
+        min_stock: 4,
+        unit: 'kg',
+        weighed: true,
+        active: true
+      }
+    });
+    const productSausage = await apiRequest(apiBaseUrl, '/api/products', {
+      method: 'POST',
+      token,
+      body: {
+        name: 'Salami QA',
+        barcode: 'QA-EMBUTIDOS-001',
+        category: 'Embutidos',
+        cost_price: 210,
+        sale_price: 295,
+        stock: 30,
+        min_stock: 5,
+        unit: 'kg',
+        weighed: true,
+        active: true
+      }
+    });
     recordStep('Creacion de productos base', {
-      created: [productWater.payload.id, productBread.payload.id]
+      created: [
+        productWater.payload.id,
+        productBread.payload.id,
+        productGrocery.payload.id,
+        productMeat.payload.id,
+        productSausage.payload.id
+      ],
+      categories: ['Bebidas', 'Panaderia', 'Abarrotes', 'Carnes', 'Embutidos']
     });
 
     const customer = await apiRequest(apiBaseUrl, '/api/customers', {
@@ -314,7 +369,10 @@ async function runCommercialQa() {
         customerId: null,
         items: [
           { productId: productWater.payload.id, quantity: 2, discount: 0 },
-          { productId: productBread.payload.id, quantity: 1, discount: 0 }
+          { productId: productBread.payload.id, quantity: 1, discount: 0 },
+          { productId: productGrocery.payload.id, quantity: 4, discount: 0 },
+          { productId: productMeat.payload.id, quantity: 1.5, discount: 0 },
+          { productId: productSausage.payload.id, quantity: 2, discount: 0 }
         ],
         discount: 0
       }
@@ -330,7 +388,10 @@ async function runCommercialQa() {
         type: 'cash',
         items: [
           { productId: productWater.payload.id, quantity: 2, discount: 0 },
-          { productId: productBread.payload.id, quantity: 1, discount: 0 }
+          { productId: productBread.payload.id, quantity: 1, discount: 0 },
+          { productId: productGrocery.payload.id, quantity: 4, discount: 0 },
+          { productId: productMeat.payload.id, quantity: 1.5, discount: 0 },
+          { productId: productSausage.payload.id, quantity: 2, discount: 0 }
         ],
         payments: [
           { method: 'cash', amount: Number(Number(cashPreview.payload.total).toFixed(2)), reference: '' }
@@ -343,6 +404,17 @@ async function runCommercialQa() {
     recordStep('Venta de contado registrada', {
       saleId: cashSale.payload.sale.id,
       invoice: cashSale.payload.sale.invoice_number
+    });
+
+    const inventoryAfterSale = await apiRequest(apiBaseUrl, '/api/products?active=all', { token });
+    const inventoryById = new Map(inventoryAfterSale.payload.map((product) => [Number(product.id), product]));
+    assertCondition(Number(inventoryById.get(Number(productGrocery.payload.id))?.stock) === 56, 'La venta no desconto inventario de Abarrotes.');
+    assertCondition(Number(inventoryById.get(Number(productMeat.payload.id))?.stock) === 23.5, 'La venta no desconto inventario de Carnes por peso.');
+    assertCondition(Number(inventoryById.get(Number(productSausage.payload.id))?.stock) === 28, 'La venta no desconto inventario de Embutidos por peso.');
+    recordStep('Inventario por categoria actualizado', {
+      abarroteStock: inventoryById.get(Number(productGrocery.payload.id))?.stock,
+      meatStock: inventoryById.get(Number(productMeat.payload.id))?.stock,
+      sausageStock: inventoryById.get(Number(productSausage.payload.id))?.stock
     });
 
     const creditPreview = await apiRequest(apiBaseUrl, '/api/sales/preview', {

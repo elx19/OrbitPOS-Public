@@ -3,10 +3,11 @@ import Button from '../ui/Button';
 import Panel from '../ui/Panel';
 import { Field, Input, Select, TextArea } from '../ui/Field';
 import { apiRequest } from '../../lib/api';
+import { classNames } from '../../lib/format';
 import securityQuestions from '../../../../shared/security-questions.json';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.12';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.13';
 
 const currencies = [
   ['DOP', 'Peso dominicano (RD$)'],
@@ -278,22 +279,11 @@ export default function WizardScreen({
       case 0:
         return (
           <div className="space-y-6">
-            <div className="rounded-[28px] bg-gradient-to-br from-ink via-slate-900 to-lagoon p-8 text-white">
-              <div className="flex items-center gap-4">
-                <img
-                  src={orbitposLogoUrl}
-                  alt="OrbitPOS"
-                  className="h-16 w-16 rounded-[20px] border border-white/20 bg-white/95 object-cover p-2"
-                />
-                <div className="text-xs uppercase tracking-[0.26em] text-white/70">Configuracion inicial</div>
-              </div>
-              <div className="inline-flex rounded-full border border-white/20 px-4 py-1 text-xs uppercase tracking-[0.26em] text-white/80">
-                Paso 1 de 6
-              </div>
-              <h1 className="mt-5 text-4xl font-bold">Bienvenido a OrbitPOS</h1>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-white/80">
-                Vamos a dejar listo el negocio, la impresora, el lector, la bascula,
-                el administrador y la licencia en un asistente corto.
+            <div className="orbit-wizard-step-hero">
+              <div className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">Paso 1 de 6 · Bienvenida</div>
+              <h1 className="mt-3 text-3xl font-bold text-ink">Configura tu negocio en minutos</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                Dejaremos listo el negocio, los dispositivos, el administrador y la licencia en un asistente corto.
               </p>
             </div>
 
@@ -638,49 +628,71 @@ export default function WizardScreen({
   }
 
   return (
-    <div className="app-surface min-h-screen overflow-auto px-4 py-6">
-      <div className="screen-shell orbit-wizard-card w-full max-w-6xl space-y-6 overflow-hidden p-6 lg:p-8">
-        <div>
-          <div className="text-xs uppercase tracking-[0.28em] text-slate-500">
-            {isReview ? 'Configuracion completa' : `Paso ${step + 1} de 6`}
+    <div className="app-surface min-h-screen overflow-auto">
+      <div className="orbit-wizard-layout">
+        <aside className="orbit-wizard-promo">
+          <div className="orbit-wizard-wordmark"><img src={orbitposLogoUrl} alt="OrbitPOS" /><span>Orbit<b>POS</b></span></div>
+          <h1>Configura tu negocio en <strong>minutos</strong></h1>
+          <div className="orbit-wizard-store-illustration" aria-hidden="true">
+            <div className="orbit-store-awning" />
+            <div className="orbit-store-window"><span /><span /><span /></div>
+            <div className="orbit-store-door" />
           </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-emerald-500 transition-all"
-              style={{ width: `${progress}%` }}
-            />
+          <div className="orbit-wizard-promo-points">
+            <span>✓ Colmado</span><span>✓ Carniceria</span><span>✓ Embutidos</span>
           </div>
-        </div>
+        </aside>
 
-        <Panel className="orbit-wizard-form p-0">
-          {renderStep()}
-
-          {message ? (
-            <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              {message}
+        <main className="orbit-wizard-main">
+          <div className="orbit-wizard-main-header">
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Configuracion inicial</div>
+            <div className="orbit-wizard-stepper" aria-label="Progreso de configuración">
+              {['Bienvenida', 'Negocio', 'Dispositivos', 'Seguridad', 'Licencia', 'Listo'].map((label, index) => {
+                const completed = isReview || step > index;
+                const active = !isReview && step === index;
+                return (
+                  <div key={label} className="orbit-wizard-step">
+                    <span className={classNames('orbit-wizard-step-dot', completed ? 'is-complete' : '', active ? 'is-active' : '')}>
+                      {completed ? '✓' : index + 1}
+                    </span>
+                    <span>{label}</span>
+                    {index < 5 ? <i className={completed ? 'is-complete' : ''} /> : null}
+                  </div>
+                );
+              })}
             </div>
-          ) : null}
-
-          <div className="mt-8 flex flex-wrap justify-between gap-3">
-            <Button
-              variant="ghost"
-              disabled={step === 0 || saving}
-              onClick={() => setStep((current) => Math.max(current - 1, 0))}
-            >
-              Volver
-            </Button>
-
-            {isReview ? (
-              <Button disabled={saving} onClick={handleFinish}>
-                {saving ? 'Finalizando...' : 'Activar licencia o iniciar demo'}
-              </Button>
-            ) : (
-              <Button disabled={saving} onClick={handleNext}>
-                {saving ? 'Guardando...' : 'Guardar y continuar'}
-              </Button>
-            )}
           </div>
-        </Panel>
+
+          <Panel className="orbit-wizard-form p-0">
+            {renderStep()}
+
+            {message ? (
+              <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {message}
+              </div>
+            ) : null}
+
+            <div className="mt-8 flex flex-wrap justify-between gap-3">
+              <Button
+                variant="ghost"
+                disabled={step === 0 || saving}
+                onClick={() => setStep((current) => Math.max(current - 1, 0))}
+              >
+                Volver
+              </Button>
+
+              {isReview ? (
+                <Button disabled={saving} onClick={handleFinish}>
+                  {saving ? 'Finalizando...' : 'Activar licencia o iniciar demo  →'}
+                </Button>
+              ) : (
+                <Button disabled={saving} onClick={handleNext}>
+                  {saving ? 'Guardando...' : 'Continuar  →'}
+                </Button>
+              )}
+            </div>
+          </Panel>
+        </main>
       </div>
     </div>
   );

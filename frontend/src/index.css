@@ -442,3 +442,891 @@ select {
 :root[data-theme='dark'] .text-amber-800 {
   color: #fbbf24 !important;
 }
+
+/* Authoritative OrbitPOS application shell, based on the supplied module references. */
+.orbit-shell {
+  background: #f6f9fc;
+}
+
+.orbit-shell .app-frame {
+  grid-template-columns: 232px minmax(0, 1fr) !important;
+  gap: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+}
+
+.orbit-sidebar {
+  min-height: 100vh !important;
+  height: 100vh !important;
+  padding: 18px 10px 12px !important;
+  border-radius: 0 !important;
+  background: #0b2948 !important;
+  box-shadow: 10px 0 28px -28px rgba(4, 20, 38, 0.9) !important;
+}
+
+.orbit-sidebar-brand {
+  padding: 4px 12px 0 !important;
+  background: transparent !important;
+  color: #fff;
+}
+
+.orbit-brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.orbit-brand-mark {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.18));
+}
+
+.orbit-brand-name {
+  color: #fff;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.055em;
+}
+
+.orbit-brand-name span {
+  color: #12c77e;
+}
+
+.orbit-business-meta {
+  margin-top: 22px;
+  padding: 0 2px;
+}
+
+.orbit-business-name {
+  overflow: hidden;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orbit-business-subtitle {
+  margin-top: 4px;
+  color: #9db3c8;
+  font-size: 0.7rem;
+}
+
+.orbit-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 28px;
+  padding: 0 0 8px;
+}
+
+.orbit-sidebar-nav .orbit-nav-item {
+  min-height: 44px;
+  padding: 9px 11px !important;
+  border: 1px solid transparent;
+  border-radius: 9px !important;
+  color: #c6d7e8;
+}
+
+.orbit-sidebar-nav .orbit-nav-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.orbit-sidebar-nav .orbit-nav-item[data-active='true'] {
+  color: #fff;
+  background: linear-gradient(90deg, #0ea96f 0%, #099362 100%);
+  box-shadow: 0 10px 18px -16px rgba(5, 218, 137, 0.9);
+}
+
+.orbit-sidebar-nav .orbit-icon {
+  width: 25px;
+  height: 25px;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.orbit-sidebar-nav .orbit-nav-item[data-active='true'] .orbit-icon {
+  background: transparent;
+}
+
+.orbit-notification-count,
+.orbit-header-badge {
+  display: inline-flex;
+  min-width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ef5350;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.orbit-sidebar-footer {
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+  padding: 12px 2px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.orbit-store-switcher {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.orbit-store-icon .orbit-icon {
+  width: 25px;
+  height: 25px;
+  color: #57d7a1;
+}
+
+.orbit-logout {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 0;
+  color: #a9bdd0;
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.orbit-logout:hover {
+  color: #fff;
+}
+
+.orbit-logout .orbit-icon {
+  width: 23px;
+  height: 23px;
+}
+
+.orbit-app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  min-height: 70px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 28px;
+  border-bottom: 1px solid #e8eef4;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+.orbit-global-search {
+  display: flex;
+  width: min(580px, 58vw);
+  height: 42px;
+  align-items: center;
+  gap: 11px;
+  padding: 0 14px;
+  border: 1px solid #dbe5ee;
+  border-radius: 9px;
+  background: #f9fbfd;
+  color: #7890a6;
+}
+
+.orbit-global-search svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+}
+
+.orbit-global-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #122a45;
+  font-size: 0.83rem;
+}
+
+.orbit-global-search input::placeholder {
+  color: #91a3b5;
+}
+
+.orbit-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.orbit-icon-button {
+  position: relative;
+  border: 0;
+  color: #36536f;
+}
+
+.orbit-icon-button .orbit-icon {
+  width: 29px;
+  height: 29px;
+}
+
+.orbit-header-badge {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  min-width: 13px;
+  height: 13px;
+  border: 2px solid #fff;
+  font-size: 0.52rem;
+}
+
+.orbit-user-menu {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 142px;
+}
+
+.orbit-user-avatar {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #103b60;
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.orbit-page-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 32px 18px;
+}
+
+.orbit-breadcrumb {
+  margin-bottom: 7px;
+  color: #8b9bad;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.orbit-breadcrumb span {
+  padding: 0 6px;
+  color: #b8c3ce;
+}
+
+.orbit-page-heading h1 {
+  margin: 0;
+  color: #102746;
+  font-size: clamp(1.85rem, 3vw, 2.55rem);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+}
+
+.orbit-page-heading p {
+  margin: 8px 0 0;
+  color: #667b91;
+  font-size: 0.92rem;
+}
+
+.orbit-page-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.orbit-status-chip {
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #edf2f7;
+  color: #52687e;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.orbit-status-chip-success {
+  background: #e4f8ef;
+  color: #087b4b;
+}
+
+.orbit-status-chip-warning {
+  background: #fff3d9;
+  color: #9b6411;
+}
+
+.orbit-content {
+  padding: 0 32px 32px;
+}
+
+.orbit-content .orbit-card,
+.orbit-content .orbit-kpi {
+  border-color: #e3eaf1;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px -22px rgba(16, 39, 70, 0.5);
+}
+
+.orbit-content .orbit-card h2,
+.orbit-content .orbit-card h3 {
+  color: #102746;
+}
+
+.orbit-content .orbit-kpi {
+  min-height: 126px;
+}
+
+.orbit-content .theme-input {
+  min-height: 42px;
+  border-color: #d9e3ed;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.orbit-content .theme-input:focus {
+  border-color: #11a970;
+  box-shadow: 0 0 0 3px rgba(17, 169, 112, 0.12);
+}
+
+.orbit-content .orbit-primary-button {
+  border-radius: 9px;
+  background: #0ea66c;
+  box-shadow: none;
+}
+
+.orbit-content .orbit-primary-button:hover {
+  background: #078d5c;
+}
+
+.orbit-category-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 15px;
+  border: 1px solid #e1e8ef;
+  border-radius: 999px;
+  background: #f7fafc;
+  color: #294461;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: 140ms ease;
+}
+
+.orbit-category-chip:hover {
+  border-color: #a7ddc5;
+  background: #f0fbf6;
+}
+
+.orbit-category-chip.is-active {
+  border-color: #b8ecd5;
+  background: #e2f7ee;
+  color: #087b4c;
+}
+
+@media (max-width: 900px) {
+  .orbit-shell .app-frame {
+    grid-template-columns: 76px minmax(0, 1fr) !important;
+  }
+
+  .orbit-sidebar {
+    padding-inline: 8px !important;
+  }
+
+  .orbit-brand-lockup {
+    justify-content: center;
+  }
+
+  .orbit-brand-name,
+  .orbit-business-meta,
+  .orbit-sidebar-nav .orbit-nav-item .text-sm,
+  .orbit-notification-count,
+  .orbit-store-switcher,
+  .orbit-logout span {
+    display: none;
+  }
+
+  .orbit-sidebar-nav .orbit-nav-item {
+    justify-content: center;
+    padding-inline: 6px !important;
+  }
+
+  .orbit-sidebar-nav .orbit-nav-item > span {
+    justify-content: center;
+  }
+
+  .orbit-sidebar-nav .orbit-nav-item .flex.items-center.gap-3 {
+    gap: 0;
+  }
+
+  .orbit-app-header,
+  .orbit-page-heading {
+    padding-inline: 18px;
+  }
+
+  .orbit-content {
+    padding-inline: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .orbit-global-search {
+    width: 100%;
+  }
+
+  .orbit-app-header {
+    flex-wrap: wrap;
+  }
+
+  .orbit-header-actions {
+    margin-left: auto;
+  }
+
+  .orbit-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .orbit-page-status {
+    justify-content: flex-start;
+  }
+}
+
+.orbit-login-card {
+  max-width: 1180px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 30px 80px -45px rgba(10, 39, 69, 0.48) !important;
+}
+
+.orbit-login-brand {
+  position: relative;
+  min-height: 650px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 86%, rgba(16, 171, 112, 0.24), transparent 26%),
+    linear-gradient(145deg, #082443 0%, #0e3152 60%, #083e4e 100%);
+}
+
+.orbit-login-brand::after {
+  position: absolute;
+  right: -100px;
+  bottom: -120px;
+  width: 480px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(14, 170, 109, 0.12);
+  content: '';
+  transform: rotate(-12deg);
+}
+
+.orbit-login-wordmark {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+}
+
+.orbit-login-wordmark img {
+  width: 43px;
+  height: 43px;
+  object-fit: contain;
+}
+
+.orbit-login-wordmark span {
+  color: #10c780;
+}
+
+.orbit-login-brand > * {
+  position: relative;
+  z-index: 1;
+}
+
+.orbit-login-features {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 15px;
+  margin-top: 34px;
+  max-width: 360px;
+}
+
+.orbit-login-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  color: #fff;
+}
+
+.orbit-login-feature-icon {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(9, 185, 119, 0.2);
+  color: #2ce59d;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.orbit-login-feature-icon-gold {
+  background: rgba(255, 183, 65, 0.16);
+  color: #ffc45d;
+}
+
+.orbit-login-feature b,
+.orbit-login-feature small {
+  display: block;
+}
+
+.orbit-login-feature b {
+  font-size: 0.92rem;
+}
+
+.orbit-login-feature small {
+  margin-top: 3px;
+  color: rgba(226, 238, 249, 0.72);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.orbit-login-form {
+  min-height: 650px;
+  padding: 48px 56px !important;
+}
+
+.orbit-login-account-header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 25px;
+}
+
+.orbit-login-account-avatar {
+  display: inline-flex;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e5f7ef;
+  color: #087c4e;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.orbit-login-account-header b,
+.orbit-login-account-header small {
+  display: block;
+}
+
+.orbit-login-account-header b {
+  color: #102746;
+  font-size: 0.96rem;
+}
+
+.orbit-login-account-header small {
+  margin-top: 3px;
+  color: #7b8da1;
+  font-size: 0.77rem;
+}
+
+@media (max-width: 768px) {
+  .orbit-login-brand {
+    min-height: auto;
+  }
+
+  .orbit-login-form {
+    min-height: auto;
+    padding: 32px 24px !important;
+  }
+}
+
+.orbit-wizard-layout {
+  display: grid;
+  width: min(1320px, calc(100vw - 64px));
+  min-height: min(820px, calc(100vh - 64px));
+  margin: 32px auto;
+  grid-template-columns: 360px minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid #e1e9f1;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 30px 80px -45px rgba(10, 39, 69, 0.42);
+}
+
+.orbit-wizard-promo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  overflow: hidden;
+  padding: 40px 34px 28px;
+  background:
+    radial-gradient(circle at 80% 74%, rgba(31, 147, 184, 0.25), transparent 24%),
+    linear-gradient(160deg, #091f3b 0%, #0c2948 66%, #0d3b4d 100%);
+  color: #fff;
+}
+
+.orbit-wizard-promo::after {
+  position: absolute;
+  right: -70px;
+  bottom: -40px;
+  width: 430px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(61, 122, 179, 0.17);
+  content: '';
+}
+
+.orbit-wizard-wordmark {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+}
+
+.orbit-wizard-wordmark img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.orbit-wizard-wordmark b,
+.orbit-wizard-promo strong {
+  color: #13ca80;
+}
+
+.orbit-wizard-promo h1 {
+  position: relative;
+  z-index: 1;
+  max-width: 270px;
+  margin-top: 82px;
+  color: #fff;
+  font-size: 2.45rem;
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.06em;
+}
+
+.orbit-wizard-store-illustration {
+  position: relative;
+  z-index: 1;
+  height: 190px;
+  margin: auto -8px 20px;
+  border-bottom: 12px solid #0a2038;
+  background: linear-gradient(180deg, transparent 0 23%, rgba(255, 255, 255, 0.08) 23% 25%, transparent 25%);
+}
+
+.orbit-store-awning {
+  position: absolute;
+  top: 28px;
+  right: 22px;
+  left: 22px;
+  height: 42px;
+  border: 4px solid #cbd7df;
+  border-bottom: 0;
+  background: repeating-linear-gradient(90deg, #f8fbfd 0 25px, #16ad76 25px 50px);
+  box-shadow: 0 -5px 0 rgba(255, 255, 255, 0.18);
+}
+
+.orbit-store-window {
+  position: absolute;
+  right: 28px;
+  bottom: 8px;
+  left: 28px;
+  height: 105px;
+  border: 5px solid #91aaba;
+  background: rgba(89, 159, 193, 0.28);
+}
+
+.orbit-store-window span {
+  position: absolute;
+  bottom: 7px;
+  width: 24px;
+  height: 34px;
+  border-radius: 4px 4px 2px 2px;
+  background: #1abf82;
+  box-shadow: 0 -14px 0 -3px #f3bd58;
+}
+
+.orbit-store-window span:nth-child(1) { left: 13%; }
+.orbit-store-window span:nth-child(2) { left: 43%; background: #e98058; }
+.orbit-store-window span:nth-child(3) { right: 13%; background: #e8b158; }
+
+.orbit-store-door {
+  position: absolute;
+  right: 42%;
+  bottom: 8px;
+  width: 34px;
+  height: 77px;
+  border: 4px solid #728ea4;
+  background: rgba(202, 232, 244, 0.35);
+}
+
+.orbit-wizard-promo-points {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 9px;
+  color: #e8f6f1;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.orbit-wizard-main {
+  min-width: 0;
+  padding: 38px 44px 34px;
+  background: #fff;
+}
+
+.orbit-wizard-main-header {
+  padding-bottom: 26px;
+  border-bottom: 1px solid #e2e9f0;
+}
+
+.orbit-wizard-stepper {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 28px;
+}
+
+.orbit-wizard-step {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  color: #8292a4;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.orbit-wizard-step-dot {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: 37px;
+  height: 37px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e7edf3;
+  color: #667b90;
+  font-size: 0.83rem;
+}
+
+.orbit-wizard-step-dot.is-active,
+.orbit-wizard-step-dot.is-complete {
+  background: #13ab70;
+  color: #fff;
+  box-shadow: 0 7px 15px -10px rgba(19, 171, 112, 0.9);
+}
+
+.orbit-wizard-step:nth-child(1)::after,
+.orbit-wizard-step:nth-child(2)::after,
+.orbit-wizard-step:nth-child(3)::after,
+.orbit-wizard-step:nth-child(4)::after,
+.orbit-wizard-step:nth-child(5)::after {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: #dfe7ef;
+  content: '';
+}
+
+.orbit-wizard-step > i {
+  display: none;
+}
+
+.orbit-wizard-step-hero {
+  padding: 8px 0 2px;
+}
+
+.orbit-wizard-form {
+  margin-top: 25px;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.orbit-wizard-form .theme-input {
+  min-height: 46px;
+}
+
+@media (max-width: 920px) {
+  .orbit-wizard-layout {
+    width: min(100% - 24px, 760px);
+    grid-template-columns: 1fr;
+    margin: 12px auto;
+  }
+
+  .orbit-wizard-promo {
+    min-height: 230px;
+    padding: 26px 28px;
+  }
+
+  .orbit-wizard-promo h1 {
+    max-width: 460px;
+    margin-top: 30px;
+    font-size: 2rem;
+  }
+
+  .orbit-wizard-store-illustration {
+    display: none;
+  }
+
+  .orbit-wizard-main {
+    padding: 28px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .orbit-wizard-stepper {
+    overflow-x: auto;
+    align-items: flex-start;
+    padding-bottom: 4px;
+  }
+
+  .orbit-wizard-step {
+    min-width: 92px;
+  }
+
+  .orbit-wizard-step:nth-child(n)::after {
+    display: none;
+  }
+}
