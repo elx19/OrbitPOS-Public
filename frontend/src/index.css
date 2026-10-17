@@ -1379,3 +1379,11 @@ select {
 .orbit-login-store-asset{position:absolute;z-index:7;left:56%;right:auto;bottom:5%;width:50%;max-width:320px;filter:drop-shadow(0 18px 18px rgba(2,23,42,.28))}
 .orbit-business-type img{width:86px;height:72px;object-fit:contain;filter:drop-shadow(0 8px 7px rgba(10,48,73,.12))}
 .orbit-wizard-promo-points span{display:flex;align-items:center;gap:6px;flex-direction:column;text-align:center}.orbit-wizard-promo-points img{width:44px;height:38px;object-fit:contain;filter:drop-shadow(0 5px 5px rgba(0,0,0,.2))}
+
+/* Supplied storefront illustrations for the reference login and setup screens. */
+.orbit-login-store-scene{left:6%;height:58%;z-index:4;background:transparent}
+.orbit-login-store-scene:before{display:none}
+.orbit-login-storefront-image{position:absolute;right:-5%;bottom:-5%;z-index:1;width:104%;height:108%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 20px 20px rgba(2,23,42,.28))}
+.orbit-wizard-storefront{position:relative;z-index:1;display:flex;height:300px;align-items:flex-end;justify-content:center;margin:auto -34px 12px;overflow:hidden}
+.orbit-wizard-storefront img{width:118%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 16px 15px rgba(0,0,0,.26))}
+@media(max-width:920px){.orbit-wizard-storefront{display:none}}

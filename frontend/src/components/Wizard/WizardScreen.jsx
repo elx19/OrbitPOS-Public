@@ -6,12 +6,13 @@ import { apiRequest } from '../../lib/api';
 import { classNames } from '../../lib/format';
 import securityQuestions from '../../../../shared/security-questions.json';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
+import wizardStorefrontUrl from '../../assets/wizard-storefront.png';
 import colmadoIconUrl from '../../assets/business-types/colmado.png';
 import carniceriaIconUrl from '../../assets/business-types/carniceria.png';
 import embutidosIconUrl from '../../assets/business-types/embutidos.png';
 import mixtoIconUrl from '../../assets/business-types/mixto.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.14';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.15';
 
 function WizardIcon({ type }) {
   const paths = {
@@ -60,9 +61,9 @@ export default function WizardScreen({
       phone: initialData?.business?.phone || '',
       address: initialData?.business?.address || '',
       logo: initialData?.business?.logo || '',
-      currency: initialData?.business?.currency || 'DOP'
-      ,businessType: initialData?.business?.businessType || 'colmado'
-      ,sellsByWeight: initialData?.business?.sellsByWeight ?? true
+      currency: initialData?.business?.currency || 'DOP',
+      businessType: initialData?.business?.businessType || 'colmado',
+      sellsByWeight: initialData?.business?.sellsByWeight ?? true
     },
     printer: {
       name: initialData?.printer?.name || '',
@@ -645,10 +646,8 @@ export default function WizardScreen({
         <aside className="orbit-wizard-promo">
           <div className="orbit-wizard-wordmark"><img src={orbitposLogoUrl} alt="OrbitPOS" /><span>Orbit<b>POS</b></span></div>
           <h1>Configura tu negocio en <strong>minutos</strong></h1>
-          <div className="orbit-wizard-store-illustration" aria-hidden="true">
-            <div className="orbit-store-awning" />
-            <div className="orbit-store-window"><span /><span /><span /></div>
-            <div className="orbit-store-door" />
+          <div className="orbit-wizard-storefront" aria-hidden="true">
+            <img src={wizardStorefrontUrl} alt="Tienda de comestibles con letrero abierto" />
           </div>
           <div className="orbit-wizard-promo-points">
             <span><img src={colmadoIconUrl} alt="" />Colmado</span><span><img src={carniceriaIconUrl} alt="" />Carnicería</span><span><img src={embutidosIconUrl} alt="" />Embutidos / Deli</span>

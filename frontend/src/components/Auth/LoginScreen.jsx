@@ -6,9 +6,9 @@ import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import { formatDate } from '../../lib/format';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
-import colmadoIconUrl from '../../assets/business-types/colmado.png';
+import loginStorefrontUrl from '../../assets/login-storefront.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.14';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.15';
 
 function ReferenceIcon({ name, className = '' }) {
   const paths = {
@@ -206,18 +206,7 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
             <div className="orbit-login-feature"><span className="orbit-login-feature-icon"><ReferenceIcon name="chart" /></span><span><b>Control de caja</b><small>Mantén tus cuentas siempre claras.</small></span></div>
           </div>
           <div className="orbit-login-store-scene" aria-hidden="true">
-            <img className="orbit-login-store-asset" src={colmadoIconUrl} alt="" />
-            <div className="orbit-login-cloud orbit-login-cloud-one" />
-            <div className="orbit-login-cloud orbit-login-cloud-two" />
-            <div className="orbit-login-store-sign">{businessName || 'Tienda San José'}</div>
-            <div className="orbit-login-store-roof" />
-            <div className="orbit-login-store-awning" />
-            <div className="orbit-login-store-front">
-              <div className="orbit-login-store-window"><span /><span /><span /><span /></div>
-              <div className="orbit-login-store-door" />
-            </div>
-            <div className="orbit-login-store-produce"><i /><i /><i /><i /><i /></div>
-            <div className="orbit-login-store-plant"><b /><b /><b /></div>
+            <img className="orbit-login-storefront-image" src={loginStorefrontUrl} alt="Tienda de barrio con productos frescos" />
           </div>
           <div className="orbit-login-version">OrbitPOS · Tu negocio en movimiento · v{APP_VERSION}</div>
         </div>

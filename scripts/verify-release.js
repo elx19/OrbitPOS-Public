@@ -86,6 +86,10 @@ function checkBrandAndReferences() {
     requireFile(`assets/business-types/${name}.png`);
     requireFile(`frontend/src/assets/business-types/${name}.png`);
   });
+  ['login-storefront', 'wizard-storefront'].forEach((name) => {
+    requireFile(`assets/${name}.png`);
+    requireFile(`frontend/src/assets/${name}.png`);
+  });
 
   const referenceDirectory = absolute('docs/ui-reference');
   const references = fs.readdirSync(referenceDirectory)
