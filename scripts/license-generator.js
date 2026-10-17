@@ -28,8 +28,13 @@ Opciones de generate:
   --json                   Devuelve respuesta JSON
 
 Opciones de verify:
-  --machine-id ID         Comprueba que la licencia pertenece a la maquina
-  --version 2.1.0         Comprueba la version minima compatible
+  --machine-id ID          Comprueba que la licencia pertenece a la maquina
+  --version 2.1.0          Comprueba la version minima compatible
+  --key-file ruta.txt      Lee la clave desde un archivo
+
+Opciones generales:
+  --secret-file ruta.txt   Lee la clave privada desde un archivo fuera del repositorio
+  --key-file ruta.txt      Lee la licencia desde un archivo en decode o verify
 
 Tipos admitidos: ${Object.keys(LICENSE_DAYS_BY_TYPE).join(', ')}
 Requiere ORBITPOS_LICENSE_SECRET en el entorno del generador y del POS.
@@ -104,7 +109,34 @@ function writeKeyFile(filePath, key) {
   const absolutePath = path.resolve(filePath);
   fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
   fs.writeFileSync(absolutePath, `${key}\n`, { encoding: 'utf8', mode: 0o600 });
+  try {
+    fs.chmodSync(absolutePath, 0o600);
+  } catch (error) {
+    // Windows puede no exponer permisos POSIX; el archivo ya fue creado correctamente.
+  }
   return absolutePath;
+}
+
+function loadSecretFromOptions(options) {
+  if (!options['secret-file']) {
+    return;
+  }
+
+  if (process.env.ORBITPOS_LICENSE_SECRET) {
+    throw new Error('Usa ORBITPOS_LICENSE_SECRET o --secret-file, no ambos.');
+  }
+
+  const secretPath = path.resolve(String(options['secret-file']));
+  if (!fs.existsSync(secretPath) || !fs.statSync(secretPath).isFile()) {
+    throw new Error(`No existe el archivo de secreto: ${secretPath}`);
+  }
+
+  const secret = fs.readFileSync(secretPath, 'utf8').trim();
+  if (!secret) {
+    throw new Error(`El archivo de secreto esta vacio: ${secretPath}`);
+  }
+
+  process.env.ORBITPOS_LICENSE_SECRET = secret;
 }
 
 function run(command, options) {
@@ -167,9 +199,12 @@ function main() {
   }
 
   try {
+    loadSecretFromOptions(options);
     const result = run(command, options);
     console.log(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
-    if (command === 'verify' && result.valid === false) {
+    const verificationFailed = command === 'verify'
+      && (result?.valid === false || (typeof result === 'string' && result.startsWith('Licencia no valida')));
+    if (verificationFailed) {
       process.exitCode = 2;
     }
   } catch (error) {

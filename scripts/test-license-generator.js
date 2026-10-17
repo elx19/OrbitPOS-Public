@@ -74,6 +74,7 @@ assert.throws(
 
 const generatorPath = path.join(__dirname, 'license-generator.js');
 const keyFile = path.join(__dirname, '..', '.qa', 'license-generator-test.key');
+const secretFile = path.join(__dirname, '..', '.qa', 'license-generator-test.secret');
 const generated = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-cli-001', '--business', 'Tienda CLI', '--type', 'monthly', '--out', keyFile, '--json'], {
   env: process.env,
   encoding: 'utf8'
@@ -89,6 +90,27 @@ const verified = spawnSync(process.execPath, [generatorPath, 'verify', '--key-fi
 });
 assert.equal(verified.status, 2, `verify debe fallar con codigo 2: ${verified.stderr}`);
 assert.equal(JSON.parse(verified.stdout).valid, false);
+const verifiedText = spawnSync(process.execPath, [generatorPath, 'verify', '--key-file', keyFile, '--machine-id', 'different-machine'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(verifiedText.status, 2, `verify en texto debe fallar con codigo 2: ${verifiedText.stderr}`);
 fs.unlinkSync(keyFile);
+
+fs.writeFileSync(secretFile, 'orbitpos-secret-file-test\n', 'utf8');
+const generatedWithSecretFile = spawnSync(process.execPath, [generatorPath, 'generate', '--secret-file', secretFile, '--machine-id', 'machine-secret-file', '--business', 'Tienda Secret File', '--type', 'monthly', '--json'], {
+  env: { ...process.env, ORBITPOS_LICENSE_SECRET: '' },
+  encoding: 'utf8'
+});
+assert.equal(generatedWithSecretFile.status, 0, generatedWithSecretFile.stderr);
+const generatedWithSecretFileResult = JSON.parse(generatedWithSecretFile.stdout);
+assert.equal(generatedWithSecretFileResult.payload.machineId, 'machine-secret-file');
+const verifiedWithSecretFile = spawnSync(process.execPath, [generatorPath, 'verify', '--secret-file', secretFile, '--key', generatedWithSecretFileResult.key, '--machine-id', 'machine-secret-file', '--json'], {
+  env: { ...process.env, ORBITPOS_LICENSE_SECRET: '' },
+  encoding: 'utf8'
+});
+assert.equal(verifiedWithSecretFile.status, 0, verifiedWithSecretFile.stderr);
+assert.equal(JSON.parse(verifiedWithSecretFile.stdout).valid, true);
+fs.unlinkSync(secretFile);
 
 console.log('License generator QA: OK');
