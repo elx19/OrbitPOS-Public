@@ -1,6 +1,4 @@
 import { Suspense, lazy, useEffect, useMemo, useState, useTransition } from 'react';
-import ModulePlaceholder from './ModulePlaceholder';
-import Button from '../ui/Button';
 import { classNames } from '../../lib/format';
 import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
@@ -23,8 +21,9 @@ const DiscountsPanel = lazy(() => import('../Discounts/DiscountsPanel'));
 const NotificationsPanel = lazy(() => import('../Notifications/NotificationsPanel'));
 const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
+const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.17';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.18';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -38,6 +37,7 @@ const moduleDefinitions = [
   { key: 'notifications', label: 'Notificaciones', group: 'overview', icon: 'bell', description: 'Centro de alertas del sistema, stock y licencia.', keywords: ['alertas', 'avisos', 'centro'] },
   { key: 'license', label: 'Licencia', group: 'system', icon: 'key', adminOnly: true, description: 'Activa, renueva y diagnostica tu licencia OrbitPOS.', keywords: ['activar', 'renovar', 'demo'] },
   { key: 'config', label: 'Configuracion', group: 'system', icon: 'settings', adminOnly: true, description: 'Negocio, dispositivos, apariencia, backups y tickets.', keywords: ['ajustes', 'parametros', 'dispositivos'] },
+  { key: 'branches', label: 'Sucursales', group: 'system', icon: 'warehouse', adminOnly: true, description: 'Administra las sedes operativas del negocio.', keywords: ['sedes', 'tiendas', 'locales'] },
   { key: 'users', label: 'Usuarios y permisos', group: 'system', icon: 'users', adminOnly: true, description: 'Administra usuarios, roles y permisos de acceso.', keywords: ['empleados', 'roles', 'seguridad'] },
   { key: 'help', label: 'Ayuda y soporte', group: 'system', icon: 'help', description: 'Guía, manual, soporte JRTech y diagnósticos.', keywords: ['manual', 'soporte', 'faq'] },
   { key: 'pos', label: 'Ventas', group: 'sales', icon: 'cart', description: 'Registra ventas, cobra y emite comprobantes.', keywords: ['venta', 'cobro', 'carrito', 'caja rapida'] },
@@ -55,7 +55,7 @@ const moduleDefinitions = [
 
 const navigationOrder = [
   'dashboard', 'pos', 'products', 'purchases', 'customers', 'suppliers', 'reports',
-  'cash', 'credits', 'returns', 'quotes', 'discounts', 'notifications', 'users', 'config', 'help', 'license'
+  'cash', 'credits', 'returns', 'quotes', 'discounts', 'notifications', 'branches', 'users', 'config', 'help', 'license'
 ];
 
 const iconPaths = {
@@ -276,17 +276,14 @@ export default function AppShell({
         );
       case 'users':
         return <UsersPanel token={token} onActivity={handleActivity} />;
+      case 'branches':
+        return <BranchesPanel token={token} onActivity={handleActivity} />;
       case 'help':
         return <HelpPanel license={license} machineId={machineId} token={token} onReconfigure={onReconfigure} />;
       case 'license':
         return <LicensePanel token={token} license={license} machineId={machineId} onActivated={onLicenseUpdated} />;
       default:
-        return (
-          <ModulePlaceholder
-            title={activeModuleDefinition?.label || 'Modulo'}
-            description="Este modulo esta listo para conectarse al flujo completo del sistema."
-          />
-        );
+        return <DashboardHome token={token} refreshKey={activityVersion} />;
     }
   }
 
@@ -321,6 +318,7 @@ export default function AppShell({
                   key={module.key}
                   type="button"
                   onClick={() => selectModule(module.key)}
+                  aria-label={`${module.label}: ${module.description}`}
                   className="orbit-nav-item w-full text-left transition"
                   data-active={isActive}
                 >

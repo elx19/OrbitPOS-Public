@@ -244,6 +244,126 @@ async function runCommercialQa() {
     token = loginAfterActivation.payload.token;
     recordStep('Login luego de activar licencia');
 
+    const dashboardSummary = await apiRequest(apiBaseUrl, '/api/dashboard/summary', { token });
+    assertCondition(Array.isArray(dashboardSummary.payload.chart), 'El dashboard no devolvio la serie de ventas.');
+    recordStep('Dashboard de negocio consultado');
+
+    const configBefore = await apiRequest(apiBaseUrl, '/api/config', { token });
+    assertCondition(configBefore.payload.business_name !== undefined, 'La configuracion no devolvio los datos del negocio.');
+    await apiRequest(apiBaseUrl, '/api/config', {
+      method: 'PUT',
+      token,
+      body: {
+        theme: 'light',
+        workspace_width: 'full',
+        sidebar_compact: '0',
+        ticket_footer: 'Gracias por su compra. QA'
+      }
+    });
+    const printTemplates = await apiRequest(apiBaseUrl, '/api/config/print-templates', { token });
+    assertCondition(printTemplates.payload.documents?.some((document) => document.key === 'sale'), 'No existe la plantilla de venta.');
+    const printPreview = await apiRequest(apiBaseUrl, '/api/config/print-templates/preview', {
+      method: 'POST',
+      token,
+      body: {
+        documentKey: 'sale',
+        variant: 'modern',
+        customTemplate: ''
+      }
+    });
+    assertCondition(String(printPreview.payload || '').length > 0, 'La vista previa de impresión llegó vacia.');
+    recordStep('Configuracion y plantillas de impresión validadas');
+
+    const branch = await apiRequest(apiBaseUrl, '/api/branches', {
+      method: 'POST',
+      token,
+      body: {
+        name: 'Sucursal QA',
+        address: 'Laboratorio QA',
+        phone: '809-555-0099',
+        active: true
+      }
+    });
+    await apiRequest(apiBaseUrl, `/api/branches/${branch.payload.id}`, {
+      method: 'PUT',
+      token,
+      body: {
+        name: 'Sucursal QA Centro',
+        address: 'Laboratorio QA',
+        phone: '809-555-0099',
+        active: true
+      }
+    });
+    const branches = await apiRequest(apiBaseUrl, '/api/branches', { token });
+    assertCondition(branches.payload.some((item) => Number(item.id) === Number(branch.payload.id)), 'La sucursal no aparecio en el listado.');
+    recordStep('Sucursales creadas y actualizadas', { branchId: branch.payload.id });
+
+    const supplier = await apiRequest(apiBaseUrl, '/api/suppliers', {
+      method: 'POST',
+      token,
+      body: {
+        name: 'Proveedor QA Alimentos',
+        contact: 'Contacto QA',
+        phone: '809-555-0088',
+        email: 'proveedor.qa@example.com',
+        address: 'Zona Industrial QA',
+        notes: 'Proveedor de prueba',
+        active: true
+      }
+    });
+    await apiRequest(apiBaseUrl, `/api/suppliers/${supplier.payload.id}`, {
+      method: 'PUT',
+      token,
+      body: {
+        name: 'Proveedor QA Alimentos',
+        contact: 'Contacto actualizado',
+        phone: '809-555-0088',
+        email: 'proveedor.qa@example.com',
+        address: 'Zona Industrial QA',
+        notes: 'Proveedor actualizado',
+        active: true
+      }
+    });
+    const suppliers = await apiRequest(apiBaseUrl, '/api/suppliers?q=Proveedor%20QA', { token });
+    assertCondition(suppliers.payload.some((item) => Number(item.id) === Number(supplier.payload.id)), 'El proveedor no aparecio en el listado.');
+    recordStep('Proveedores creados y actualizados', { supplierId: supplier.payload.id });
+
+    const qaUser = await apiRequest(apiBaseUrl, '/api/users', {
+      method: 'POST',
+      token,
+      body: {
+        name: 'Cajero QA',
+        username: 'qa-cashier',
+        password: 'qa1234',
+        role: 'cashier',
+        branchId: branch.payload.id,
+        securityQuestion: adminQuestion,
+        securityAnswer: 'verde'
+      }
+    });
+    await apiRequest(apiBaseUrl, `/api/users/${qaUser.payload.id}`, {
+      method: 'PUT',
+      token,
+      body: {
+        name: 'Cajero QA Actualizado',
+        role: 'cashier',
+        active: true,
+        branchId: branch.payload.id
+      }
+    });
+    await apiRequest(apiBaseUrl, `/api/users/${qaUser.payload.id}/password`, {
+      method: 'PATCH',
+      token,
+      body: { password: 'qa5678' }
+    });
+    const users = await apiRequest(apiBaseUrl, '/api/users', { token });
+    assertCondition(users.payload.some((item) => Number(item.id) === Number(qaUser.payload.id)), 'El usuario QA no aparecio en el listado.');
+    recordStep('Usuarios, roles y contrasena validados', { userId: qaUser.payload.id });
+
+    const helpResources = await apiRequest(apiBaseUrl, '/api/help/resources', { token });
+    assertCondition(helpResources.payload && typeof helpResources.payload.manualAvailable === 'boolean', 'Ayuda no devolvio recursos.');
+    recordStep('Centro de ayuda consultado');
+
     const productWater = await apiRequest(apiBaseUrl, '/api/products', {
       method: 'POST',
       token,
@@ -335,6 +455,64 @@ async function runCommercialQa() {
       categories: ['Bebidas', 'Panaderia', 'Abarrotes', 'Carnes', 'Embutidos']
     });
 
+    const purchase = await apiRequest(apiBaseUrl, '/api/purchases', {
+      method: 'POST',
+      token,
+      body: {
+        supplierId: supplier.payload.id,
+        invoiceRef: 'QA-COMPRA-001',
+        notes: 'Entrada de inventario QA',
+        items: [
+          {
+            productId: productBread.payload.id,
+            quantity: 5,
+            unitCost: 10,
+            updateCostPrice: true,
+            newSalePrice: 28
+          }
+        ]
+      }
+    });
+    const purchaseDetail = await apiRequest(apiBaseUrl, `/api/purchases/${purchase.payload.purchaseId}`, { token });
+    assertCondition(purchaseDetail.payload.items?.length === 1, 'La compra no devolvio sus lineas.');
+    recordStep('Compra y entrada de inventario registradas', {
+      purchaseId: purchase.payload.purchaseId,
+      total: purchase.payload.total
+    });
+
+    const discount = await apiRequest(apiBaseUrl, '/api/discounts', {
+      method: 'POST',
+      token,
+      body: {
+        name: 'Descuento QA 10%',
+        type: 'percentage',
+        value: 10,
+        applies_to: 'all',
+        active: true
+      }
+    });
+    await apiRequest(apiBaseUrl, `/api/discounts/${discount.payload.id}`, {
+      method: 'PUT',
+      token,
+      body: {
+        name: 'Descuento QA 10% actualizado',
+        type: 'percentage',
+        value: 10,
+        applies_to: 'all',
+        active: true
+      }
+    });
+    const discountPreview = await apiRequest(apiBaseUrl, '/api/discounts/preview', {
+      method: 'POST',
+      token,
+      body: {
+        items: [{ productId: productWater.payload.id, quantity: 2, discount: 0 }],
+        discount: 0
+      }
+    });
+    assertCondition(Number(discountPreview.payload.discount) > 0, 'El descuento automatico no se aplico en preview.');
+    recordStep('Descuentos y promociones validados', { discountId: discount.payload.id });
+
     const customer = await apiRequest(apiBaseUrl, '/api/customers', {
       method: 'POST',
       token,
@@ -405,6 +583,34 @@ async function runCommercialQa() {
       saleId: cashSale.payload.sale.id,
       invoice: cashSale.payload.sale.invoice_number
     });
+
+    const quote = await apiRequest(apiBaseUrl, '/api/quotes', {
+      method: 'POST',
+      token,
+      body: {
+        customerId: null,
+        items: [{ productId: productWater.payload.id, quantity: 1, discount: 0 }],
+        validUntil: '2099-12-31',
+        notes: 'Cotizacion QA'
+      }
+    });
+    const quoteDetail = await apiRequest(apiBaseUrl, `/api/quotes/${quote.payload.quoteId}`, { token });
+    assertCondition(quoteDetail.payload.status === 'pending', 'La cotizacion no quedo pendiente.');
+    await apiRequest(apiBaseUrl, `/api/quotes/${quote.payload.quoteId}/status`, {
+      method: 'PATCH',
+      token,
+      body: { status: 'approved' }
+    });
+    const convertedQuote = await apiRequest(apiBaseUrl, `/api/quotes/${quote.payload.quoteId}/convert`, {
+      method: 'POST',
+      token,
+      body: {
+        type: 'cash',
+        payments: [{ method: 'cash', amount: Number(quoteDetail.payload.total), reference: '' }]
+      }
+    });
+    assertCondition(Boolean(convertedQuote.payload.sale?.id), 'La cotizacion no se convirtio en venta.');
+    recordStep('Cotizacion creada, aprobada y convertida', { quoteId: quote.payload.quoteId });
 
     const inventoryAfterSale = await apiRequest(apiBaseUrl, '/api/products?active=all', { token });
     const inventoryById = new Map(inventoryAfterSale.payload.map((product) => [Number(product.id), product]));
@@ -599,6 +805,13 @@ async function runCommercialQa() {
     recordStep('Resumen de notificaciones', {
       unread: notificationSummary.payload.summary?.unread || 0
     });
+    const notifications = await apiRequest(apiBaseUrl, '/api/notifications', { token });
+    assertCondition(Array.isArray(notifications.payload.items), 'Notificaciones no devolvio la lista.');
+    await apiRequest(apiBaseUrl, '/api/notifications/mark-all-read', {
+      method: 'POST',
+      token
+    });
+    recordStep('Notificaciones listadas y marcadas como leidas');
 
     results.status = 'ok';
     return results;
