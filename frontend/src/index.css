@@ -1387,3 +1387,12 @@ select {
 .orbit-wizard-storefront{position:relative;z-index:1;display:flex;height:300px;align-items:flex-end;justify-content:center;margin:auto -34px 12px;overflow:hidden}
 .orbit-wizard-storefront img{width:118%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 16px 15px rgba(0,0,0,.26))}
 @media(max-width:920px){.orbit-wizard-storefront{display:none}}
+
+@media(max-width:768px){
+  .orbit-login-wordmark{gap:6px;font-size:2rem!important}
+  .orbit-login-wordmark img{width:40px!important;height:40px!important}
+  .orbit-login-brand h1{margin-top:42px!important;font-size:2.3rem!important}
+  .orbit-login-brand .orbit-login-features{max-width:none;margin-top:30px!important}
+  .orbit-login-store-scene{display:none}
+  .orbit-login-version{margin-top:30px}
+}

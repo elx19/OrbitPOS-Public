@@ -24,7 +24,7 @@ const NotificationsPanel = lazy(() => import('../Notifications/NotificationsPane
 const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.16';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.17';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -132,6 +132,7 @@ export default function AppShell({
   const [logoVisible, setLogoVisible] = useState(true);
   const [isPending, startTransition] = useTransition();
   const businessName = config.business_name || 'Mi Negocio';
+  const compactSidebar = String(config.sidebar_compact || '0') === '1';
   const businessLogoUrl = resolveAssetUrl(config.business_logo);
   const businessInitials = getInitials(businessName);
   const displayLogoUrl = businessLogoUrl && logoVisible ? businessLogoUrl : orbitposLogoUrl;
@@ -194,17 +195,6 @@ export default function AppShell({
   useEffect(() => {
     setLogoVisible(true);
   }, [businessLogoUrl]);
-
-  useEffect(() => {
-    if (!activeModuleDefinition?.group) {
-      return;
-    }
-
-    setExpandedGroups((current) => ({
-      ...current,
-      [activeModuleDefinition.group]: true
-    }));
-  }, [activeModuleDefinition]);
 
   useEffect(() => {
     if (!activeModuleDefinition && visibleModules[0]) {
