@@ -7,7 +7,7 @@ import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import { formatDate } from '../../lib/format';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.10';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.11';
 
 function describeLicense(license) {
   if (license?.isActive) {

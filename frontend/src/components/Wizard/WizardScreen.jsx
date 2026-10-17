@@ -6,7 +6,7 @@ import { apiRequest } from '../../lib/api';
 import securityQuestions from '../../../../shared/security-questions.json';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.10';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.11';
 
 const currencies = [
   ['DOP', 'Peso dominicano (RD$)'],

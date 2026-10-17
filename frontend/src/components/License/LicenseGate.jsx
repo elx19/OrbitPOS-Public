@@ -4,6 +4,8 @@ import Panel from '../ui/Panel';
 import { Field, Input } from '../ui/Field';
 import { apiRequest } from '../../lib/api';
 import { formatDate } from '../../lib/format';
+import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
+import orbitposLicenseUrl from '../../assets/orbitpos-license.png';
 
 export default function LicenseGate({ license, machineId, onActivated }) {
   const [licenseKey, setLicenseKey] = useState('');
@@ -33,8 +35,18 @@ export default function LicenseGate({ license, machineId, onActivated }) {
     <div className="app-surface flex min-h-screen items-center justify-center overflow-auto">
       <Panel className="screen-shell min-h-screen w-full max-w-none p-8">
         <div className="rounded-[28px] bg-gradient-to-r from-rosewood to-ink p-8 text-white">
-          <div className="inline-flex rounded-full border border-white/20 px-4 py-1 text-xs uppercase tracking-[0.26em] text-white/80">
-            Activacion requerida
+          <div className="flex items-center gap-4">
+            <img
+              src={orbitposLicenseUrl}
+              alt="Activador OrbitPOS"
+              className="h-16 w-16 rounded-[20px] border border-white/20 bg-white/95 object-contain p-2"
+            />
+            <div>
+              <div className="text-xs uppercase tracking-[0.26em] text-white/70">OrbitPOS</div>
+              <div className="mt-1 inline-flex rounded-full border border-white/20 px-4 py-1 text-xs uppercase tracking-[0.26em] text-white/80">
+                Activacion requerida
+              </div>
+            </div>
           </div>
           <h1 className="mt-4 text-4xl font-bold">Tu demo de 30 dias ha finalizado</h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-white/80">
@@ -43,7 +55,10 @@ export default function LicenseGate({ license, machineId, onActivated }) {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <div className="mt-8 grid gap-4 md:grid-cols-[minmax(0,1fr),minmax(0,1.4fr),minmax(0,1fr)]">
+          <div className="flex items-center justify-center rounded-3xl border border-slate-200 bg-white/80 p-5">
+            <img src={orbitposLogoUrl} alt="OrbitPOS" className="h-28 w-28 object-contain" />
+          </div>
           <div className="rounded-3xl border border-slate-200 bg-white/80 p-5">
             <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Machine ID</div>
             <div className="mt-3 break-all text-sm font-semibold text-slate-800">{machineId}</div>
