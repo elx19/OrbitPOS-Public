@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const { getDb, getConfigEntries, setConfigEntries, createAuditLog } = require('./database');
 const { startDemo, activateLicenseKey, getMachineId, refreshLicenseState } = require('./license');
 const { listPrinters, testPrinter, autoDetectPrinter } = require('./helpers/printer');
-const { listSerialPorts, testScannerConnection, autoDetectScanner } = require('./helpers/barcode');
+const { listSerialPorts, testScannerConnection, autoDetectScanner, readScannerBarcode } = require('./helpers/barcode');
 const { testScaleConnection, autoDetectScale, readScaleWeight } = require('./helpers/scale');
 const securityQuestions = require('../shared/security-questions.json');
 
@@ -139,6 +139,14 @@ function createWizardRouter() {
     try {
       const result = await testScannerConnection(request.body || {});
       response.json(result);
+    } catch (error) {
+      response.status(400).json({ message: error.message });
+    }
+  });
+
+  router.post('/read-scanner', async (request, response) => {
+    try {
+      response.json(await readScannerBarcode(request.body || {}));
     } catch (error) {
       response.status(400).json({ message: error.message });
     }

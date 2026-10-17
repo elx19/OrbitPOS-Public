@@ -4,6 +4,18 @@ const { promisify } = require('util');
 const execAsync = promisify(exec);
 const FALLBACK_PORTS = ['COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6'];
 
+function parseBarcodeReading(rawValue) {
+  const raw = String(rawValue || '');
+  const lines = raw
+    .split(/\r?\n/)
+    .map((line) => line.replace(/[\u0000-\u001f\u007f]/g, '').trim())
+    .filter(Boolean);
+  const barcode = lines[0] || raw.replace(/[\u0000-\u001f\u007f]/g, '').trim();
+  return barcode
+    ? { success: true, barcode, raw: rawValue }
+    : { success: false, barcode: '', raw: rawValue, message: 'El lector no devolvio un codigo.' };
+}
+
 async function listSerialPorts() {
   try {
     const serialport = require('serialport');
@@ -133,6 +145,101 @@ async function testScannerConnection({ port, baudRate }) {
   };
 }
 
+async function closeSerialPort(serial) {
+  if (!serial || !serial.isOpen) return;
+  await new Promise((resolve) => serial.close(() => resolve()));
+}
+
+async function readScannerBarcode({ enabled = true, port, baudRate = 9600, timeoutMs = 2200 } = {}) {
+  if (!enabled) {
+    return {
+      success: false,
+      enabled: false,
+      barcode: '',
+      message: 'Lector desactivado.'
+    };
+  }
+
+  if (!port) {
+    return {
+      success: false,
+      enabled: true,
+      barcode: '',
+      message: 'Debes seleccionar el puerto del lector.'
+    };
+  }
+
+  let serialport;
+  try {
+    serialport = require('serialport');
+  } catch (error) {
+    return {
+      success: false,
+      enabled: true,
+      port,
+      barcode: '',
+      message: 'El soporte serial no esta disponible en esta instalacion.'
+    };
+  }
+
+  const serial = new serialport.SerialPort({
+    path: port,
+    baudRate: Number(baudRate || 9600),
+    autoOpen: false
+  });
+
+  try {
+    await new Promise((resolve, reject) => {
+      serial.open((error) => (error ? reject(error) : resolve()));
+    });
+
+    const result = await new Promise((resolve, reject) => {
+      let buffer = '';
+      const finishWithBuffer = () => {
+        const parsed = parseBarcodeReading(buffer);
+        if (parsed.success) {
+          resolve(parsed);
+          return;
+        }
+        reject(new Error('El lector no envio un codigo dentro del tiempo esperado.'));
+      };
+      const timer = setTimeout(finishWithBuffer, timeoutMs);
+      const onData = (chunk) => {
+        buffer += chunk.toString('utf8');
+        if (/[\r\n]/.test(buffer)) {
+          clearTimeout(timer);
+          const parsed = parseBarcodeReading(buffer);
+          parsed.success ? resolve(parsed) : reject(new Error(parsed.message));
+        }
+      };
+      serial.on('data', onData);
+      serial.once('error', (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
+
+    return {
+      ...result,
+      enabled: true,
+      port,
+      baudRate: Number(baudRate || 9600),
+      message: `Codigo leido: ${result.barcode}.`
+    };
+  } catch (error) {
+    return {
+      success: false,
+      enabled: true,
+      port,
+      baudRate: Number(baudRate || 9600),
+      barcode: '',
+      message: error.message || 'No fue posible leer el lector.'
+    };
+  } finally {
+    await closeSerialPort(serial);
+  }
+}
+
 async function autoDetectScanner({ baudRate = 9600 } = {}) {
   const ports = await listSerialPorts();
   if (!ports.length) {
@@ -172,6 +279,8 @@ async function autoDetectScanner({ baudRate = 9600 } = {}) {
 module.exports = {
   autoDetectScanner,
   listSerialPorts,
+  parseBarcodeReading,
   probeSerialPort,
+  readScannerBarcode,
   testScannerConnection
 };

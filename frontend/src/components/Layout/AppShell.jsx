@@ -23,7 +23,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.23';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.24';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -232,6 +232,8 @@ export default function AppShell({
             token={token}
             taxRate={Number(config.tax_rate || 18)}
             businessName={businessName}
+            scannerPort={config.scanner_port || ''}
+            scannerBaudRate={Number(config.scanner_baud_rate || 9600)}
             scaleEnabled={String(config.scale_enabled) === '1'}
             scalePort={config.scale_port || ''}
             scaleBaudRate={Number(config.scale_baud_rate || 9600)}

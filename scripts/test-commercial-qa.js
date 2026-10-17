@@ -170,6 +170,18 @@ async function runCommercialQa() {
     assertCondition(disabledScaleRead.payload.enabled === false, 'La lectura de bascula desactivada no devolvio su estado.');
     recordStep('Lectura de bascula desactivada controlada');
 
+    const disabledScannerRead = await apiRequest(apiBaseUrl, '/api/wizard/read-scanner', {
+      method: 'POST',
+      body: {
+        enabled: false,
+        port: '',
+        baudRate: 9600
+      }
+    });
+    assertCondition(disabledScannerRead.payload.success === false, 'La lectura de lector desactivado debe informar que no esta disponible.');
+    assertCondition(disabledScannerRead.payload.enabled === false, 'La lectura de lector desactivado no devolvio su estado.');
+    recordStep('Lectura de lector desactivado controlada');
+
     const adminQuestion = securityQuestions[0];
     assertCondition(Boolean(adminQuestion), 'No hay preguntas de seguridad precargadas.');
 

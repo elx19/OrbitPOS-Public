@@ -1,5 +1,6 @@
 const assert = require('assert');
 const { parseWeightReading, testScaleConnection } = require('../backend/helpers/scale');
+const { parseBarcodeReading, readScannerBarcode } = require('../backend/helpers/barcode');
 
 const kilogramReading = parseWeightReading('ST,GS, 1.250 kg');
 assert.equal(kilogramReading.success, true);
@@ -20,9 +21,21 @@ assert.equal(spanishDecimalReading.weightKg, 1.5);
 const invalidReading = parseWeightReading('READY STABLE');
 assert.equal(invalidReading.success, false);
 
-testScaleConnection({ enabled: false }).then((result) => {
+const barcodeReading = parseBarcodeReading('\u0002QA-123456\u0003\r\n');
+assert.equal(barcodeReading.success, true);
+assert.equal(barcodeReading.barcode, 'QA-123456');
+
+const emptyBarcode = parseBarcodeReading('\u0002\u0003');
+assert.equal(emptyBarcode.success, false);
+
+Promise.all([
+  testScaleConnection({ enabled: false }),
+  readScannerBarcode({ enabled: false })
+]).then(([result, scannerResult]) => {
   assert.equal(result.success, true);
   assert.equal(result.enabled, false);
+  assert.equal(scannerResult.success, false);
+  assert.equal(scannerResult.enabled, false);
   console.log('Hardware QA: OK');
 }).catch((error) => {
   console.error(error);

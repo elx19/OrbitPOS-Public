@@ -25,6 +25,8 @@ export default function POSPanel({
   token,
   taxRate = 18,
   businessName = 'Mi Negocio',
+  scannerPort = '',
+  scannerBaudRate = 9600,
   scaleEnabled = false,
   scalePort = '',
   scaleBaudRate = 9600,
@@ -53,6 +55,7 @@ export default function POSPanel({
   const [openingAmount, setOpeningAmount] = useState('0');
   const [openingRegister, setOpeningRegister] = useState(false);
   const [readingScaleId, setReadingScaleId] = useState(null);
+  const [readingScanner, setReadingScanner] = useState(false);
   const previewCacheRef = useRef(new Map());
   const deferredQuery = useDeferredValue(query);
 
@@ -208,6 +211,36 @@ export default function POSPanel({
     }
   }
 
+  async function readBarcodeFromScanner() {
+    setReadingScanner(true);
+    setMessage('Esperando codigo del lector...');
+    try {
+      const result = await apiRequest('/api/wizard/read-scanner', {
+        method: 'POST',
+        body: {
+          enabled: Boolean(scannerPort),
+          port: scannerPort,
+          baudRate: scannerBaudRate
+        }
+      });
+      if (!result.success || !result.barcode) {
+        throw new Error(result.message || 'El lector no devolvio un codigo valido.');
+      }
+      setQuery(result.barcode);
+      const product = products.find((candidate) => String(candidate.barcode || '').trim() === String(result.barcode).trim());
+      if (product) {
+        addProduct(product);
+        setMessage(`Producto agregado desde el lector: ${product.name}.`);
+      } else {
+        setMessage(`Codigo ${result.barcode} no encontrado en el catalogo.`);
+      }
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setReadingScanner(false);
+    }
+  }
+
   const removeFromCart = (productId) => setCart((current) => current.filter((item) => item.id !== productId));
   async function openCustomerDisplay() { try { await window.orbit?.customerDisplay?.open?.(); setCustomerDisplayOpen(true); } catch { setMessage('No fue posible abrir la pantalla cliente.'); } }
   async function closeCustomerDisplay() { try { await window.orbit?.customerDisplay?.close?.(); setCustomerDisplayOpen(false); } catch { setMessage('No fue posible cerrar la pantalla cliente.'); } }
@@ -271,7 +304,14 @@ export default function POSPanel({
         <Panel className="flex h-full min-h-[28rem] flex-col overflow-hidden">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div><div className="text-xs uppercase tracking-[0.24em] text-slate-500">Punto de venta</div><h2 className="mt-2 text-3xl font-bold text-ink">Productos</h2><div className="mt-2 text-sm text-slate-600">Haz clic en un producto para agregarlo al carrito.</div></div>
-            <div className="w-full md:max-w-md"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nombre, codigo o categoria" /></div>
+            <div className="flex w-full gap-2 md:max-w-lg">
+              <div className="min-w-0 flex-1"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nombre, codigo o categoria" /></div>
+              {scannerPort ? (
+                <Button variant="secondary" disabled={readingScanner} onClick={readBarcodeFromScanner}>
+                  {readingScanner ? 'Leyendo...' : 'Leer lector'}
+                </Button>
+              ) : null}
+            </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2" aria-label="Filtrar productos por categoría">
             {CATEGORY_FILTERS.map((category) => (
