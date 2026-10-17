@@ -1,6 +1,6 @@
 {
   "name": "orbitpos",
-  "version": "2.1.0-alpha.1",
+  "version": "2.1.0-alpha.2",
   "private": true,
   "author": "JRTech",
   "description": "Sistema de terminal de venta al publico OrbitPOS",
@@ -17,6 +17,10 @@
     "native:rebuild:electron": "electron-rebuild -f --build-from-source -v 35.7.5 -m . -w better-sqlite3,serialport",
     "native:rebuild:node": "npm rebuild better-sqlite3 serialport",
     "manual:generate": "node scripts/generate-user-manual.js",
+    "license:generate": "node scripts/license-generator.js generate",
+    "license:decode": "node scripts/license-generator.js decode",
+    "license:verify": "node scripts/license-generator.js verify",
+    "qa:license": "node scripts/test-license-generator.js",
     "release:clean-data": "node scripts/clean-release-runtime-data.js",
     "qa:commercial": "node scripts/test-commercial-qa.js",
     "updates:manifest": "node scripts/generate-update-manifest.js",
