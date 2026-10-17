@@ -16,12 +16,13 @@ function printUsage() {
 Comandos:
   generate  --machine-id ID --business "Nombre" --type monthly [opciones]
   decode    --key ORB2....
-  verify    --key ORB2....
+  verify    --key ORB2.... [--key-file ruta.txt]
 
 Opciones de generate:
   --edition standard       Edicion comercial
   --version-min 2.1.0     Version minima compatible
   --expires-at ISO         Expiracion exacta; omite para calcular por tipo
+  --issued-at ISO          Emision exacta; util para migraciones o QA
   --serial JR-...         Serial manual opcional
   --out ruta.txt           Guarda la clave sin imprimir secretos adicionales
   --json                   Devuelve respuesta JSON
@@ -70,6 +71,20 @@ function requiredOption(options, key, label = key) {
   return value;
 }
 
+function readLicenseKey(options) {
+  if (options.key && options['key-file']) {
+    throw new Error('Usa --key o --key-file, no ambos.');
+  }
+  if (options['key-file']) {
+    const filePath = path.resolve(String(options['key-file']));
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`No existe el archivo de licencia: ${filePath}`);
+    }
+    return fs.readFileSync(filePath, 'utf8').trim();
+  }
+  return requiredOption(options, 'key');
+}
+
 function safePayload(payload) {
   return {
     schema: payload.schema,
@@ -102,6 +117,7 @@ function run(command, options) {
       businessName,
       licenseType,
       expiresAt: options['expires-at'] || undefined,
+      issuedAt: options['issued-at'] || undefined,
       edition: options.edition || 'standard',
       versionMinCompatible: options['version-min'] || undefined,
       serial: options.serial || undefined
@@ -119,7 +135,7 @@ function run(command, options) {
   }
 
   if (command === 'decode' || command === 'verify') {
-    const key = requiredOption(options, 'key');
+    const key = readLicenseKey(options);
     const payload = decodeLicenseKey(key);
     const result = {
       ok: true,
@@ -135,7 +151,7 @@ function run(command, options) {
       result.valid = result.verification.valid;
     }
     if (options.json) return result;
-    const status = command === 'verify' && !result.valid ? 'Licencia no valida' : 'Licencia valida';
+    const status = command === 'verify' && !result.valid ? 'Licencia no valida' : 'Firma de licencia valida';
     return `${status}\n${JSON.stringify(command === 'verify' ? { ...result.payload, verification: result.verification } : result.payload, null, 2)}`;
   }
 
@@ -153,6 +169,9 @@ function main() {
   try {
     const result = run(command, options);
     console.log(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
+    if (command === 'verify' && result.valid === false) {
+      process.exitCode = 2;
+    }
   } catch (error) {
     console.error(`Error: ${error.message}`);
     process.exitCode = 1;

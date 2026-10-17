@@ -112,13 +112,18 @@ function createLicenseKey({
   const normalizedBusinessName = requireText(businessName, 'businessName');
   const normalizedLicenseType = assertLicenseType(licenseType);
   const normalizedEdition = requireText(edition || 'standard', 'edition').toLowerCase();
+  const normalizedIssuedAt = normalizeDate(issuedAt, 'issuedAt', { nullable: false });
+  const normalizedExpiresAt = normalizeDate(expiresAt || calculateExpiration(normalizedLicenseType, normalizedIssuedAt), 'expiresAt');
+  if (normalizedIssuedAt && normalizedExpiresAt && new Date(normalizedExpiresAt) < new Date(normalizedIssuedAt)) {
+    throw new Error('La fecha de expiracion no puede ser anterior a la emision.');
+  }
   const payload = {
     schema: LICENSE_SCHEMA_VERSION,
     machineId: normalizedMachineId,
     businessName: normalizedBusinessName,
     licenseType: normalizedLicenseType,
-    expiresAt: normalizeDate(expiresAt || calculateExpiration(normalizedLicenseType), 'expiresAt'),
-    issuedAt: normalizeDate(issuedAt, 'issuedAt', { nullable: false }),
+    expiresAt: normalizedExpiresAt,
+    issuedAt: normalizedIssuedAt,
     version: packageJson.version,
     versionMinCompatible: requireText(versionMinCompatible || packageJson.version, 'versionMinCompatible'),
     edition: normalizedEdition,
@@ -214,6 +219,10 @@ function decodeLicenseKey(licenseKey) {
 }
 
 function verifyLicensePayload(payload, { machineId = null, appVersion = packageJson.version, now = new Date() } = {}) {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('La licencia no contiene un payload valido.');
+  }
+
   const currentDate = new Date(now);
   if (Number.isNaN(currentDate.getTime())) {
     throw new Error('La fecha de verificacion no es valida.');
@@ -221,6 +230,15 @@ function verifyLicensePayload(payload, { machineId = null, appVersion = packageJ
 
   const expiresDate = payload.expiresAt ? new Date(payload.expiresAt) : null;
   const issuedDate = payload.issuedAt ? new Date(payload.issuedAt) : null;
+  if (expiresDate && Number.isNaN(expiresDate.getTime())) {
+    throw new Error('La fecha de expiracion no es valida.');
+  }
+  if (issuedDate && Number.isNaN(issuedDate.getTime())) {
+    throw new Error('La fecha de emision no es valida.');
+  }
+  if (issuedDate && expiresDate && expiresDate < issuedDate) {
+    throw new Error('La fecha de expiracion no puede ser anterior a la emision.');
+  }
   const expired = Boolean(expiresDate && expiresDate.getTime() <= currentDate.getTime());
   const notYetIssued = Boolean(issuedDate && issuedDate.getTime() > currentDate.getTime());
   const machineMatches = machineId ? String(payload.machineId) === String(machineId) : null;
