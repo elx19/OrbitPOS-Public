@@ -6,7 +6,7 @@ import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import { formatDate } from '../../lib/format';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.7';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.8';
 
 function describeLicense(license) {
   if (license?.isActive) {
