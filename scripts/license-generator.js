@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const {
@@ -9,6 +10,7 @@ const {
   decodeLicenseKey,
   verifyLicensePayload
 } = require('../shared/license-core');
+const { getMachineId } = require('../shared/machine-id');
 
 function printUsage() {
   console.log(`OrbitPOS license-generator
@@ -17,6 +19,7 @@ Comandos:
   generate  --machine-id ID --business "Nombre" --type monthly [opciones]
   decode    --key ORB2....
   verify    --key ORB2.... [--key-file ruta.txt]
+  machine-id              Muestra el identificador de esta maquina
 
 Opciones de generate:
   --edition standard       Edicion comercial
@@ -25,6 +28,7 @@ Opciones de generate:
   --issued-at ISO          Emision exacta; util para migraciones o QA
   --serial JR-...         Serial manual opcional
   --out ruta.txt           Guarda la clave sin imprimir secretos adicionales
+  --force                  Permite reemplazar --out si ya existe
   --json                   Devuelve respuesta JSON
 
 Opciones de verify:
@@ -105,14 +109,32 @@ function safePayload(payload) {
   };
 }
 
-function writeKeyFile(filePath, key) {
+function writeKeyFile(filePath, key, { force = false } = {}) {
   const absolutePath = path.resolve(filePath);
   fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
-  fs.writeFileSync(absolutePath, `${key}\n`, { encoding: 'utf8', mode: 0o600 });
+
+  if (fs.existsSync(absolutePath) && !force) {
+    throw new Error(`El archivo de salida ya existe: ${absolutePath}. Usa --force para reemplazarlo.`);
+  }
+
+  const temporaryPath = `${absolutePath}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
   try {
-    fs.chmodSync(absolutePath, 0o600);
+    fs.writeFileSync(temporaryPath, `${key}\n`, { encoding: 'utf8', mode: 0o600 });
+    try {
+      fs.chmodSync(temporaryPath, 0o600);
+    } catch (error) {
+      // Windows puede no exponer permisos POSIX; el archivo ya fue creado correctamente.
+    }
+
+    if (force && fs.existsSync(absolutePath)) {
+      fs.rmSync(absolutePath, { force: true });
+    }
+    fs.renameSync(temporaryPath, absolutePath);
   } catch (error) {
-    // Windows puede no exponer permisos POSIX; el archivo ya fue creado correctamente.
+    if (fs.existsSync(temporaryPath)) {
+      fs.rmSync(temporaryPath, { force: true });
+    }
+    throw error;
   }
   return absolutePath;
 }
@@ -140,6 +162,13 @@ function loadSecretFromOptions(options) {
 }
 
 function run(command, options) {
+  if (command === 'machine-id') {
+    const machineId = getMachineId();
+    return options.json
+      ? { ok: true, command, machineId }
+      : machineId;
+  }
+
   if (command === 'generate') {
     const machineId = requiredOption(options, 'machine-id');
     const businessName = requiredOption(options, 'business');
@@ -155,7 +184,9 @@ function run(command, options) {
       serial: options.serial || undefined
     });
     const payload = decodeLicenseKey(key);
-    const outputPath = options.out ? writeKeyFile(options.out, key) : null;
+    const outputPath = options.out
+      ? writeKeyFile(options.out, key, { force: Boolean(options.force) })
+      : null;
     const result = {
       ok: true,
       command,
@@ -168,7 +199,30 @@ function run(command, options) {
 
   if (command === 'decode' || command === 'verify') {
     const key = readLicenseKey(options);
-    const payload = decodeLicenseKey(key);
+    let payload;
+    try {
+      payload = decodeLicenseKey(key);
+    } catch (error) {
+      if (command !== 'verify') {
+        throw error;
+      }
+
+      const invalidResult = {
+        ok: false,
+        command,
+        valid: false,
+        payload: null,
+        verification: {
+          valid: false,
+          cryptographicallyValid: false,
+          reason: error.message
+        },
+        error: error.message
+      };
+      return options.json
+        ? invalidResult
+        : `Licencia no valida\n${JSON.stringify(invalidResult.verification, null, 2)}`;
+    }
     const result = {
       ok: true,
       command,
@@ -199,7 +253,9 @@ function main() {
   }
 
   try {
-    loadSecretFromOptions(options);
+    if (command !== 'machine-id') {
+      loadSecretFromOptions(options);
+    }
     const result = run(command, options);
     console.log(typeof result === 'string' ? result : JSON.stringify(result, null, 2));
     const verificationFailed = command === 'verify'

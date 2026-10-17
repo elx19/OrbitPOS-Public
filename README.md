@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.20** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.21** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.20.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.21.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.20` endurece el control de distribución: `qa:release` valida los manifiestos local, estático y de servidor, compara SHA-512, tamaños, blockmaps y copias publicables del instalador. La navegación navy compacta, las tarjetas blancas, las acciones emerald y la carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) quedan versionadas junto con cada hito funcional.
+La línea `v2.1.0-alpha.21` mejora el generador de licencias para operación segura: `verify` clasifica claves corruptas como inválidas con código 2, `machine-id` permite identificar el equipo sin exponer secretos y las salidas existentes no se reemplazan sin `--force`. La navegación navy compacta, las tarjetas blancas, las acciones emerald y la carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) quedan versionadas junto con cada hito funcional.
 
 ## Generador de licencias
 
@@ -82,6 +82,7 @@ set ORBITPOS_LICENSE_SECRET=clave-privada-local
 node scripts/license-generator.js generate --machine-id ID --business "Tienda San Jose" --type monthly --json
 node scripts/license-generator.js verify --key ORB2.... --json
 node scripts/license-generator.js decode --key ORB2.... --json
+node scripts/license-generator.js machine-id --json
 ```
 
 Para no exponer la clave privada en el historial de comandos, también se puede usar un archivo externo protegido:
@@ -90,6 +91,8 @@ Para no exponer la clave privada en el historial de comandos, también se puede 
 node scripts/license-generator.js generate --secret-file C:\\secure\\orbitpos-license.secret --machine-id ID --business "Tienda San Jose" --type monthly --out C:\\secure\\license.key
 node scripts/license-generator.js verify --secret-file C:\\secure\\orbitpos-license.secret --key-file C:\\secure\\license.key --machine-id ID
 ```
+
+Por seguridad, `--out` no reemplaza una licencia existente salvo que se indique `--force`; el archivo se escribe primero en una ruta temporal y luego se mueve de forma atómica.
 
 La prueba aislada del generador se ejecuta con `npm run qa:license`. La QA comercial completa y las pruebas físicas de dispositivos siguen siendo gates obligatorios antes de producción.
 

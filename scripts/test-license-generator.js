@@ -97,6 +97,20 @@ const verifiedText = spawnSync(process.execPath, [generatorPath, 'verify', '--ke
 assert.equal(verifiedText.status, 2, `verify en texto debe fallar con codigo 2: ${verifiedText.stderr}`);
 fs.unlinkSync(keyFile);
 
+const malformedVerification = spawnSync(process.execPath, [generatorPath, 'verify', '--key', 'ORB2.invalid-key', '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(malformedVerification.status, 2, `verify debe clasificar una clave corrupta como invalida: ${malformedVerification.stderr}`);
+assert.equal(JSON.parse(malformedVerification.stdout).verification.cryptographicallyValid, false);
+
+const machineIdResult = spawnSync(process.execPath, [generatorPath, 'machine-id', '--json'], {
+  env: { ...process.env, ORBITPOS_LICENSE_SECRET: '' },
+  encoding: 'utf8'
+});
+assert.equal(machineIdResult.status, 0, machineIdResult.stderr);
+assert.ok(JSON.parse(machineIdResult.stdout).machineId);
+
 fs.writeFileSync(secretFile, 'orbitpos-secret-file-test\n', 'utf8');
 const generatedWithSecretFile = spawnSync(process.execPath, [generatorPath, 'generate', '--secret-file', secretFile, '--machine-id', 'machine-secret-file', '--business', 'Tienda Secret File', '--type', 'monthly', '--json'], {
   env: { ...process.env, ORBITPOS_LICENSE_SECRET: '' },
@@ -112,5 +126,23 @@ const verifiedWithSecretFile = spawnSync(process.execPath, [generatorPath, 'veri
 assert.equal(verifiedWithSecretFile.status, 0, verifiedWithSecretFile.stderr);
 assert.equal(JSON.parse(verifiedWithSecretFile.stdout).valid, true);
 fs.unlinkSync(secretFile);
+
+const protectedOutputPath = path.join(__dirname, '..', '.qa', 'license-generator-protected.key');
+const firstProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(firstProtectedOutput.status, 0, firstProtectedOutput.stderr);
+const secondProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(secondProtectedOutput.status, 1, 'generate no debe reemplazar una licencia existente sin --force.');
+const forcedProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--force', '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(forcedProtectedOutput.status, 0, forcedProtectedOutput.stderr);
+fs.unlinkSync(protectedOutputPath);
 
 console.log('License generator QA: OK');
