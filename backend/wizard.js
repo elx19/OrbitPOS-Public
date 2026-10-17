@@ -15,7 +15,9 @@ function mapWizardConfig(config, adminUser = null) {
       phone: config.business_phone || '',
       address: config.business_address || '',
       logo: config.business_logo || '',
-      currency: config.business_currency || 'DOP'
+      currency: config.business_currency || 'DOP',
+      businessType: config.business_type || 'colmado',
+      sellsByWeight: config.business_sells_weight === '1'
     },
     printer: {
       name: config.printer_name || '',
@@ -47,6 +49,8 @@ function flattenWizardPayload(payload) {
     business_address: payload.business?.address || '',
     business_logo: payload.business?.logo || '',
     business_currency: payload.business?.currency || 'DOP',
+    business_type: payload.business?.businessType || 'colmado',
+    business_sells_weight: payload.business?.sellsByWeight ? '1' : '0',
     printer_name: payload.printer?.name || '',
     printer_port: payload.printer?.port || '',
     scanner_port: payload.scanner?.port || '',

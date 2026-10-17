@@ -24,7 +24,7 @@ const NotificationsPanel = lazy(() => import('../Notifications/NotificationsPane
 const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.13';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.14';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },

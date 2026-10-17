@@ -82,6 +82,10 @@ function checkBrandAndReferences() {
   requireFile('assets/orbitpos-license.png');
   requireFile('frontend/src/assets/orbitpos-logo.png');
   requireFile('frontend/src/assets/orbitpos-license.png');
+  ['colmado', 'carniceria', 'embutidos', 'mixto'].forEach((name) => {
+    requireFile(`assets/business-types/${name}.png`);
+    requireFile(`frontend/src/assets/business-types/${name}.png`);
+  });
 
   const referenceDirectory = absolute('docs/ui-reference');
   const references = fs.readdirSync(referenceDirectory)

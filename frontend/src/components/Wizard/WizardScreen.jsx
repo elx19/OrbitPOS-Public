@@ -6,8 +6,31 @@ import { apiRequest } from '../../lib/api';
 import { classNames } from '../../lib/format';
 import securityQuestions from '../../../../shared/security-questions.json';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
+import colmadoIconUrl from '../../assets/business-types/colmado.png';
+import carniceriaIconUrl from '../../assets/business-types/carniceria.png';
+import embutidosIconUrl from '../../assets/business-types/embutidos.png';
+import mixtoIconUrl from '../../assets/business-types/mixto.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.13';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.14';
+
+function WizardIcon({ type }) {
+  const paths = {
+    cart: <><path d="M4 5h2l2 10h9l2-7H7" /><circle cx="10" cy="19" r="1.5" /><circle cx="17" cy="19" r="1.5" /></>,
+    meat: <><path d="M5 13c0-4 3-7 7-7 3 0 5 2 5 5 0 4-3 7-7 7-3 0-5-2-5-5Z" /><path d="M17 8c2-2 3-2 4-1M15 12h.01" /></>,
+    sausage: <><path d="M5 15c0-4 4-8 9-8 3 0 5 1 5 3 0 4-4 8-9 8-3 0-5-1-5-3Z" /><path d="M9 8 7 6M15 17l2 2M12 8l-1-2" /></>,
+    shop: <><path d="M4 10h16M5 10l1.5-5h11L20 10M6 10v9h12v-9M10 19v-5h4v5" /></>,
+    help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 4.1 1.9c-1 .8-1.6 1.2-1.6 2.6M12 17h.01" /></>
+  };
+
+  return <svg className="orbit-reference-icon" viewBox="0 0 24 24" aria-hidden="true">{paths[type] || paths.shop}</svg>;
+}
+
+const businessTypes = [
+  { value: 'colmado', label: 'Colmado', icon: 'cart', image: colmadoIconUrl, tone: 'green' },
+  { value: 'carniceria', label: 'Carnicería', icon: 'meat', image: carniceriaIconUrl, tone: 'red' },
+  { value: 'embutidos', label: 'Embutidos / Deli', icon: 'sausage', image: embutidosIconUrl, tone: 'orange' },
+  { value: 'mixto', label: 'Mixto', icon: 'shop', image: mixtoIconUrl, tone: 'navy' }
+];
 
 const currencies = [
   ['DOP', 'Peso dominicano (RD$)'],
@@ -29,7 +52,7 @@ export default function WizardScreen({
   serialPorts,
   onCompleted
 }) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
   const [form, setForm] = useState(() => ({
     business: {
       name: initialData?.business?.name || '',
@@ -38,6 +61,8 @@ export default function WizardScreen({
       address: initialData?.business?.address || '',
       logo: initialData?.business?.logo || '',
       currency: initialData?.business?.currency || 'DOP'
+      ,businessType: initialData?.business?.businessType || 'colmado'
+      ,sellsByWeight: initialData?.business?.sellsByWeight ?? true
     },
     printer: {
       name: initialData?.printer?.name || '',
@@ -68,6 +93,8 @@ export default function WizardScreen({
   const totalSteps = 6;
   const isReview = step === totalSteps;
   const progress = isReview ? 100 : Math.round(((step + 1) / totalSteps) * 100);
+  const referenceSteps = ['Bienvenida', 'Negocio', 'Impuestos', 'Inventario', 'Listo'];
+  const referenceStep = isReview ? 4 : step === 0 ? 0 : step === 1 ? 1 : step === 2 ? 2 : 3;
 
   const validationMessage = useMemo(() => {
     if (step === 1 && !form.business.name.trim()) {
@@ -303,7 +330,7 @@ export default function WizardScreen({
         );
       case 1:
         return (
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="orbit-business-form">
             <Field label="Nombre del negocio">
               <Input
                 value={form.business.name}
@@ -311,72 +338,57 @@ export default function WizardScreen({
                   ...current,
                   business: { ...current.business, name: event.target.value }
                 }))}
-                placeholder="Mi Negocio"
+                placeholder="Ej. Super Colmado La Esquina"
               />
             </Field>
-            <Field label="RNC">
-              <Input
-                value={form.business.rnc}
-                onChange={(event) => setForm((current) => ({
-                  ...current,
-                  business: { ...current.business, rnc: event.target.value }
-                }))}
-                placeholder="000-000000-0"
-              />
-            </Field>
-            <Field label="Telefono">
-              <Input
-                value={form.business.phone}
-                onChange={(event) => setForm((current) => ({
-                  ...current,
-                  business: { ...current.business, phone: event.target.value }
-                }))}
-                placeholder="809-000-0000"
-              />
-            </Field>
-            <Field label="Moneda">
-              <Select
-                value={form.business.currency}
-                onChange={(event) => setForm((current) => ({
-                  ...current,
-                  business: { ...current.business, currency: event.target.value }
-                }))}
-              >
-                {currencies.map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+            <div className="orbit-business-section">
+              <div className="orbit-business-section-label">Tipo de negocio</div>
+              <div className="orbit-business-types">
+                {businessTypes.map((type) => (
+                  <button
+                    key={type.value}
+                    type="button"
+                    className={`orbit-business-type orbit-business-type-${type.tone} ${form.business.businessType === type.value ? 'is-selected' : ''}`}
+                    onClick={() => setForm((current) => ({ ...current, business: { ...current.business, businessType: type.value } }))}
+                  >
+                    <img src={type.image} alt="" />
+                    <strong>{type.label}</strong>
+                  </button>
                 ))}
-              </Select>
-            </Field>
-            <div className="md:col-span-2">
-              <Field label="Direccion">
-                <TextArea
-                  rows={4}
-                  value={form.business.address}
+              </div>
+            </div>
+            <div className="orbit-business-bottom-grid">
+              <Field label="Moneda">
+                <Select
+                  value={form.business.currency}
                   onChange={(event) => setForm((current) => ({
                     ...current,
-                    business: { ...current.business, address: event.target.value }
+                    business: { ...current.business, currency: event.target.value }
                   }))}
-                  placeholder="Direccion del negocio"
-                />
+                >
+                  {currencies.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </Select>
               </Field>
+              <label className="orbit-weight-toggle">
+                <span>¿Vendes por peso?</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.business.sellsByWeight}
+                  className={form.business.sellsByWeight ? 'is-on' : ''}
+                  onClick={() => setForm((current) => ({ ...current, business: { ...current.business, sellsByWeight: !current.business.sellsByWeight } }))}
+                ><i /></button>
+              </label>
             </div>
-            <div className="md:col-span-2">
-              <Field label="Logo (ruta opcional)">
-                <div className="flex flex-col gap-3 md:flex-row">
-                  <Input
-                    value={form.business.logo}
-                    onChange={(event) => setForm((current) => ({
-                      ...current,
-                      business: { ...current.business, logo: event.target.value }
-                    }))}
-                    placeholder="C:\\logos\\negocio.png"
-                  />
-                  <Button variant="secondary" onClick={pickLogoFile}>
-                    Buscar logo
-                  </Button>
-                </div>
-              </Field>
-            </div>
+            <details className="orbit-business-advanced">
+              <summary>Agregar datos fiscales, contacto y logo (opcional)</summary>
+              <div className="orbit-business-extra-grid">
+                <Field label="RNC (opcional)"><Input value={form.business.rnc} onChange={(event) => setForm((current) => ({ ...current, business: { ...current.business, rnc: event.target.value } }))} placeholder="000-000000-0" /></Field>
+                <Field label="Teléfono"><Input value={form.business.phone} onChange={(event) => setForm((current) => ({ ...current, business: { ...current.business, phone: event.target.value } }))} placeholder="809-000-0000" /></Field>
+                <Field label="Dirección"><TextArea rows={2} value={form.business.address} onChange={(event) => setForm((current) => ({ ...current, business: { ...current.business, address: event.target.value } }))} placeholder="Dirección del negocio" /></Field>
+                <Field label="Logo (ruta opcional)"><div className="flex gap-3"><Input value={form.business.logo} onChange={(event) => setForm((current) => ({ ...current, business: { ...current.business, logo: event.target.value } }))} placeholder="C:\\logos\\negocio.png" /><Button variant="secondary" onClick={pickLogoFile}>Buscar logo</Button></div></Field>
+              </div>
+            </details>
           </div>
         );
       case 2:
@@ -639,7 +651,7 @@ export default function WizardScreen({
             <div className="orbit-store-door" />
           </div>
           <div className="orbit-wizard-promo-points">
-            <span>✓ Colmado</span><span>✓ Carniceria</span><span>✓ Embutidos</span>
+            <span><img src={colmadoIconUrl} alt="" />Colmado</span><span><img src={carniceriaIconUrl} alt="" />Carnicería</span><span><img src={embutidosIconUrl} alt="" />Embutidos / Deli</span>
           </div>
         </aside>
 
@@ -647,16 +659,16 @@ export default function WizardScreen({
           <div className="orbit-wizard-main-header">
             <div className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">Configuracion inicial</div>
             <div className="orbit-wizard-stepper" aria-label="Progreso de configuración">
-              {['Bienvenida', 'Negocio', 'Dispositivos', 'Seguridad', 'Licencia', 'Listo'].map((label, index) => {
-                const completed = isReview || step > index;
-                const active = !isReview && step === index;
+              {referenceSteps.map((label, index) => {
+                const completed = isReview || referenceStep > index;
+                const active = !isReview && referenceStep === index;
                 return (
                   <div key={label} className="orbit-wizard-step">
                     <span className={classNames('orbit-wizard-step-dot', completed ? 'is-complete' : '', active ? 'is-active' : '')}>
                       {completed ? '✓' : index + 1}
                     </span>
                     <span>{label}</span>
-                    {index < 5 ? <i className={completed ? 'is-complete' : ''} /> : null}
+                    {index < referenceSteps.length - 1 ? <i className={completed ? 'is-complete' : ''} /> : null}
                   </div>
                 );
               })}

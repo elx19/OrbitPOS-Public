@@ -6,8 +6,29 @@ import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import { formatDate } from '../../lib/format';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
+import colmadoIconUrl from '../../assets/business-types/colmado.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.13';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.14';
+
+function ReferenceIcon({ name, className = '' }) {
+  const paths = {
+    cart: <><path d="M4 5h2l2 10h9l2-7H7" /><circle cx="10" cy="19" r="1.5" /><circle cx="17" cy="19" r="1.5" /></>,
+    box: <><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" /><path d="m4 7.5 8 4.5 8-4.5M12 12v9" /></>,
+    chart: <><path d="M5 19V11M12 19V6M19 19V3" /></>,
+    store: <><path d="M4 10h16M5 10l1.5-5h11L20 10M6 10v9h12v-9M10 19v-5h4v5" /></>,
+    user: <><circle cx="12" cy="8" r="3" /><path d="M5 21c.8-3.5 3.2-5 7-5s6.2 1.5 7 5" /></>,
+    lock: <><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
+    eye: <><path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z" /><circle cx="12" cy="12" r="2" /></>,
+    arrow: <><path d="M4 12h15M13 6l6 6-6 6" /></>,
+    check: <path d="m5 12 4 4L19 6" />
+  };
+
+  return (
+    <svg className={`orbit-reference-icon ${className}`} viewBox="0 0 24 24" aria-hidden="true">
+      {paths[name] || paths.store}
+    </svg>
+  );
+}
 
 function describeLicense(license) {
   if (license?.isActive) {
@@ -57,6 +78,7 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
   });
   const [recoveryMessage, setRecoveryMessage] = useState('');
   const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const businessLogoUrl = resolveAssetUrl(businessLogo);
   const initials = getInitials(businessName || 'OrbitPOS');
   const displayLogoUrl = businessLogoUrl && logoVisible ? businessLogoUrl : orbitposLogoUrl;
@@ -173,76 +195,50 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
   }
 
   return (
-    <div className="app-surface flex min-h-screen items-center justify-center overflow-auto px-4 py-6">
-      <Panel className="orbit-login-card screen-shell grid w-full max-w-6xl gap-0 overflow-hidden p-0 lg:grid-cols-[1.05fr,0.95fr]">
-        <div className="orbit-login-brand p-8 lg:p-12">
-          <div className="orbit-login-wordmark">
-            <img src={orbitposLogoUrl} alt="OrbitPOS" />
-            <div>Orbit<span>POS</span></div>
-          </div>
-          <div className="mt-3 text-xs text-white/58">Tu negocio en movimiento · v{APP_VERSION}</div>
-          <div className="mt-6 flex items-center gap-4">
-            {displayLogoUrl ? (
-              <img
-                src={displayLogoUrl}
-                alt={`Logo de ${businessName || 'Mi Negocio'}`}
-                className="h-20 w-20 rounded-[24px] border border-white/15 bg-white/90 object-cover p-2"
-                onError={() => businessLogoUrl && logoVisible && setLogoVisible(false)}
-              />
-            ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/15 bg-white/12 text-2xl font-bold">
-                {initials}
-              </div>
-            )}
-            <div>
-              <div className="text-xs uppercase tracking-[0.22em] text-white/60">Negocio activo</div>
-              <div className="mt-2 text-2xl font-bold">{businessName || 'Mi Negocio'}</div>
-            </div>
-          </div>
-          <h1 className="mt-8 text-4xl font-bold leading-tight">
-            Tu negocio listo para <span className="text-emerald-300">vender</span>
-          </h1>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-white/78">
-            Administra tus ventas, inventario, caja y clientes desde una sola pantalla clara y rapida.
-          </p>
+    <div className="app-surface orbit-login-stage flex min-h-screen items-center justify-center overflow-auto px-4 py-6">
+      <Panel className="orbit-login-card screen-shell grid w-full max-w-6xl gap-0 overflow-hidden p-0 lg:grid-cols-[1.08fr,0.92fr]">
+        <div className="orbit-login-brand">
+          <div className="orbit-login-wordmark"><img src={orbitposLogoUrl} alt="OrbitPOS" /><div>Orbit<span>POS</span></div></div>
+          <h1>Tu negocio listo<br />para <span>vender</span></h1>
           <div className="orbit-login-features">
-            <div className="orbit-login-feature"><span className="orbit-login-feature-icon">↗</span><span><b>Ventas rapidas</b><small>Atiende a tus clientes sin complicaciones.</small></span></div>
-            <div className="orbit-login-feature"><span className="orbit-login-feature-icon orbit-login-feature-icon-gold">□</span><span><b>Inventario inteligente</b><small>Controla tus productos en tiempo real.</small></span></div>
-            <div className="orbit-login-feature"><span className="orbit-login-feature-icon">▥</span><span><b>Control de caja</b><small>Mantén tus cuentas siempre claras.</small></span></div>
+            <div className="orbit-login-feature"><span className="orbit-login-feature-icon"><ReferenceIcon name="cart" /></span><span><b>Ventas rápidas</b><small>Atiende a tus clientes sin complicaciones.</small></span></div>
+            <div className="orbit-login-feature"><span className="orbit-login-feature-icon orbit-login-feature-icon-gold"><ReferenceIcon name="box" /></span><span><b>Inventario inteligente</b><small>Controla tus productos en tiempo real.</small></span></div>
+            <div className="orbit-login-feature"><span className="orbit-login-feature-icon"><ReferenceIcon name="chart" /></span><span><b>Control de caja</b><small>Mantén tus cuentas siempre claras.</small></span></div>
           </div>
+          <div className="orbit-login-store-scene" aria-hidden="true">
+            <img className="orbit-login-store-asset" src={colmadoIconUrl} alt="" />
+            <div className="orbit-login-cloud orbit-login-cloud-one" />
+            <div className="orbit-login-cloud orbit-login-cloud-two" />
+            <div className="orbit-login-store-sign">{businessName || 'Tienda San José'}</div>
+            <div className="orbit-login-store-roof" />
+            <div className="orbit-login-store-awning" />
+            <div className="orbit-login-store-front">
+              <div className="orbit-login-store-window"><span /><span /><span /><span /></div>
+              <div className="orbit-login-store-door" />
+            </div>
+            <div className="orbit-login-store-produce"><i /><i /><i /><i /><i /></div>
+            <div className="orbit-login-store-plant"><b /><b /><b /></div>
+          </div>
+          <div className="orbit-login-version">OrbitPOS · Tu negocio en movimiento · v{APP_VERSION}</div>
         </div>
 
-        <div className="orbit-login-form p-8 lg:p-12">
+        <div className="orbit-login-form">
           <div className="orbit-login-account-header">
-            <div className="orbit-login-account-avatar">{initials}</div>
-            <div><b>{businessName || 'Mi Negocio'}</b><small>Administrador</small></div>
+            <div className="orbit-login-account-icon"><ReferenceIcon name="store" /></div>
+            <div><b>{businessName || 'Tienda San José'}</b><small>Administrador</small></div>
           </div>
           {!showRecovery ? (
             <form onSubmit={handleSubmit}>
-              <div className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-                Acceso al sistema
-              </div>
-              <h2 className="mt-6 text-3xl font-bold text-ink">Bienvenido de nuevo</h2>
-              <p className="mt-2 text-sm leading-7 text-slate-600">
-                Inicia sesion para continuar.
-              </p>
+              <h2 className="orbit-login-title">Bienvenido de nuevo</h2>
+              <p className="orbit-login-subtitle">Inicia sesión para continuar</p>
 
-              <div className="mt-8 space-y-5">
+              <div className="orbit-login-fields">
                 <Field label="Usuario">
-                  <Input
-                    value={form.username}
-                    onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))}
-                    placeholder="Administrador"
-                  />
+                  <div className="orbit-login-input-wrap"><ReferenceIcon name="user" /><Input value={form.username} onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))} placeholder="Administrador" /></div>
                 </Field>
 
                 <Field label="Contrasena">
-                  <Input
-                    type="password"
-                    value={form.password}
-                    onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-                    placeholder="••••••••••"
-                  />
+                  <div className="orbit-login-input-wrap"><ReferenceIcon name="lock" /><Input type={passwordVisible ? 'text' : 'password'} value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} placeholder="••••••••••" /><button type="button" className="orbit-login-eye" aria-label={passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'} onClick={() => setPasswordVisible((current) => !current)}><ReferenceIcon name="eye" /></button></div>
                 </Field>
               </div>
 
@@ -252,20 +248,21 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
                 </div>
               ) : null}
 
-              <Button type="submit" className="mt-8 w-full" disabled={submitting}>
+              <Button type="submit" className="orbit-login-submit mt-8 w-full" disabled={submitting}>
                 {submitting ? 'Entrando...' : 'Entrar a OrbitPOS  →'}
               </Button>
 
               <button
                 type="button"
-                className="mt-4 text-sm font-semibold text-slate-600 transition hover:text-ink"
+                className="orbit-login-recovery-link mt-4"
                 onClick={() => {
                   resetRecovery(form.username || 'admin');
                   setShowRecovery(true);
                 }}
               >
-                Recuperar contrasena con pregunta de seguridad
+                ¿Olvidaste tu contraseña?
               </button>
+              <div className="orbit-login-license"><span><ReferenceIcon name="check" /></span><b>{licenseSummary.title}</b><ReferenceIcon name="arrow" className="orbit-login-license-arrow" /></div>
             </form>
           ) : (
             <form onSubmit={handleRecoverySubmit}>
