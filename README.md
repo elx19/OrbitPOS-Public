@@ -1,24 +1,24 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. La versión distribuida actualmente es **5.1.2** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.9** para Windows.
 
 ## Lenguaje y tecnología
 
 El proyecto utiliza **JavaScript y JSX**; no está desarrollado en TypeScript.
 
 - Node.js 22.12+.
-- Electron 41.10.7.
+- Electron 35.7.5.
 - React 18.3.1 y Vite 6.4.3.
-- Express 5.2.1.
-- SQLite con better-sqlite3 13.0.3.
+- Express 4.21.2.
+- SQLite con better-sqlite3 11.10.0.
 - serialport 13.0.0 para dispositivos seriales.
-- electron-updater 6.8.9 para actualizaciones.
+- electron-updater 6.8.3 para actualizaciones.
 
 El frontend está escrito con React/JSX y el backend y proceso principal de Electron están escritos en JavaScript. La base de datos opera localmente en el equipo donde se instala OrbitPOS.
 
 ## Release actual
 
-Descarga el instalador o el portable desde [OrbitPOS v5.1.2](https://github.com/elx19/OrbitPOS-Public/releases/tag/v5.1.2).
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.9.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.4` contiene la base visual del nuevo sistema: navegación navy compacta, tarjetas blancas, acciones emerald, login, wizard y referencias visuales para cada módulo en [`docs/ui-reference`](docs/ui-reference/README.md). Cada hito se conserva con commit y tag para poder volver a una versión funcional anterior.
+La línea `v2.1.0-alpha.9` contiene la base visual del nuevo sistema: navegación navy compacta, tarjetas blancas, acciones emerald, login, wizard y referencias visuales para cada módulo en [`docs/ui-reference`](docs/ui-reference/README.md). Cada hito se conserva con commit y tag para poder volver a una versión funcional anterior.
 
 ## Generador de licencias
 
