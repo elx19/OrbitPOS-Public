@@ -5,7 +5,7 @@ import { Field, Input } from '../ui/Field';
 import { apiRequest } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
 
-const APP_VERSION = window.orbit?.version || '2.0.3';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.6';
 
 export default function LicensePanel({ token, license, machineId, onActivated }) {
   const [licenseKey, setLicenseKey] = useState('');

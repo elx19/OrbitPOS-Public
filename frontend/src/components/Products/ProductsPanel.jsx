@@ -20,6 +20,8 @@ const emptyForm = {
   active: true
 };
 
+const CATEGORY_OPTIONS = ['Abarrotes', 'Bebidas', 'Carnes', 'Embutidos', 'Lácteos', 'Limpieza'];
+
 function ProductImagePreview({ product, className = 'h-16 w-16 rounded-[18px]' }) {
   const imageUrl = resolveAssetUrl(product?.image_path);
   if (imageUrl) {
@@ -270,7 +272,11 @@ export default function ProductsPanel({ token, onActivity }) {
                     <Input value={form.barcode} onChange={(event) => setForm((current) => ({ ...current, barcode: event.target.value }))} />
                   </Field>
                   <Field label="Categoria">
-                    <Input value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))} />
+                    <Select value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}>
+                      <option value="">Seleccionar categoria</option>
+                      {form.category && !CATEGORY_OPTIONS.includes(form.category) ? <option value={form.category}>{form.category}</option> : null}
+                      {CATEGORY_OPTIONS.map((category) => <option key={category} value={category}>{category}</option>)}
+                    </Select>
                   </Field>
                   <Field label="Costo">
                     <Input type="number" step="0.01" value={form.cost_price} onChange={(event) => setForm((current) => ({ ...current, cost_price: event.target.value }))} />

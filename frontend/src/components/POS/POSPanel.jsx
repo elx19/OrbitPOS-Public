@@ -10,6 +10,7 @@ import TicketPreview from '../ui/TicketPreview';
 
 const PREVIEW_CACHE_TTL_MS = 15000;
 const PREVIEW_CACHE_LIMIT = 24;
+const CATEGORY_FILTERS = ['Todos', 'Abarrotes', 'Bebidas', 'Carnes', 'Embutidos', 'Lácteos', 'Limpieza'];
 const getInitialPayments = () => [{ method: 'cash', amount: '', reference: '' }];
 
 function ProductVisual({ product, className = 'h-16 w-16 rounded-[18px]' }) {
@@ -25,6 +26,7 @@ export default function POSPanel({ token, taxRate = 18, businessName = 'Mi Negoc
   const [customers, setCustomers] = useState([]);
   const [register, setRegister] = useState(null);
   const [query, setQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('Todos');
   const [cart, setCart] = useState([]);
   const [saleType, setSaleType] = useState('cash');
   const [customerId, setCustomerId] = useState('');
@@ -59,17 +61,18 @@ export default function POSPanel({ token, taxRate = 18, businessName = 'Mi Negoc
   useEffect(() => { loadData(); }, [token]);
 
   const filteredProducts = useMemo(() => {
-    if (!deferredQuery.trim()) return products;
+    const normalizedCategory = categoryFilter.toLowerCase();
     const search = deferredQuery.toLowerCase();
     return products.filter((product) =>
-      product.name.toLowerCase().includes(search) ||
-      (product.barcode || '').toLowerCase().includes(search) ||
-      (product.category || '').toLowerCase().includes(search)
+      (categoryFilter === 'Todos' || (product.category || '').toLowerCase().includes(normalizedCategory)) &&
+      (!search || product.name.toLowerCase().includes(search) ||
+        (product.barcode || '').toLowerCase().includes(search) ||
+        (product.category || '').toLowerCase().includes(search))
     );
-  }, [deferredQuery, products]);
+  }, [categoryFilter, deferredQuery, products]);
 
   const visibleProducts = useMemo(() => filteredProducts.slice(0, visibleProductCount), [filteredProducts, visibleProductCount]);
-  useEffect(() => { setVisibleProductCount(deferredQuery.trim() ? 60 : 24); }, [deferredQuery]);
+  useEffect(() => { setVisibleProductCount(deferredQuery.trim() || categoryFilter !== 'Todos' ? 60 : 24); }, [categoryFilter, deferredQuery]);
 
   const selectedCustomer = useMemo(() => customers.find((customer) => String(customer.id) === String(customerId)) || null, [customerId, customers]);
   const saleItems = useMemo(() => cart.map((item) => ({ productId: item.id, quantity: Number(item.quantity || 0), discount: Number(item.discount || 0) })), [cart]);
@@ -236,6 +239,18 @@ export default function POSPanel({ token, taxRate = 18, businessName = 'Mi Negoc
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div><div className="text-xs uppercase tracking-[0.24em] text-slate-500">Punto de venta</div><h2 className="mt-2 text-3xl font-bold text-ink">Productos</h2><div className="mt-2 text-sm text-slate-600">Haz clic en un producto para agregarlo al carrito.</div></div>
             <div className="w-full md:max-w-md"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nombre, codigo o categoria" /></div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2" aria-label="Filtrar productos por categoría">
+            {CATEGORY_FILTERS.map((category) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setCategoryFilter(category)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${categoryFilter === category ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700'}`}
+              >
+                {category}
+              </button>
+            ))}
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <div className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-600">Caja: {register ? 'Activa' : 'Por abrir'}</div>

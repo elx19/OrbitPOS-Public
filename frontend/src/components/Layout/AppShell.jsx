@@ -36,7 +36,7 @@ const rdTimeFormatter = new Intl.DateTimeFormat('es-DO', {
   minute: '2-digit',
   hour12: true
 });
-const APP_VERSION = window.orbit?.version || '2.0.3';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.6';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
