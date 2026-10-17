@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.11** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.12** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.11.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.12.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.11` contiene la base visual del nuevo sistema: navegación navy compacta, tarjetas blancas, acciones emerald, login, wizard y referencias visuales para cada módulo en [`docs/ui-reference`](docs/ui-reference/README.md). Cada hito se conserva con commit y tag para poder volver a una versión funcional anterior.
+La línea `v2.1.0-alpha.12` contiene la base visual del nuevo sistema: navegación navy compacta, tarjetas blancas, acciones emerald, login, wizard y referencias visuales para cada módulo en [`docs/ui-reference`](docs/ui-reference/README.md). Cada hito se conserva con commit y tag para poder volver a una versión funcional anterior.
 
 ## Generador de licencias
 
@@ -85,6 +85,8 @@ node scripts/license-generator.js decode --key ORB2.... --json
 ```
 
 La prueba aislada del generador se ejecuta con `npm run qa:license`. La QA comercial completa y las pruebas físicas de dispositivos siguen siendo gates obligatorios antes de producción.
+
+La integridad del artefacto se comprueba con `npm run qa:release`; valida el tag, el instalador, el hash del manifiesto, el ejecutable desempaquetado, la identidad visual y las referencias de todos los módulos.
 
 Publicación de una nueva release:
 
