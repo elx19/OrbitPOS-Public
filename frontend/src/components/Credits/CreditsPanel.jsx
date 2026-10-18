@@ -67,6 +67,14 @@ export default function CreditsPanel({ token, onActivity }) {
     () => credits.reduce((sum, credit) => sum + Number(credit.balance || 0), 0),
     [credits]
   );
+  const overdueTotal = useMemo(
+    () => credits.reduce((sum, credit) => sum + Number(credit.overdue_balance || 0), 0),
+    [credits]
+  );
+  const paymentsToday = useMemo(
+    () => credits.reduce((sum, credit) => sum + Number(credit.payments_today || 0), 0),
+    [credits]
+  );
   const visibleCredits = useMemo(
     () => credits.slice(0, visibleCreditCount),
     [credits, visibleCreditCount]
@@ -123,32 +131,19 @@ export default function CreditsPanel({ token, onActivity }) {
 
   return (
     <div className="space-y-6">
-      <Panel>
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Ventas a credito</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Gestion de creditos y abonos</h2>
-            <p className="mt-3 text-sm text-slate-600">
-              Selecciona una factura pendiente, registra pagos parciales o completos y reimprime recibos sin salir
-              de esta vista.
-            </p>
-          </div>
-          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Creditos abiertos</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{credits.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Saldo pendiente</div>
-              <div className="mt-2 text-2xl font-bold text-rosewood">{formatCurrency(totalPending)}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Abono en edicion</div>
-              <div className="mt-2 text-2xl font-bold text-emerald-700">{formatCurrency(paymentTotal)}</div>
-            </div>
-          </div>
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-ink">Créditos y cuentas por cobrar</h2>
+          <p className="mt-2 text-sm text-slate-600">Administra las ventas a crédito, los abonos y los saldos de tus clientes.</p>
         </div>
-      </Panel>
+        <Button onClick={() => setMessage(selectedCredit ? `Factura seleccionada: #${selectedCredit.invoice_number}` : 'Selecciona una factura para registrar un abono.')}>＋ Registrar abono</Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/60 p-5"><div className="text-sm text-slate-600">Saldo total por cobrar</div><div className="mt-2 text-3xl font-bold text-ink">{formatCurrency(totalPending)}</div><div className="mt-1 text-xs text-slate-500">{credits.length} facturas abiertas</div></div>
+        <div className="rounded-[24px] border border-rose-100 bg-rose-50/70 p-5"><div className="text-sm text-rose-700">Vencido</div><div className="mt-2 text-3xl font-bold text-rosewood">{formatCurrency(overdueTotal)}</div><div className="mt-1 text-xs text-rose-700">Cartera con más de 30 días</div></div>
+        <div className="rounded-[24px] border border-blue-100 bg-blue-50/60 p-5"><div className="text-sm text-slate-600">Abonos de hoy</div><div className="mt-2 text-3xl font-bold text-ink">{formatCurrency(paymentsToday)}</div><div className="mt-1 text-xs text-blue-700">Pagos registrados hoy</div></div>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(320px,0.92fr),minmax(0,1.08fr)]">
         <Panel className="overflow-hidden">

@@ -26,7 +26,9 @@ router.get('/', (request, response) => {
       c.name AS customer_name,
       c.phone AS customer_phone,
       c.credit_limit,
-      b.name AS branch_name
+      b.name AS branch_name,
+      COALESCE((SELECT SUM(p.amount) FROM payments p WHERE p.sale_id = s.id AND date(p.created_at) = date('now')), 0) AS payments_today,
+      CASE WHEN datetime(s.created_at) < datetime('now', '-30 day') THEN s.balance ELSE 0 END AS overdue_balance
     FROM sales s
     INNER JOIN customers c ON c.id = s.customer_id
     LEFT JOIN branches b ON b.id = s.branch_id
