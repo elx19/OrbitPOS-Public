@@ -24,7 +24,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.47';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.48';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -174,6 +174,7 @@ export default function AppShell({
   const [notificationSummary, setNotificationSummary] = useState({ total: 0, unread: 0 });
   const [logoVisible, setLogoVisible] = useState(true);
   const [showAdvancedModules, setShowAdvancedModules] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isPending, startTransition] = useTransition();
   const businessName = config.business_name || 'Mi Negocio';
   const businessType = config.business_type || 'colmado';
@@ -286,6 +287,7 @@ export default function AppShell({
   }
 
   function selectModule(moduleKey) {
+    setShowProfileMenu(false);
     startTransition(() => {
       setActiveModule(moduleKey);
     });
@@ -450,16 +452,12 @@ export default function AppShell({
 
           <div className="orbit-sidebar-footer">
             <div className="orbit-store-switcher">
-              <span className="orbit-store-icon">{businessLogoUrl && logoVisible ? <img src={businessLogoUrl} alt="" onError={() => setLogoVisible(false)} /> : <NavIcon name="warehouse" />}</span>
+              <span className="orbit-store-icon"><NavIcon name="warehouse" /></span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-white">{businessName}</span>
                 <span className="block truncate text-xs text-slate-400">Santo Domingo, RD · En linea</span>
               </span>
             </div>
-            <button type="button" className="orbit-logout" onClick={onLogout}>
-              <NavIcon name="help" />
-              <span>Cerrar sesion</span>
-            </button>
           </div>
         </aside>
 
@@ -482,13 +480,54 @@ export default function AppShell({
                 <NavIcon name="bell" />
                 {notificationSummary.unread > 0 ? <span className="orbit-header-badge">{notificationSummary.unread}</span> : null}
               </button>
-              <div className="orbit-user-menu">
-                <span className="orbit-user-avatar">{businessInitials}</span>
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold text-ink">{user.name}</span>
-                  <span className="block truncate text-xs text-slate-500">{user.role === 'admin' ? 'Administrador' : 'Cajero'}</span>
-                </span>
-                <span className="text-slate-400">⌄</span>
+              <div className="orbit-profile-wrap">
+                <button
+                  type="button"
+                  className="orbit-user-menu"
+                  onClick={() => setShowProfileMenu((current) => !current)}
+                  aria-expanded={showProfileMenu}
+                  aria-haspopup="menu"
+                >
+                  <span className="orbit-user-avatar">
+                    {businessLogoUrl && logoVisible ? (
+                      <img src={businessLogoUrl} alt={`Logo de ${businessName}`} onError={() => setLogoVisible(false)} />
+                    ) : businessInitials}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-bold text-ink">{user.name}</span>
+                    <span className="block truncate text-xs text-slate-500">{user.role === 'admin' ? 'Administrador' : 'Cajero'}</span>
+                  </span>
+                  <span className="orbit-profile-chevron" aria-hidden="true">⌄</span>
+                </button>
+                {showProfileMenu ? (
+                  <div className="orbit-profile-menu" role="menu" aria-label="Perfil del usuario">
+                    <div className="orbit-profile-menu-brand">
+                      <span className="orbit-profile-menu-logo">
+                        {businessLogoUrl && logoVisible ? (
+                          <img src={businessLogoUrl} alt={`Logo de ${businessName}`} onError={() => setLogoVisible(false)} />
+                        ) : <NavIcon name="warehouse" />}
+                      </span>
+                      <span className="min-w-0">
+                        <strong className="block truncate">{businessName}</strong>
+                        <small className="block truncate">{businessProfile.subtitle}</small>
+                      </span>
+                    </div>
+                    <div className="orbit-profile-menu-user">
+                      <strong className="block truncate">{user.name}</strong>
+                      <small>{user.role === 'admin' ? 'Administrador' : 'Cajero'}</small>
+                    </div>
+                    {user.role === 'admin' ? (
+                      <button type="button" role="menuitem" onClick={() => selectModule('config')}>
+                        <NavIcon name="settings" />
+                        <span>Configuración del negocio</span>
+                      </button>
+                    ) : null}
+                    <button type="button" role="menuitem" onClick={() => { setShowProfileMenu(false); onLogout(); }}>
+                      <NavIcon name="return" />
+                      <span>Cerrar sesión</span>
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           </header>

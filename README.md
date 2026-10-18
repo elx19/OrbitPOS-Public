@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.47** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.48** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.47.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.48.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.47` mantiene la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes, refuerza el aislamiento por tipo de negocio y alinea Inicio, Ventas, Configuración, Ayuda y Licencia con las referencias visuales. Esta iteración incorpora el EULA dentro del instalador NSIS, selector de logo funcional en Electron y navegador, identidad del negocio en login/sidebar y composición de Ventas en dos áreas como la referencia. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
+La línea `v2.1.0-alpha.48` mantiene la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes, refuerza el aislamiento por tipo de negocio y alinea Inicio, Ventas, Configuración, Ayuda y Licencia con las referencias visuales. Esta iteración incorpora el menú de perfil con logo del negocio y cierre de sesión, retirando ambos elementos del sidebar. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
 
 ## Generador de licencias
 

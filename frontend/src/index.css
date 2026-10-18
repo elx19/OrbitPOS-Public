@@ -682,6 +682,10 @@ select {
   height: 23px;
 }
 
+.orbit-profile-wrap {
+  position: relative;
+}
+
 .orbit-app-header {
   position: sticky;
   top: 0;
@@ -801,6 +805,12 @@ select {
   align-items: center;
   gap: 9px;
   min-width: 142px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .orbit-user-avatar {
@@ -814,6 +824,117 @@ select {
   color: #fff;
   font-size: 0.76rem;
   font-weight: 800;
+  overflow: hidden;
+}
+
+.orbit-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.orbit-profile-chevron {
+  color: #94a3b8;
+  transition: transform 140ms ease;
+}
+
+.orbit-user-menu[aria-expanded="true"] .orbit-profile-chevron {
+  transform: rotate(180deg);
+}
+
+.orbit-profile-menu {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(320px, calc(100vw - 28px));
+  padding: 12px;
+  border: 1px solid #dbe5ed;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 22px 50px -24px rgba(15, 39, 66, 0.48);
+}
+
+.orbit-profile-menu-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 12px;
+  border-bottom: 1px solid #edf2f6;
+  color: #10213d;
+}
+
+.orbit-profile-menu-brand strong,
+.orbit-profile-menu-user strong {
+  font-size: 0.86rem;
+}
+
+.orbit-profile-menu-brand small,
+.orbit-profile-menu-user small {
+  color: #718399;
+  font-size: 0.72rem;
+}
+
+.orbit-profile-menu-logo {
+  display: inline-flex;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #dce9e4;
+  border-radius: 14px;
+  background: #effaf5;
+  color: #078b55;
+}
+
+.orbit-profile-menu-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 5px;
+  background: #fff;
+}
+
+.orbit-profile-menu-logo .orbit-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.orbit-profile-menu-user {
+  padding: 11px 4px 7px;
+  color: #10213d;
+}
+
+.orbit-profile-menu > button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #294461;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.orbit-profile-menu > button:hover {
+  background: #eef9f4;
+  color: #087b4c;
+}
+
+.orbit-profile-menu > button .orbit-icon {
+  width: 25px;
+  height: 25px;
+  color: currentColor;
 }
 
 .orbit-page-heading {
