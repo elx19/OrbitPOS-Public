@@ -91,14 +91,28 @@ export default function ReportsPanel({ token }) {
       return [];
     }
 
+    const averageTicket = report.metrics.totalSales
+      ? report.metrics.grossSales / report.metrics.totalSales
+      : 0;
+    const estimatedMargin = report.metrics.grossSales - report.metrics.purchasesTotal;
+
     return [
-      ['Ventas', formatCurrency(report.metrics.grossSales)],
-      ['Descuentos', formatCurrency(report.metrics.discounts)],
-      ['Compras', formatCurrency(report.metrics.purchasesTotal)],
-      ['Devoluciones', formatCurrency(report.metrics.returnsTotal)],
-      ['Abonos', formatCurrency(report.metrics.paymentsTotal)],
-      ['Credito pendiente', formatCurrency(report.metrics.pendingCredits)]
+      { label: 'Ventas netas', value: formatCurrency(report.metrics.grossSales - report.metrics.discounts), tone: 'green', icon: '↗' },
+      { label: 'Margen estimado', value: formatCurrency(estimatedMargin), tone: 'blue', icon: '%' },
+      { label: 'Ticket promedio', value: formatCurrency(averageTicket), tone: 'violet', icon: '🛒' },
+      { label: 'Productos vendidos', value: String(report.itemsSold || 0), tone: 'amber', icon: '▣' }
     ];
+  }, [report]);
+
+  const salesByDay = useMemo(() => {
+    const points = report?.salesByDay || [];
+    const max = Math.max(...points.map((item) => Number(item.total_amount || 0)), 1);
+    return points.map((item) => ({
+      ...item,
+      amount: Number(item.total_amount || 0),
+      height: Math.max((Number(item.total_amount || 0) / max) * 100, 6),
+      label: new Intl.DateTimeFormat('es-DO', { weekday: 'short' }).format(new Date(`${item.day}T12:00:00`)).replace('.', '')
+    }));
   }, [report]);
 
   function exportCsv() {
@@ -156,21 +170,20 @@ export default function ReportsPanel({ token }) {
       <Panel>
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Analitica y reportes</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Centro de reportes</h2>
+            <h2 className="text-4xl font-bold text-ink">Reportes</h2>
             <div className="mt-3 text-sm text-slate-600">
-              Consulta ventas, compras, devoluciones, abonos y desempeno comercial con una lectura mas clara.
+              Analiza el desempeño de tu supermercado, carnicería y deli.
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button variant="secondary" onClick={() => loadReport(filters, { forceFresh: true })}>
-              Actualizar
+            <Button onClick={exportCsv} disabled={!report}>
+              ↓ Exportar
             </Button>
             <Button variant="secondary" onClick={exportPdf} disabled={!report || exportingPdf}>
-              {exportingPdf ? 'Exportando PDF...' : 'Exportar PDF'}
+              {exportingPdf ? 'Exportando PDF...' : 'PDF'}
             </Button>
-            <Button onClick={exportCsv} disabled={!report}>
-              Exportar CSV
+            <Button variant="secondary" onClick={() => loadReport(filters, { forceFresh: true })}>
+              Actualizar
             </Button>
           </div>
         </div>
@@ -192,7 +205,7 @@ export default function ReportsPanel({ token }) {
               <Input type="date" value={filters.dateTo} onChange={(event) => setFilters((current) => ({ ...current, dateTo: event.target.value }))} />
             </Field>
           </div>
-          <div className="rounded-[24px] bg-white/80 p-4 text-sm text-slate-600">
+          <div className="rounded-[24px] border border-slate-200 bg-white/80 p-4 text-sm text-slate-600">
             <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Rango activo</div>
             <div className="mt-2 font-semibold text-ink">
               {report?.range?.label || (filters.dateFrom || filters.dateTo ? `${formatDate(filters.dateFrom)} - ${formatDate(filters.dateTo)}` : 'Define un periodo')}
@@ -211,23 +224,45 @@ export default function ReportsPanel({ token }) {
       ) : null}
 
       <Panel>
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Indicadores clave</div>
-            <div className="mt-2 text-2xl font-bold text-ink">Resumen del periodo</div>
-          </div>
-          <div className="text-sm text-slate-500">{loading ? 'Cargando...' : `${metricCards.length} metricas`}</div>
-        </div>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {metricCards.map(([label, value]) => (
-            <div key={label} className="rounded-[24px] bg-white/80 p-5">
-              <div className="text-xs uppercase tracking-[0.22em] text-slate-500">{label}</div>
-              <div className="mt-3 text-3xl font-bold text-ink">{loading ? '...' : value}</div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {metricCards.map((card) => (
+            <div key={card.label} className="rounded-[24px] border border-slate-200 bg-white/80 p-5">
+              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-bold ${
+                card.tone === 'green' ? 'bg-emerald-100 text-emerald-700' :
+                card.tone === 'blue' ? 'bg-blue-100 text-blue-700' :
+                card.tone === 'violet' ? 'bg-violet-100 text-violet-700' :
+                'bg-amber-100 text-amber-700'
+              }`}>{card.icon}</div>
+              <div className="mt-4 text-sm font-medium text-slate-600">{card.label}</div>
+              <div className="mt-2 text-2xl font-bold text-ink">{loading ? '...' : card.value}</div>
+              <div className="mt-2 text-xs text-emerald-600">{loading ? 'Actualizando...' : 'Periodo seleccionado'}</div>
             </div>
           ))}
         </div>
       </Panel>
+
+      {report ? (
+        <Panel className="overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-2xl font-bold text-ink">Ventas netas</div>
+              <div className="mt-1 text-sm text-slate-500">Comportamiento diario del periodo seleccionado</div>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">Por día⌄</div>
+          </div>
+          <div className="mt-7 flex h-64 items-end gap-2 border-b border-slate-200 px-2 pb-8 sm:gap-4">
+            {salesByDay.length ? salesByDay.map((point) => (
+              <div key={point.day} className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
+                <div className="text-[10px] font-semibold text-slate-600 opacity-0 transition group-hover:opacity-100">{formatCurrency(point.amount)}</div>
+                <div className="w-full max-w-16 rounded-t-lg bg-emerald-500 transition group-hover:bg-emerald-600" style={{ height: `${point.height}%` }} title={formatCurrency(point.amount)} />
+                <div className="text-xs capitalize text-slate-500">{point.label}</div>
+              </div>
+            )) : (
+              <div className="w-full pb-8 text-center text-sm text-slate-500">No hay ventas en el periodo seleccionado.</div>
+            )}
+          </div>
+        </Panel>
+      ) : null}
 
       {report ? (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.04fr),minmax(340px,0.96fr)]">

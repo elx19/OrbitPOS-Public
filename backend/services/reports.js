@@ -127,6 +127,23 @@ function getReportStatements() {
       ORDER BY quantity DESC, revenue DESC
       LIMIT 8
     `),
+    salesByDay: db.prepare(`
+      SELECT
+        substr(s.created_at, 1, 10) AS day,
+        COALESCE(SUM(s.total), 0) AS total_amount
+      FROM sales s
+      WHERE s.status != 'cancelled'
+        AND s.created_at BETWEEN ? AND ?
+      GROUP BY substr(s.created_at, 1, 10)
+      ORDER BY day ASC
+    `),
+    itemsSold: db.prepare(`
+      SELECT COALESCE(SUM(si.quantity), 0) AS items_sold
+      FROM sale_items si
+      INNER JOIN sales s ON s.id = si.sale_id
+      WHERE s.status != 'cancelled'
+        AND s.created_at BETWEEN ? AND ?
+    `),
     salesByUser: db.prepare(`
       SELECT
         u.username,
@@ -207,6 +224,8 @@ function buildReportData(query = {}) {
         convertedQuotes: Number(quotes.converted_quotes || 0)
       },
       topProducts: statements.topProducts.all(range.sqlStart, range.sqlEnd),
+      salesByDay: statements.salesByDay.all(range.sqlStart, range.sqlEnd),
+      itemsSold: Number(statements.itemsSold.get(range.sqlStart, range.sqlEnd).items_sold || 0),
       salesByUser: statements.salesByUser.all(range.sqlStart, range.sqlEnd),
       recentSales: statements.recentSales.all(range.sqlStart, range.sqlEnd),
       lowStock: statements.lowStock.all()

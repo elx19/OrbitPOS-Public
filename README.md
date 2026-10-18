@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.32** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.33** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.32.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.33.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.32` mantiene la protección del asistente, la adaptación responsive y el aislamiento por tipo de negocio, y alinea el módulo de caja con la referencia: identidad estable “Caja”, estado visible y flujo operativo de apertura, cierre, arqueo e historial. La shell visual prioriza una navegación compacta por rol, calcula métricas de DPI/tamaño desde Electron y conserva la referencia visual navy/white/emerald en los módulos. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
+La línea `v2.1.0-alpha.33` mantiene la protección del asistente, la adaptación responsive y el aislamiento por tipo de negocio, y alinea el módulo de reportes con la referencia: indicadores principales, gráfica diaria y exportaciones conservadas. La shell visual prioriza una navegación compacta por rol, calcula métricas de DPI/tamaño desde Electron y conserva la referencia visual navy/white/emerald en los módulos. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
 
 ## Generador de licencias
 
