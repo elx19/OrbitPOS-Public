@@ -68,40 +68,48 @@ export default function SuppliersPanel({ token, onActivity }) {
     }
   }
 
+  function startNewSupplier() {
+    setForm(emptyForm);
+    setMessage('');
+  }
+
   return (
     <div className="space-y-6">
       <Panel>
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Abastecimiento</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Proveedores y contactos de compra</h2>
+            <h2 className="text-4xl font-bold text-ink">Proveedores</h2>
             <p className="mt-3 text-sm text-slate-600">
-              Mantiene organizado el directorio de suplidores para compras, soporte y seguimiento comercial.
+              Gestiona tus suplidores de productos, carnes, embutidos, lácteos y más.
             </p>
           </div>
-          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Proveedores</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{suppliers.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Activos</div>
-              <div className="mt-2 text-2xl font-bold text-emerald-700">{activeSuppliers}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Seleccionado</div>
-              <div className="mt-2 truncate text-lg font-bold text-ink">{selectedSupplier?.name || 'Ninguno'}</div>
-            </div>
-          </div>
+          <Button onClick={startNewSupplier}>＋ Nuevo proveedor</Button>
         </div>
       </Panel>
+
+      <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-[24px] border border-slate-200 bg-white/80 px-5 py-4">
+              <div className="text-sm font-medium text-slate-600">Proveedores activos</div>
+              <div className="mt-2 text-3xl font-bold text-ink">{activeSuppliers}</div>
+              <div className="mt-1 text-xs text-emerald-600">disponibles para comprar</div>
+            </div>
+            <div className="rounded-[24px] border border-slate-200 bg-white/80 px-5 py-4">
+              <div className="text-sm font-medium text-slate-600">Total de proveedores</div>
+              <div className="mt-2 text-3xl font-bold text-ink">{suppliers.length}</div>
+              <div className="mt-1 text-xs text-slate-500">en el directorio</div>
+            </div>
+            <div className="rounded-[24px] border border-slate-200 bg-white/80 px-5 py-4">
+              <div className="text-sm font-medium text-slate-600">Proveedor seleccionado</div>
+              <div className="mt-2 truncate text-xl font-bold text-ink">{selectedSupplier?.name || 'Ninguno'}</div>
+              <div className="mt-1 text-xs text-slate-500">elige una fila para editar</div>
+            </div>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(320px,0.96fr),minmax(0,1.04fr)]">
         <Panel className="overflow-hidden">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Directorio</div>
-              <h3 className="mt-2 text-2xl font-bold text-ink">Listado de proveedores</h3>
+              <h3 className="text-2xl font-bold text-ink">Listado de proveedores</h3>
             </div>
             <Input
               value={query}
@@ -111,26 +119,33 @@ export default function SuppliersPanel({ token, onActivity }) {
                   loadSuppliers(event.currentTarget.value);
                 }
               }}
-              placeholder="Buscar proveedor"
+              placeholder="Buscar proveedores por nombre, contacto o teléfono..."
             />
           </div>
 
-          <div className="soft-scrollbar mt-6 max-h-[calc(100vh-21rem)] space-y-3 overflow-auto pr-1">
+          <div className="mt-6 hidden grid-cols-[minmax(0,1.4fr),minmax(0,1fr),110px] gap-4 border-b border-slate-200 px-4 pb-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 md:grid">
+            <span>Empresa</span><span>Contacto</span><span>Estado</span>
+          </div>
+          <div className="soft-scrollbar mt-2 max-h-[calc(100vh-23rem)] space-y-2 overflow-auto pr-1">
             {suppliers.length ? suppliers.map((supplier) => (
               <button
                 key={supplier.id}
                 type="button"
                 onClick={() => setForm({ ...supplier, active: Boolean(supplier.active) })}
-                className={`w-full rounded-[24px] p-4 text-left transition ${
+                className={`w-full rounded-2xl border p-4 text-left transition ${
                   selectedSupplier?.id === supplier.id ? 'bg-ink text-white shadow-soft' : 'bg-white/78 hover:bg-white'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="grid items-center gap-3 md:grid-cols-[minmax(0,1.4fr),minmax(0,1fr),110px]">
                   <div className="min-w-0">
                     <div className="truncate font-semibold">{supplier.name}</div>
                     <div className={`mt-1 text-xs ${selectedSupplier?.id === supplier.id ? 'text-white/75' : 'text-slate-500'}`}>
-                      {supplier.contact || 'Sin contacto'} | {supplier.phone || 'Sin telefono'}
+                      Proveedor de productos
                     </div>
+                  </div>
+                  <div className={`text-sm ${selectedSupplier?.id === supplier.id ? 'text-white/85' : 'text-slate-700'}`}>
+                    <div>{supplier.contact || 'Sin contacto'}</div>
+                    <div className="mt-1 text-xs opacity-75">{supplier.phone || 'Sin teléfono'}</div>
                   </div>
                   <div className={`text-xs font-semibold uppercase ${selectedSupplier?.id === supplier.id ? 'text-white/75' : supplier.active ? 'text-emerald-700' : 'text-slate-400'}`}>
                     {supplier.active ? 'Activo' : 'Inactivo'}
