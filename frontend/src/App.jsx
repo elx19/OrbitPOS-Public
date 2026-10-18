@@ -24,7 +24,7 @@ function updateViewportMetrics() {
   const height = Math.round(viewportHeight);
   const devicePixelRatio = window.devicePixelRatio || 1;
   const widthScale = width < 420 ? 0.9 : width < 720 ? 0.95 : width >= 2200 ? 1.04 : 1;
-  const heightScale = height < 650 ? 0.86 : height < 760 ? 0.94 : 1;
+  const heightScale = height < 650 ? 0.82 : height < 820 ? 0.9 : height < 960 ? 0.95 : 1;
   const autoScale = Math.max(0.82, Math.min(1.04, widthScale * heightScale));
   const viewportClass = width < 640 ? 'phone' : width < 1024 ? 'tablet' : width < 1440 ? 'desktop' : 'wide';
 

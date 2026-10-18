@@ -456,7 +456,7 @@ select {
 }
 
 .orbit-shell .app-frame {
-  grid-template-columns: 232px minmax(0, 1fr) !important;
+  grid-template-columns: clamp(216px, 13vw, 250px) minmax(0, 1fr) !important;
   gap: 0 !important;
   max-width: none !important;
   width: 100% !important;
@@ -1031,6 +1031,38 @@ select {
 
   .orbit-page-status {
     justify-content: flex-start;
+  }
+}
+
+/* Electron keeps the application frame inside the physical work area. Long
+   tables can still scroll inside their module, but the page itself must never
+   grow beyond the window and force the user to chase the header/sidebar. */
+@media (min-width: 641px) {
+  .orbit-shell {
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .orbit-shell .app-frame {
+    height: 100vh;
+    min-height: 0 !important;
+  }
+
+  .orbit-shell .orbit-sidebar {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .orbit-shell main {
+    height: 100%;
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+
+  .orbit-shell .orbit-content {
+    min-height: 0;
+    overflow: auto;
   }
 }
 
