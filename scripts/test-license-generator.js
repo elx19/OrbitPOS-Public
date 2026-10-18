@@ -9,7 +9,8 @@ process.env.ORBITPOS_LICENSE_SECRET = 'orbitpos-alpha-test-secret-change-me-32';
 const {
   createLicenseKey,
   decodeLicenseKey,
-  verifyLicensePayload
+  verifyLicensePayload,
+  getPublicKeyFingerprint
 } = require('../shared/license-core');
 
 const { privateKey: modernPrivateKey, publicKey: modernPublicKey } = crypto.generateKeyPairSync('ed25519');
@@ -37,7 +38,7 @@ const modernKey = createLicenseKey({
   businessName: 'Tienda ORB3',
   licenseType: 'annual',
   edition: 'professional',
-  versionMinCompatible: '2.1.0-alpha.49',
+  versionMinCompatible: '2.1.0-alpha.50',
   serial: 'JR-ORB3-001',
   signingKey: modernPrivateKey
 });
@@ -100,8 +101,28 @@ const keyFile = path.join(__dirname, '..', '.qa', 'license-generator-test.key');
 const secretFile = path.join(__dirname, '..', '.qa', 'license-generator-test.secret');
 const privateKeyFile = path.join(__dirname, '..', '.qa', 'license-generator-test-private.pem');
 const publicKeyFile = path.join(__dirname, '..', '.qa', 'license-generator-test-public.pem');
+const keygenPrivateFile = path.join(__dirname, '..', '.qa', 'license-generator-keygen-private.pem');
+const keygenPublicFile = path.join(__dirname, '..', '.qa', 'license-generator-keygen-public.pem');
+const mismatchPublicKeyFile = path.join(__dirname, '..', '.qa', 'license-generator-mismatch-public.pem');
+
+const generatedKeyPair = spawnSync(process.execPath, [generatorPath, 'keygen', '--private-out', keygenPrivateFile, '--public-out', keygenPublicFile, '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(generatedKeyPair.status, 0, generatedKeyPair.stderr);
+const generatedKeyPairResult = JSON.parse(generatedKeyPair.stdout);
+assert.equal(generatedKeyPairResult.publicKeyFingerprint.startsWith('sha256:'), true);
+const generatedFingerprint = spawnSync(process.execPath, [generatorPath, 'fingerprint', '--public-key-file', keygenPublicFile, '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(generatedFingerprint.status, 0, generatedFingerprint.stderr);
+assert.equal(JSON.parse(generatedFingerprint.stdout).fingerprint, generatedKeyPairResult.publicKeyFingerprint);
+
 fs.writeFileSync(privateKeyFile, modernPrivateKey.export({ type: 'pkcs8', format: 'pem' }), { encoding: 'utf8', mode: 0o600 });
 fs.writeFileSync(publicKeyFile, modernPublicPem, { encoding: 'utf8', mode: 0o644 });
+const { publicKey: mismatchPublicKey } = crypto.generateKeyPairSync('ed25519');
+fs.writeFileSync(mismatchPublicKeyFile, mismatchPublicKey.export({ type: 'spki', format: 'pem' }), { encoding: 'utf8', mode: 0o644 });
 const generated = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-cli-001', '--business', 'Tienda CLI', '--type', 'monthly', '--out', keyFile, '--json'], {
   env: process.env,
   encoding: 'utf8'
@@ -124,13 +145,14 @@ const verifiedText = spawnSync(process.execPath, [generatorPath, 'verify', '--ke
 assert.equal(verifiedText.status, 2, `verify en texto debe fallar con codigo 2: ${verifiedText.stderr}`);
 fs.unlinkSync(keyFile);
 
-const generatedModern = spawnSync(process.execPath, [generatorPath, 'generate', '--private-key-file', privateKeyFile, '--machine-id', 'machine-cli-orb3', '--business', 'Tienda CLI ORB3', '--type', 'annual', '--out', keyFile, '--json'], {
+const generatedModern = spawnSync(process.execPath, [generatorPath, 'generate', '--private-key-file', privateKeyFile, '--public-key-file', publicKeyFile, '--machine-id', 'machine-cli-orb3', '--business', 'Tienda CLI ORB3', '--type', 'annual', '--out', keyFile, '--json'], {
   env: { ...process.env, ORBITPOS_LICENSE_SECRET: '', ORBITPOS_LICENSE_PUBLIC_KEY: modernPublicPem },
   encoding: 'utf8'
 });
 assert.equal(generatedModern.status, 0, generatedModern.stderr);
 const generatedModernResult = JSON.parse(generatedModern.stdout);
 assert.match(generatedModernResult.key, /^ORB3\./);
+assert.equal(generatedModernResult.publicKeyFingerprint, getPublicKeyFingerprint(modernPublicKey));
 const verifiedModern = spawnSync(process.execPath, [generatorPath, 'verify', '--key-file', keyFile, '--machine-id', 'machine-cli-orb3', '--json'], {
   env: { ORBITPOS_LICENSE_SECRET: '', ORBITPOS_LICENSE_PUBLIC_KEY: modernPublicPem },
   encoding: 'utf8'
@@ -138,6 +160,13 @@ const verifiedModern = spawnSync(process.execPath, [generatorPath, 'verify', '--
 assert.equal(verifiedModern.status, 0, verifiedModern.stderr);
 assert.equal(JSON.parse(verifiedModern.stdout).valid, true);
 fs.unlinkSync(keyFile);
+
+const mismatchedModern = spawnSync(process.execPath, [generatorPath, 'generate', '--private-key-file', privateKeyFile, '--public-key-file', mismatchPublicKeyFile, '--machine-id', 'machine-cli-orb3', '--business', 'Tienda CLI ORB3', '--type', 'annual', '--json'], {
+  env: { ...process.env, ORBITPOS_LICENSE_SECRET: '' },
+  encoding: 'utf8'
+});
+assert.equal(mismatchedModern.status, 1);
+assert.match(JSON.parse(mismatchedModern.stdout).error, /no corresponde/i);
 
 const malformedVerification = spawnSync(process.execPath, [generatorPath, 'verify', '--key', 'ORB2.invalid-key', '--json'], {
   env: process.env,
@@ -196,5 +225,8 @@ assert.equal(forcedProtectedOutput.status, 0, forcedProtectedOutput.stderr);
 fs.unlinkSync(protectedOutputPath);
 fs.unlinkSync(privateKeyFile);
 fs.unlinkSync(publicKeyFile);
+fs.unlinkSync(keygenPrivateFile);
+fs.unlinkSync(keygenPublicFile);
+fs.unlinkSync(mismatchPublicKeyFile);
 
 console.log('License generator QA: OK');

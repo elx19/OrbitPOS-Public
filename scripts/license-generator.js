@@ -8,7 +8,9 @@ const {
   assertLicenseType,
   createLicenseKey,
   decodeLicenseKey,
-  verifyLicensePayload
+  verifyLicensePayload,
+  getPublicKeyFingerprint,
+  getPrivateKeyPublicKeyFingerprint
 } = require('../shared/license-core');
 const { getMachineId } = require('../shared/machine-id');
 
@@ -19,6 +21,7 @@ Comandos:
   generate  --machine-id ID --business "Nombre" --type monthly [opciones]
   decode    --key ORB2....
   verify    --key ORB2.... [--key-file ruta.txt]
+  fingerprint --public-key-file ruta.pem
   machine-id              Muestra el identificador de esta maquina
 
 Opciones de generate:
@@ -29,6 +32,7 @@ Opciones de generate:
   --serial JR-...         Serial manual opcional
   --out ruta.txt           Guarda la clave sin imprimir secretos adicionales
   --private-key-file ruta  Firma una licencia ORB3 con una clave Ed25519 externa
+  --public-key-file ruta   Verifica que la publica corresponde a --private-key-file
   --force                  Permite reemplazar --out si ya existe
   --json                   Devuelve respuesta JSON
 
@@ -44,6 +48,7 @@ Opciones de verify:
 Opciones generales:
   --secret-file ruta.txt   Lee la clave privada desde un archivo fuera del repositorio
   --key-file ruta.txt      Lee la licencia desde un archivo en decode o verify
+  fingerprint devuelve SHA-256 de la clave publica en formato sha256:...
 
 Tipos admitidos: ${Object.keys(LICENSE_DAYS_BY_TYPE).join(', ')}
 ORB2 requiere ORBITPOS_LICENSE_SECRET. ORB3 usa Ed25519: el generador conserva la
@@ -171,6 +176,24 @@ function readPrivateSigningKey(options) {
   }
 }
 
+function readPublicSigningKey(options) {
+  const publicKeyPath = path.resolve(String(options['public-key-file'] || ''));
+  if (!options['public-key-file']) {
+    throw new Error('Falta la opcion --public-key-file.');
+  }
+  if (!fs.existsSync(publicKeyPath) || !fs.statSync(publicKeyPath).isFile()) {
+    throw new Error(`No existe la clave publica: ${publicKeyPath}`);
+  }
+  if (fs.statSync(publicKeyPath).size > 16 * 1024) {
+    throw new Error('El archivo de clave publica excede el tamano maximo permitido de 16 KB.');
+  }
+  try {
+    return crypto.createPublicKey(fs.readFileSync(publicKeyPath, 'utf8'));
+  } catch (error) {
+    throw new Error(`La clave publica no es valida: ${error.message}`);
+  }
+}
+
 function generateKeyPair(options) {
   const privateOut = requiredOption(options, 'private-out');
   const publicOut = requiredOption(options, 'public-out');
@@ -179,7 +202,14 @@ function generateKeyPair(options) {
   const publicPem = publicKey.export({ type: 'spki', format: 'pem' });
   const privatePath = writeTextFile(privateOut, privatePem, { force: Boolean(options.force), mode: 0o600 });
   const publicPath = writeTextFile(publicOut, publicPem, { force: Boolean(options.force), mode: 0o644 });
-  const result = { ok: true, command: 'keygen', privatePath, publicPath, algorithm: 'ed25519' };
+  const result = {
+    ok: true,
+    command: 'keygen',
+    privatePath,
+    publicPath,
+    algorithm: 'ed25519',
+    publicKeyFingerprint: getPublicKeyFingerprint(publicKey)
+  };
   return options.json ? result : `Clave privada: ${privatePath}\nClave publica: ${publicPath}`;
 }
 
@@ -221,11 +251,31 @@ function run(command, options) {
     return generateKeyPair(options);
   }
 
+  if (command === 'fingerprint') {
+    const publicKey = readPublicSigningKey(options);
+    const fingerprint = getPublicKeyFingerprint(publicKey);
+    const result = { ok: true, command, algorithm: 'ed25519', fingerprint };
+    return options.json ? result : fingerprint;
+  }
+
   if (command === 'generate') {
     const machineId = requiredOption(options, 'machine-id');
     const businessName = requiredOption(options, 'business');
     const licenseType = assertLicenseType(requiredOption(options, 'type'));
     const signingKey = options['private-key-file'] ? readPrivateSigningKey(options) : null;
+    let publicKeyFingerprint = null;
+    if (signingKey) {
+      publicKeyFingerprint = getPrivateKeyPublicKeyFingerprint(signingKey);
+      if (options['public-key-file']) {
+        const publicKey = readPublicSigningKey(options);
+        const expectedFingerprint = getPublicKeyFingerprint(publicKey);
+        if (expectedFingerprint !== publicKeyFingerprint) {
+          throw new Error('La clave publica no corresponde a la clave privada indicada.');
+        }
+      }
+    } else if (options['public-key-file']) {
+      throw new Error('Usa --public-key-file junto con --private-key-file para validar un par ORB3.');
+    }
     if (signingKey && options['secret-file']) {
       throw new Error('Usa --private-key-file o --secret-file, no ambos.');
     }
@@ -249,7 +299,8 @@ function run(command, options) {
       command,
       key,
       payload: safePayload(payload),
-      outputPath
+      outputPath,
+      publicKeyFingerprint
     };
     return options.json ? result : [key, outputPath ? `Guardada en: ${outputPath}` : ''].filter(Boolean).join('\n');
   }

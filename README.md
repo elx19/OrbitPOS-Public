@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.49** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.50** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.49.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.50.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.49` mantiene la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes, refuerza el aislamiento por tipo de negocio y alinea Inicio, Ventas, Configuración, Ayuda y Licencia con las referencias visuales. Esta iteración actualiza las métricas de pantalla en tiempo real al cambiar tamaño o monitor en Electron, además del menú de perfil con logo del negocio y cierre de sesión. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
+La línea `v2.1.0-alpha.50` mantiene la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes, refuerza el aislamiento por tipo de negocio y alinea Inicio, Ventas, Configuración, Ayuda y Licencia con las referencias visuales. Esta iteración mantiene las métricas de pantalla en tiempo real y evita que una ventana restaurada se salga del monitor; además endurece la emisión ORB3 mediante huellas y validación del par de claves. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
 
 ## Generador de licencias
 
@@ -93,6 +93,14 @@ node scripts/license-generator.js verify --secret-file C:\\secure\\orbitpos-lice
 ```
 
 Por seguridad, `--out` no reemplaza una licencia existente salvo que se indique `--force`; el archivo se escribe primero en una ruta temporal y luego se mueve de forma atómica.
+
+Para ORB3, identifica la clave pública que debe instalarse en el POS y valida el par antes de emitir:
+
+```bash
+node scripts/license-generator.js keygen --private-out C:\\secure\\orbitpos-private.pem --public-out C:\\secure\\orbitpos-public.pem --json
+node scripts/license-generator.js fingerprint --public-key-file C:\\secure\\orbitpos-public.pem --json
+node scripts/license-generator.js generate --private-key-file C:\\secure\\orbitpos-private.pem --public-key-file C:\\secure\\orbitpos-public.pem --machine-id ID --business "Tienda San Jose" --type annual --json
+```
 
 La prueba aislada del generador se ejecuta con `npm run qa:license`. `npm run qa:packaged` arranca el ejecutable desempaquetado en un puerto temporal, comprueba `/api/health` y `/api/meta`, y limpia su base de datos de prueba. `npm run qa:production` agrupa la QA de licencia, comercial, runtime empaquetado y release. Las pruebas físicas de dispositivos siguen siendo gates obligatorios antes de producción.
 

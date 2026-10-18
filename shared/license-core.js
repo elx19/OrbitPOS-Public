@@ -54,6 +54,21 @@ function getLicensePublicKey() {
   }
 }
 
+function getPublicKeyFingerprint(publicKeyInput) {
+  const publicKey = publicKeyInput?.type === 'public'
+    ? publicKeyInput
+    : crypto.createPublicKey(publicKeyInput);
+  const der = publicKey.export({ type: 'spki', format: 'der' });
+  return `sha256:${crypto.createHash('sha256').update(der).digest('hex')}`;
+}
+
+function getPrivateKeyPublicKeyFingerprint(privateKeyInput) {
+  const privateKey = privateKeyInput?.type === 'private'
+    ? privateKeyInput
+    : crypto.createPrivateKey(privateKeyInput);
+  return getPublicKeyFingerprint(crypto.createPublicKey(privateKey));
+}
+
 function isLicenseKey(licenseKey) {
   const normalized = String(licenseKey || '').trim();
   return LICENSE_PREFIXES.some((prefix) => normalized.startsWith(`${prefix}.`));
@@ -365,6 +380,8 @@ module.exports = {
   createLicenseKey,
   decodeLicenseKey,
   getLicensePublicKey,
+  getPublicKeyFingerprint,
+  getPrivateKeyPublicKeyFingerprint,
   isLicenseKey,
   verifyLicensePayload,
   compareVersions,

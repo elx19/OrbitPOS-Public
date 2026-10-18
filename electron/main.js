@@ -350,6 +350,30 @@ function getMainDisplayMetrics() {
   };
 }
 
+function fitMainWindowToDisplay() {
+  if (!mainWindow || mainWindow.isDestroyed() || mainWindow.isMaximized() || mainWindow.isFullScreen()) {
+    return;
+  }
+
+  const display = screen.getDisplayMatching(mainWindow.getBounds());
+  const workArea = display.workArea || display.bounds;
+  const currentBounds = mainWindow.getBounds();
+  const width = Math.min(currentBounds.width, Math.max(320, workArea.width));
+  const height = Math.min(currentBounds.height, Math.max(360, workArea.height));
+  const x = Math.min(
+    Math.max(currentBounds.x, workArea.x),
+    workArea.x + Math.max(0, workArea.width - width)
+  );
+  const y = Math.min(
+    Math.max(currentBounds.y, workArea.y),
+    workArea.y + Math.max(0, workArea.height - height)
+  );
+
+  if (x !== currentBounds.x || y !== currentBounds.y || width !== currentBounds.width || height !== currentBounds.height) {
+    mainWindow.setBounds({ x, y, width, height }, false);
+  }
+}
+
 function broadcastDisplayMetrics() {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('display:metrics-changed', getMainDisplayMetrics());
@@ -359,14 +383,21 @@ function broadcastDisplayMetrics() {
 function createMainWindow() {
   appendStartupLog('Creando ventana principal.');
   const primaryDisplay = screen.getPrimaryDisplay();
-  const workArea = primaryDisplay.workAreaSize || { width: 1480, height: 920 };
-  const initialWidth = Math.min(1480, Math.max(900, workArea.width));
-  const initialHeight = Math.min(920, Math.max(620, workArea.height));
+  const workArea = primaryDisplay.workArea || {
+    x: 0,
+    y: 0,
+    width: primaryDisplay.workAreaSize?.width || 1480,
+    height: primaryDisplay.workAreaSize?.height || 920
+  };
+  const initialWidth = Math.min(1480, Math.max(320, workArea.width));
+  const initialHeight = Math.min(920, Math.max(360, workArea.height));
   mainWindow = new BrowserWindow({
+    x: workArea.x,
+    y: workArea.y,
     width: initialWidth,
     height: initialHeight,
-    minWidth: Math.min(980, workArea.width),
-    minHeight: Math.min(620, workArea.height),
+    minWidth: Math.min(980, Math.max(320, workArea.width)),
+    minHeight: Math.min(620, Math.max(360, workArea.height)),
     show: false,
     autoHideMenuBar: true,
     backgroundColor: '#f7efe1',
@@ -399,7 +430,10 @@ function createMainWindow() {
     appendStartupLog('Ventana principal cerrada.');
   });
 
-  const notifyDisplayMetrics = () => {
+  const notifyDisplayMetrics = ({ fit = false } = {}) => {
+    if (fit) {
+      fitMainWindowToDisplay();
+    }
     clearTimeout(mainWindow.__orbitDisplayMetricsTimer);
     mainWindow.__orbitDisplayMetricsTimer = setTimeout(() => {
       broadcastDisplayMetrics();
@@ -409,9 +443,9 @@ function createMainWindow() {
   mainWindow.on('move', notifyDisplayMetrics);
   mainWindow.on('maximize', notifyDisplayMetrics);
   mainWindow.on('unmaximize', notifyDisplayMetrics);
-  screen.on('display-metrics-changed', notifyDisplayMetrics);
-  screen.on('display-added', notifyDisplayMetrics);
-  screen.on('display-removed', notifyDisplayMetrics);
+  screen.on('display-metrics-changed', () => notifyDisplayMetrics({ fit: true }));
+  screen.on('display-added', () => notifyDisplayMetrics({ fit: true }));
+  screen.on('display-removed', () => notifyDisplayMetrics({ fit: true }));
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize();
