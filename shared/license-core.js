@@ -3,6 +3,8 @@ const packageJson = require('../package.json');
 
 const LICENSE_PREFIX = 'ORB2';
 const LICENSE_SCHEMA_VERSION = 2;
+const MIN_LICENSE_SECRET_LENGTH = 32;
+const MAX_LICENSE_KEY_LENGTH = 32 * 1024;
 const LICENSE_DAYS_BY_TYPE = {
   demo: 30,
   monthly: 30,
@@ -16,6 +18,10 @@ function getLicenseSecret() {
 
   if (!secret) {
     throw new Error('ORBITPOS_LICENSE_SECRET no esta configurado. La activacion comercial y la validacion de licencias firmadas requieren una clave privada fuera del repositorio publico.');
+  }
+
+  if (secret.length < MIN_LICENSE_SECRET_LENGTH) {
+    throw new Error(`ORBITPOS_LICENSE_SECRET debe tener al menos ${MIN_LICENSE_SECRET_LENGTH} caracteres.`);
   }
 
   return secret;
@@ -153,11 +159,12 @@ function createLicenseKey({
 
 function decodeLicenseKey(licenseKey) {
   try {
-    if (!licenseKey || typeof licenseKey !== 'string' || !licenseKey.startsWith(`${LICENSE_PREFIX}.`)) {
+    const normalizedLicenseKey = typeof licenseKey === 'string' ? licenseKey.trim() : '';
+    if (!normalizedLicenseKey || normalizedLicenseKey.length > MAX_LICENSE_KEY_LENGTH || !normalizedLicenseKey.startsWith(`${LICENSE_PREFIX}.`)) {
       throw new Error('La licencia no tiene un formato valido.');
     }
 
-    const parts = licenseKey.split('.');
+    const parts = normalizedLicenseKey.split('.');
     if (parts.length !== 2 || !parts[1]) {
       throw new Error('La licencia no tiene un formato valido.');
     }
@@ -198,9 +205,14 @@ function decodeLicenseKey(licenseKey) {
       throw new Error('La fecha de expiracion no puede ser anterior a la emision.');
     }
 
+    const schema = Number(payload.schema || 1);
+    if (schema !== LICENSE_SCHEMA_VERSION) {
+      throw new Error(`Esquema de licencia no soportado: ${schema}.`);
+    }
+
     return {
       ...payload,
-      schema: Number(payload.schema || 1),
+      schema,
       machineId: requireText(payload.machineId, 'machineId'),
       businessName: requireText(payload.businessName, 'businessName'),
       licenseType: normalizedLicenseType,
@@ -265,6 +277,8 @@ module.exports = {
   LICENSE_DAYS_BY_TYPE,
   LICENSE_SCHEMA_VERSION,
   LICENSE_PREFIX,
+  MIN_LICENSE_SECRET_LENGTH,
+  MAX_LICENSE_KEY_LENGTH,
   buildLicenseSerial,
   calculateExpiration,
   createLicenseKey,

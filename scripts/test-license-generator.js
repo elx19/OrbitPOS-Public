@@ -111,7 +111,7 @@ const machineIdResult = spawnSync(process.execPath, [generatorPath, 'machine-id'
 assert.equal(machineIdResult.status, 0, machineIdResult.stderr);
 assert.ok(JSON.parse(machineIdResult.stdout).machineId);
 
-fs.writeFileSync(secretFile, 'orbitpos-secret-file-test\n', 'utf8');
+fs.writeFileSync(secretFile, 'orbitpos-secret-file-test-change-me-32\n', 'utf8');
 const generatedWithSecretFile = spawnSync(process.execPath, [generatorPath, 'generate', '--secret-file', secretFile, '--machine-id', 'machine-secret-file', '--business', 'Tienda Secret File', '--type', 'monthly', '--json'], {
   env: { ...process.env, ORBITPOS_LICENSE_SECRET: '' },
   encoding: 'utf8'
@@ -126,6 +126,14 @@ const verifiedWithSecretFile = spawnSync(process.execPath, [generatorPath, 'veri
 assert.equal(verifiedWithSecretFile.status, 0, verifiedWithSecretFile.stderr);
 assert.equal(JSON.parse(verifiedWithSecretFile.stdout).valid, true);
 fs.unlinkSync(secretFile);
+
+const weakSecret = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-weak-secret', '--business', 'Tienda Debil', '--type', 'monthly', '--json'], {
+  env: { ...process.env, ORBITPOS_LICENSE_SECRET: 'too-short' },
+  encoding: 'utf8'
+});
+assert.equal(weakSecret.status, 1);
+assert.equal(JSON.parse(weakSecret.stdout).ok, false);
+assert.match(JSON.parse(weakSecret.stdout).error, /32 caracteres/i);
 
 const protectedOutputPath = path.join(__dirname, '..', '.qa', 'license-generator-protected.key');
 const firstProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--json'], {

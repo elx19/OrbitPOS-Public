@@ -89,6 +89,10 @@ function readLicenseKey(options) {
     if (!fs.existsSync(filePath)) {
       throw new Error(`No existe el archivo de licencia: ${filePath}`);
     }
+    const stats = fs.statSync(filePath);
+    if (stats.size > 32 * 1024) {
+      throw new Error('El archivo de licencia excede el tamano maximo permitido de 32 KB.');
+    }
     return fs.readFileSync(filePath, 'utf8').trim();
   }
   return requiredOption(options, 'key');
@@ -151,6 +155,10 @@ function loadSecretFromOptions(options) {
   const secretPath = path.resolve(String(options['secret-file']));
   if (!fs.existsSync(secretPath) || !fs.statSync(secretPath).isFile()) {
     throw new Error(`No existe el archivo de secreto: ${secretPath}`);
+  }
+
+  if (fs.statSync(secretPath).size > 16 * 1024) {
+    throw new Error('El archivo de secreto excede el tamano maximo permitido de 16 KB.');
   }
 
   const secret = fs.readFileSync(secretPath, 'utf8').trim();
@@ -264,7 +272,15 @@ function main() {
       process.exitCode = 2;
     }
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    if (options.json) {
+      console.log(JSON.stringify({
+        ok: false,
+        command: command || null,
+        error: error.message
+      }, null, 2));
+    } else {
+      console.error(`Error: ${error.message}`);
+    }
     process.exitCode = 1;
   }
 }
