@@ -10,6 +10,7 @@ const {
   installOrbitUpdate,
   onUpdaterEvent
 } = require('./updater');
+const { fitBoundsToWorkArea } = require('../shared/display-layout');
 
 let mainWindow;
 let customerDisplayWindow;
@@ -358,19 +359,15 @@ function fitMainWindowToDisplay() {
   const display = screen.getDisplayMatching(mainWindow.getBounds());
   const workArea = display.workArea || display.bounds;
   const currentBounds = mainWindow.getBounds();
-  const width = Math.min(currentBounds.width, Math.max(320, workArea.width));
-  const height = Math.min(currentBounds.height, Math.max(360, workArea.height));
-  const x = Math.min(
-    Math.max(currentBounds.x, workArea.x),
-    workArea.x + Math.max(0, workArea.width - width)
-  );
-  const y = Math.min(
-    Math.max(currentBounds.y, workArea.y),
-    workArea.y + Math.max(0, workArea.height - height)
-  );
+  const fittedBounds = fitBoundsToWorkArea(currentBounds, workArea);
 
-  if (x !== currentBounds.x || y !== currentBounds.y || width !== currentBounds.width || height !== currentBounds.height) {
-    mainWindow.setBounds({ x, y, width, height }, false);
+  if (
+    fittedBounds.x !== currentBounds.x
+    || fittedBounds.y !== currentBounds.y
+    || fittedBounds.width !== currentBounds.width
+    || fittedBounds.height !== currentBounds.height
+  ) {
+    mainWindow.setBounds(fittedBounds, false);
   }
 }
 
