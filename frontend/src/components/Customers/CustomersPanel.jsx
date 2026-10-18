@@ -129,12 +129,12 @@ export default function CustomersPanel({ token, onActivity }) {
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Clientes</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Cartera de clientes y seguimiento</h2>
+            <h2 className="mt-2 text-3xl font-bold text-ink">Clientes</h2>
             <p className="mt-3 text-sm text-slate-600">
-              Administra datos de contacto, limite de credito y acciones de cobro desde una sola vista mas clara.
+              Gestiona tus clientes, sus compras y cuentas por cobrar.
             </p>
           </div>
-          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
+          <div className="flex w-full flex-col gap-3 xl:w-auto xl:min-w-[520px] xl:flex-row xl:items-stretch">
             <div className="rounded-[24px] bg-white/78 px-5 py-4">
               <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Clientes</div>
               <div className="mt-2 text-2xl font-bold text-ink">{customers.length}</div>
@@ -147,6 +147,15 @@ export default function CustomersPanel({ token, onActivity }) {
               <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Saldo en cartera</div>
               <div className="mt-2 text-2xl font-bold text-ink">{formatCurrency(portfolioBalance)}</div>
             </div>
+            <Button
+              className="orbit-primary-button shrink-0"
+              onClick={() => {
+                setForm(emptyForm);
+                document.getElementById('orbit-customer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              + Nuevo cliente
+            </Button>
           </div>
         </div>
       </Panel>
@@ -225,7 +234,7 @@ export default function CustomersPanel({ token, onActivity }) {
         </Panel>
 
         <div className="space-y-6">
-          <Panel>
+          <Panel id="orbit-customer-form">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
