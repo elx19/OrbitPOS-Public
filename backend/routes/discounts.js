@@ -17,6 +17,20 @@ router.get('/', (request, response) => {
   response.json(discounts);
 });
 
+router.get('/metrics', (request, response) => {
+  const metrics = getDb().prepare(`
+    SELECT
+      COUNT(DISTINCT CASE WHEN s.discount > 0 AND date(s.created_at) >= date('now', 'start of month') THEN s.id END) AS discounted_sales,
+      COALESCE(SUM(CASE WHEN date(s.created_at) >= date('now', 'start of month') THEN s.discount ELSE 0 END), 0) AS savings
+    FROM sales s
+  `).get();
+
+  response.json({
+    discountedSales: Number(metrics?.discounted_sales || 0),
+    savings: Number(metrics?.savings || 0)
+  });
+});
+
 router.post('/preview', (request, response) => {
   try {
     const preview = calculateSalePreview({

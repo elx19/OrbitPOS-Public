@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiRequest } from '../../lib/api';
+import { formatCurrency } from '../../lib/format';
 import Button from '../ui/Button';
 import { Field, Input, Select } from '../ui/Field';
 import Panel from '../ui/Panel';
@@ -18,7 +19,10 @@ const emptyForm = {
 
 export default function DiscountsPanel({ token, onActivity }) {
   const [discounts, setDiscounts] = useState([]);
+  const [metrics, setMetrics] = useState({ discountedSales: 0, savings: 0 });
   const [form, setForm] = useState(emptyForm);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const selectedDiscount = discounts.find((discount) => discount.id === form.id) || null;
@@ -26,10 +30,22 @@ export default function DiscountsPanel({ token, onActivity }) {
     () => discounts.filter((discount) => Number(discount.active) === 1).length,
     [discounts]
   );
+  const visibleDiscounts = useMemo(() => discounts.filter((discount) => {
+    const text = `${discount.name} ${discount.applies_to} ${discount.target_id || ''}`.toLowerCase();
+    const matchesSearch = !search.trim() || text.includes(search.trim().toLowerCase());
+    const matchesStatus = statusFilter === 'all'
+      || (statusFilter === 'active' && Number(discount.active) === 1)
+      || (statusFilter === 'inactive' && Number(discount.active) !== 1);
+    return matchesSearch && matchesStatus;
+  }), [discounts, search, statusFilter]);
 
   async function loadDiscounts() {
-    const result = await apiRequest('/api/discounts', { token });
+    const [result, metricResult] = await Promise.all([
+      apiRequest('/api/discounts', { token }),
+      apiRequest('/api/discounts/metrics', { token })
+    ]);
     setDiscounts(result);
+    setMetrics(metricResult);
   }
 
   useEffect(() => {
@@ -75,40 +91,35 @@ export default function DiscountsPanel({ token, onActivity }) {
 
   return (
     <div className="space-y-6">
-      <Panel>
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Promociones</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Descuentos automaticos</h2>
-            <p className="mt-3 text-sm text-slate-600">
-              Crea reglas comerciales limpias para porcentaje, monto fijo o promociones de tipo 2x1.
-            </p>
-          </div>
-          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Promociones</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{discounts.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Activas</div>
-              <div className="mt-2 text-2xl font-bold text-emerald-700">{activeDiscounts}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Seleccionada</div>
-              <div className="mt-2 truncate text-lg font-bold text-ink">{selectedDiscount?.name || 'Ninguna'}</div>
-            </div>
-          </div>
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-ink">Descuentos y promociones</h2>
+          <p className="mt-2 text-sm text-slate-600">Crea y gestiona ofertas para impulsar tus ventas en la tienda, carnicería y deli.</p>
         </div>
-      </Panel>
+        <Button onClick={() => setForm(emptyForm)}>＋ Nueva promoción</Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/60 p-5"><div className="text-sm text-slate-600">Promociones activas</div><div className="mt-2 text-3xl font-bold text-ink">{activeDiscounts}</div><div className="mt-1 text-xs text-emerald-700">Reglas vigentes</div></div>
+        <div className="rounded-[24px] border border-blue-100 bg-blue-50/60 p-5"><div className="text-sm text-slate-600">Ventas con descuento</div><div className="mt-2 text-3xl font-bold text-ink">{metrics.discountedSales}</div><div className="mt-1 text-xs text-blue-700">Este mes</div></div>
+        <div className="rounded-[24px] border border-amber-100 bg-amber-50/70 p-5"><div className="text-sm text-slate-600">Ahorro generado</div><div className="mt-2 text-3xl font-bold text-ink">{formatCurrency(metrics.savings)}</div><div className="mt-1 text-xs text-amber-700">Para tus clientes</div></div>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(320px,0.96fr),minmax(0,1.04fr)]">
         <Panel className="overflow-hidden">
           <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Listado</div>
-            <h3 className="mt-2 text-2xl font-bold text-ink">Reglas de descuento</h3>
+            <h3 className="text-2xl font-bold text-ink">Promociones</h3>
           </div>
-          <div className="soft-scrollbar mt-6 max-h-[calc(100vh-23rem)] space-y-3 overflow-auto pr-1">
-            {discounts.length ? discounts.map((discount) => (
+          <div className="mt-5 grid gap-3 md:grid-cols-[minmax(0,1fr),180px]">
+            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar promociones..." />
+            <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+              <option value="all">Todos los estados</option>
+              <option value="active">Activas</option>
+              <option value="inactive">Inactivas</option>
+            </Select>
+          </div>
+          <div className="soft-scrollbar mt-5 max-h-[calc(100vh-26rem)] space-y-3 overflow-auto pr-1">
+            {visibleDiscounts.length ? visibleDiscounts.map((discount) => (
               <button
                 key={discount.id}
                 type="button"
