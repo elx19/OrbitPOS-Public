@@ -55,6 +55,13 @@ export default function ProductsPanel({ token, businessType = 'colmado', onActiv
     () => products.filter((product) => Number(product.stock || 0) <= Number(product.min_stock || 0)).length,
     [products]
   );
+  const lowStockProducts = useMemo(
+    () => products
+      .filter((product) => Number(product.stock || 0) <= Number(product.min_stock || 0))
+      .sort((left, right) => Number(left.stock || 0) - Number(right.stock || 0))
+      .slice(0, 4),
+    [products]
+  );
   const filteredProducts = useMemo(() => {
     if (categoryFilter === 'Todos') return products;
     const normalizedCategory = categoryFilter.toLowerCase();
@@ -144,14 +151,14 @@ export default function ProductsPanel({ token, businessType = 'colmado', onActiv
     <div className="space-y-6">
       <Panel>
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
+            <div className="max-w-3xl">
             <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Inventario</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Productos y control base</h2>
+            <h2 className="mt-2 text-3xl font-bold text-ink">Productos e inventario</h2>
             <p className="mt-3 text-sm text-slate-600">
-              Organiza tu catalogo, define un stock inicial real y agrega imagen al producto para venderlo mas facil desde el POS.
+              Gestiona tu catalogo de productos, precios y existencias.
             </p>
           </div>
-          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[560px]">
+          <div className="flex w-full flex-col gap-3 xl:w-auto xl:min-w-[560px] xl:flex-row xl:items-stretch">
             <div className="rounded-[24px] bg-white/78 px-5 py-4">
               <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Productos</div>
               <div className="mt-2 text-2xl font-bold text-ink">{products.length}</div>
@@ -164,11 +171,20 @@ export default function ProductsPanel({ token, businessType = 'colmado', onActiv
               <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Seleccionado</div>
               <div className="mt-2 truncate text-lg font-bold text-ink">{selectedProduct?.name || 'Ninguno'}</div>
             </div>
+            <Button
+              className="orbit-primary-button shrink-0"
+              onClick={() => {
+                setForm(emptyForm);
+                document.getElementById('orbit-product-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              + Nuevo producto
+            </Button>
           </div>
         </div>
       </Panel>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(340px,0.92fr),minmax(0,1.08fr)]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr),minmax(340px,0.92fr)]">
         <Panel className="overflow-hidden">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -271,7 +287,8 @@ export default function ProductsPanel({ token, businessType = 'colmado', onActiv
           ) : null}
         </Panel>
 
-        <Panel>
+        <div className="grid content-start gap-6">
+        <Panel id="orbit-product-form">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div>
               <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
@@ -379,6 +396,50 @@ export default function ProductsPanel({ token, businessType = 'colmado', onActiv
             </div>
           </form>
         </Panel>
+        <Panel className="orbit-low-stock-panel">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.22em] text-rosewood">Inventario</div>
+              <h3 className="mt-2 text-2xl font-bold text-ink">Productos con bajo stock</h3>
+              <p className="mt-2 text-sm text-slate-600">Revisa lo que necesita reposicion antes de quedarte sin existencia.</p>
+            </div>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#fff0eb] text-2xl font-bold text-rosewood">
+              {lowStockCount}
+            </div>
+          </div>
+          <div className="mt-5 divide-y divide-slate-100 rounded-[18px] border border-slate-100 bg-white">
+            {lowStockProducts.length ? lowStockProducts.map((product) => (
+              <button
+                key={product.id}
+                type="button"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
+                onClick={() => setForm({
+                  ...product,
+                  image_path: product.image_path || '',
+                  cost_price: String(product.cost_price),
+                  sale_price: String(product.sale_price),
+                  stock: String(product.stock),
+                  min_stock: String(product.min_stock),
+                  weighed: Boolean(product.weighed),
+                  active: Boolean(product.active)
+                })}
+              >
+                <ProductImagePreview product={product} className="h-12 w-12 rounded-[12px]" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold text-ink">{product.name}</span>
+                  <span className="mt-1 block text-xs text-slate-500">{product.stock} / {product.min_stock} {product.unit || 'un'}</span>
+                </span>
+                <span className="text-sm font-bold text-rosewood">Reponer</span>
+              </button>
+            )) : (
+              <div className="px-4 py-5 text-sm text-slate-500">No hay productos en nivel critico.</div>
+            )}
+          </div>
+          <div className="mt-4 rounded-[16px] bg-[#eefaf5] px-4 py-3 text-sm font-semibold text-[#087c55]">
+            {lowStockCount ? `${lowStockCount} producto(s) necesitan reposicion.` : 'Todo el inventario esta en orden.'}
+          </div>
+        </Panel>
+        </div>
       </div>
     </div>
   );
