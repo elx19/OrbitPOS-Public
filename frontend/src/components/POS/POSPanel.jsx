@@ -301,7 +301,7 @@ export default function POSPanel({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="orbit-pos-root space-y-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Punto de venta</div>
@@ -321,8 +321,8 @@ export default function POSPanel({
 
       {message ? <Panel><div className="text-sm font-semibold text-amber-800">{message}</div></Panel> : null}
 
-      <div className="grid gap-5 xl:h-[calc(100vh-16rem)] xl:grid-rows-2 xl:grid-cols-[minmax(0,1.12fr),minmax(380px,0.82fr)]">
-        <Panel className="flex h-full min-h-[28rem] flex-col overflow-hidden xl:col-start-2 xl:row-span-2 xl:row-start-1">
+      <div className="orbit-pos-workspace grid gap-5 xl:h-[calc(100vh-16rem)] xl:grid-rows-2 xl:grid-cols-[minmax(0,1.12fr),minmax(380px,0.82fr)]">
+        <Panel className="orbit-pos-panel flex h-full min-h-0 flex-col overflow-hidden xl:col-start-2 xl:row-span-2 xl:row-start-1">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div><div className="text-xs uppercase tracking-[0.24em] text-slate-500">Punto de venta</div><h2 className="mt-2 text-3xl font-bold text-ink">Productos</h2><div className="mt-2 text-sm text-slate-600">Haz clic en un producto para agregarlo al carrito.</div></div>
             <div className="flex w-full gap-2 md:max-w-lg">
@@ -377,7 +377,7 @@ export default function POSPanel({
           {filteredProducts.length > visibleProductCount ? <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[22px] bg-white/72 px-4 py-3"><div className="text-sm text-slate-600">Mostrando {visibleProductCount} de {filteredProducts.length} producto(s).</div><Button variant="secondary" onClick={() => setVisibleProductCount((current) => current + 24)}>Mostrar mas</Button></div> : null}
         </Panel>
 
-        <Panel className="flex h-full min-h-[28rem] flex-col overflow-hidden xl:col-start-1 xl:row-start-1">
+        <Panel className="orbit-pos-panel flex h-full min-h-0 flex-col overflow-hidden xl:col-start-1 xl:row-start-1">
           <div className="flex items-center justify-between gap-3"><div><div className="text-xs uppercase tracking-[0.24em] text-slate-500">Carrito</div><h3 className="mt-2 text-2xl font-bold text-ink">{cart.length} item(s)</h3></div><Button variant="ghost" onClick={() => setCart([])}>Vaciar</Button></div>
           <div className="soft-scrollbar mt-5 min-h-0 flex-1 space-y-3 overflow-auto pr-1">
             {cart.length ? cart.map((item) => (
@@ -407,7 +407,7 @@ export default function POSPanel({
           <div className="mt-4 rounded-[24px] bg-white/76 px-4 py-4"><div className="flex items-center justify-between gap-3 text-sm"><span className="font-semibold text-slate-600">Subtotal rapido</span><span className="font-bold text-ink">{formatCurrency(totals.subtotal)}</span></div><div className="mt-2 flex items-center justify-between gap-3 text-sm"><span className="font-semibold text-slate-600">Total proyectado</span><span className="font-bold text-ink">{formatCurrency(totals.total)}</span></div></div>
         </Panel>
 
-        <Panel className="flex h-full min-h-[28rem] flex-col overflow-hidden xl:col-start-1 xl:row-start-2">
+        <Panel className="orbit-pos-panel flex h-full min-h-0 flex-col overflow-hidden xl:col-start-1 xl:row-start-2">
           <div className="flex items-center justify-between gap-3"><div><div className="text-xs uppercase tracking-[0.24em] text-slate-500">Cobro y cierre</div><h3 className="mt-2 text-2xl font-bold text-ink">Finalizar venta</h3></div><div className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-600">{cart.length} producto(s)</div></div>
           <div className="soft-scrollbar mt-5 min-h-0 flex-1 space-y-4 overflow-auto pr-1">
             {!register ? (

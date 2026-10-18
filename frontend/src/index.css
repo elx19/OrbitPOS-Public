@@ -1413,6 +1413,30 @@ select {
 .orbit-shell main[data-module="pos"] .orbit-content [class*="grid-cols-3"] {
   min-height: 0;
 }
+
+@media (min-width: 1200px) {
+  .orbit-shell main[data-module="pos"] .orbit-content {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .orbit-shell main[data-module="pos"] .orbit-pos-root {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .orbit-shell main[data-module="pos"] .orbit-pos-workspace {
+    min-height: 0;
+    height: auto !important;
+    flex: 1 1 auto;
+  }
+
+  .orbit-shell main[data-module="pos"] .orbit-pos-panel {
+    min-height: 0 !important;
+  }
+}
 .orbit-shell main[data-module="products"] .orbit-content .orbit-category-chip,
 .orbit-shell main[data-module="pos"] .orbit-content .orbit-category-chip {
   min-height: 38px;
