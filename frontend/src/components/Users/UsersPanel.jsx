@@ -42,6 +42,9 @@ export default function UsersPanel({ token, onActivity }) {
   const [users, setUsers] = useState([]);
   const [branches, setBranches] = useState([]);
   const [form, setForm] = useState(emptyForm);
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const selectedUser = users.find((user) => user.id === form.id) || null;
@@ -49,6 +52,15 @@ export default function UsersPanel({ token, onActivity }) {
     () => users.filter((user) => Number(user.active) === 1).length,
     [users]
   );
+  const administrators = useMemo(() => users.filter((user) => user.role === 'admin').length, [users]);
+  const cashiers = useMemo(() => users.filter((user) => user.role === 'cashier').length, [users]);
+  const visibleUsers = useMemo(() => users.filter((user) => {
+    const text = `${user.name} ${user.username} ${user.branch_name || ''}`.toLowerCase();
+    const matchesSearch = !search.trim() || text.includes(search.trim().toLowerCase());
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? Number(user.active) === 1 : Number(user.active) !== 1);
+    return matchesSearch && matchesRole && matchesStatus;
+  }), [users, search, roleFilter, statusFilter]);
 
   async function loadData() {
     const [usersResult, branchesResult] = await Promise.all([
@@ -137,40 +149,30 @@ export default function UsersPanel({ token, onActivity }) {
 
   return (
     <div className="space-y-6">
-      <Panel>
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Usuarios del sistema</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Gestion de usuarios</h2>
-            <p className="mt-3 text-sm text-slate-600">
-              Controla accesos, roles, sucursales y recuperacion local de contrasena en una vista mas clara.
-            </p>
-          </div>
-          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Usuarios</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{users.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Activos</div>
-              <div className="mt-2 text-2xl font-bold text-emerald-700">{activeUsers}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Seleccionado</div>
-              <div className="mt-2 truncate text-lg font-bold text-ink">{selectedUser?.name || 'Ninguno'}</div>
-            </div>
-          </div>
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-ink">Usuarios y permisos</h2>
+          <p className="mt-2 text-sm text-slate-600">Administra los usuarios del sistema y define sus permisos de acceso.</p>
         </div>
-      </Panel>
+        <Button onClick={() => setForm(emptyForm)}>＋ Nuevo usuario</Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/60 p-5"><div className="text-sm text-slate-600">Usuarios activos</div><div className="mt-2 text-3xl font-bold text-ink">{activeUsers}</div><div className="mt-1 text-xs text-slate-500">de {users.length} registrados</div></div>
+        <div className="rounded-[24px] border border-blue-100 bg-blue-50/60 p-5"><div className="text-sm text-slate-600">Administradores</div><div className="mt-2 text-3xl font-bold text-ink">{administrators}</div><div className="mt-1 text-xs text-blue-700">Con acceso total</div></div>
+        <div className="rounded-[24px] border border-amber-100 bg-amber-50/70 p-5"><div className="text-sm text-slate-600">Cajeros</div><div className="mt-2 text-3xl font-bold text-ink">{cashiers}</div><div className="mt-1 text-xs text-amber-700">En operación</div></div>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(320px,0.96fr),minmax(0,1.04fr)]">
         <Panel className="overflow-hidden">
-          <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Directorio</div>
-            <h3 className="mt-2 text-2xl font-bold text-ink">Listado de usuarios</h3>
+          <h3 className="text-2xl font-bold text-ink">Listado de usuarios</h3>
+          <div className="mt-5 grid gap-3 md:grid-cols-[minmax(0,1fr),150px,150px]">
+            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nombre o usuario..." />
+            <Select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}><option value="all">Todos los roles</option><option value="admin">Administrador</option><option value="cashier">Cajero</option></Select>
+            <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="all">Todos los estados</option><option value="active">Activos</option><option value="inactive">Inactivos</option></Select>
           </div>
-          <div className="soft-scrollbar mt-6 max-h-[calc(100vh-21rem)] space-y-3 overflow-auto pr-1">
-            {users.map((user) => (
+          <div className="soft-scrollbar mt-5 max-h-[calc(100vh-26rem)] space-y-3 overflow-auto pr-1">
+            {visibleUsers.map((user) => (
               <button
                 key={user.id}
                 type="button"
@@ -196,6 +198,7 @@ export default function UsersPanel({ token, onActivity }) {
                 </div>
               </button>
             ))}
+            {!visibleUsers.length ? <div className="rounded-[24px] bg-white/78 px-4 py-5 text-sm text-slate-500">No se encontraron usuarios con ese criterio.</div> : null}
           </div>
         </Panel>
 
