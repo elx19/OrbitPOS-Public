@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { apiRequest } from '../../lib/api';
 import Button from '../ui/Button';
 import { Field, Input, Select, TextArea } from '../ui/Field';
@@ -6,11 +6,12 @@ import Panel from '../ui/Panel';
 import BranchesPanel from '../Branches/BranchesPanel';
 import PrintTemplatesPanel from './PrintTemplatesPanel';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
+import { readImageFileAsDataUrl } from '../../lib/logoPicker';
 
 const DEFAULT_UPDATE_PROVIDER = 'github';
 const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.46';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.47';
 
 const themeOptions = [
   {
@@ -167,6 +168,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
   const [localUpdatePackage, setLocalUpdatePackage] = useState(null);
   const [restoreBackupFile, setRestoreBackupFile] = useState('');
   const [logoPreviewVisible, setLogoPreviewVisible] = useState(true);
+  const logoInputRef = useRef(null);
   const [hardwareCatalog, setHardwareCatalog] = useState({
     printers: [],
     serialPorts: []
@@ -260,18 +262,30 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
   }
 
   async function pickLogoFile() {
-    if (!window.orbit?.files?.pickLogo) {
-      setMessage('El selector de archivos solo esta disponible en la app de escritorio.');
-      return;
-    }
-
     try {
-      const selectedPath = await window.orbit.files.pickLogo();
+      const selectedPath = window.orbit?.files?.pickLogo
+        ? await window.orbit.files.pickLogo()
+        : '';
       if (selectedPath) {
         updateField('business_logo', selectedPath);
+      } else if (!window.orbit?.files?.pickLogo) {
+        logoInputRef.current?.click();
       }
     } catch (error) {
-      setMessage('No fue posible seleccionar el logo.');
+      setMessage(error.message || 'No fue posible seleccionar el logo.');
+    }
+  }
+
+  async function handleLogoInput(event) {
+    try {
+      const dataUrl = await readImageFileAsDataUrl(event.target.files?.[0]);
+      if (dataUrl) {
+        updateField('business_logo', dataUrl);
+      }
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      event.target.value = '';
     }
   }
 
@@ -631,9 +645,8 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
                 <Field label="Logo del negocio">
                   <div className="flex flex-col gap-3 md:flex-row">
                     <Input value={form.business_logo} onChange={(event) => updateField('business_logo', event.target.value)} placeholder="C:\\logos\\negocio.png" />
-                    <Button variant="secondary" onClick={pickLogoFile}>
-                      Buscar logo
-                    </Button>
+                    <Button variant="secondary" onClick={pickLogoFile}>Seleccionar logo</Button>
+                    <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/bmp,image/x-icon" className="hidden" onChange={handleLogoInput} />
                   </div>
                 </Field>
 

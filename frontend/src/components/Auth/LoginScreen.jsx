@@ -8,7 +8,7 @@ import { formatDate } from '../../lib/format';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 import loginStorefrontUrl from '../../assets/login-storefront.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.46';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.47';
 
 function ReferenceIcon({ name, className = '' }) {
   const paths = {
@@ -213,7 +213,9 @@ export default function LoginScreen({ businessName, businessLogo, license, onLog
 
         <div className="orbit-login-form">
           <div className="orbit-login-account-header">
-            <div className="orbit-login-account-icon"><ReferenceIcon name="store" /></div>
+            <div className="orbit-login-account-icon">
+              {businessLogoUrl && logoVisible ? <img src={businessLogoUrl} alt={`Logo de ${businessName || 'tu negocio'}`} onError={() => setLogoVisible(false)} /> : <ReferenceIcon name="store" />}
+            </div>
             <div><b>{businessName || 'Tienda San José'}</b><small>Administrador</small></div>
           </div>
           {!showRecovery ? (

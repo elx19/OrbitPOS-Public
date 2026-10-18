@@ -24,7 +24,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.46';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.47';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -87,7 +87,18 @@ const primaryAdminModules = new Set([
   'purchases',
   'customers',
   'cash',
-  'reports'
+  'reports',
+  'suppliers',
+  'credits',
+  'returns',
+  'quotes',
+  'discounts',
+  'notifications',
+  'branches',
+  'users',
+  'config',
+  'help',
+  'license'
 ]);
 
 const iconPaths = {
@@ -170,7 +181,6 @@ export default function AppShell({
   const compactSidebar = String(config.sidebar_compact || '0') === '1';
   const businessLogoUrl = resolveAssetUrl(config.business_logo);
   const businessInitials = getInitials(businessName);
-  const displayLogoUrl = businessLogoUrl && logoVisible ? businessLogoUrl : orbitposLogoUrl;
 
   const visibleModules = useMemo(
     () => moduleDefinitions
@@ -362,12 +372,7 @@ export default function AppShell({
         <aside className="orbit-sidebar flex min-h-[260px] flex-col xl:h-screen">
           <div className="orbit-sidebar-brand">
             <div className="orbit-brand-lockup">
-              <img
-                src={displayLogoUrl}
-                alt={`Logo de ${businessName}`}
-                className="orbit-brand-mark"
-                onError={() => businessLogoUrl && logoVisible && setLogoVisible(false)}
-              />
+              <img src={orbitposLogoUrl} alt="OrbitPOS" className="orbit-brand-mark" />
               <div className="orbit-brand-name">Orbit<span>POS</span></div>
             </div>
             <div className="orbit-business-meta">
@@ -445,7 +450,7 @@ export default function AppShell({
 
           <div className="orbit-sidebar-footer">
             <div className="orbit-store-switcher">
-              <span className="orbit-store-icon"><NavIcon name="warehouse" /></span>
+              <span className="orbit-store-icon">{businessLogoUrl && logoVisible ? <img src={businessLogoUrl} alt="" onError={() => setLogoVisible(false)} /> : <NavIcon name="warehouse" />}</span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-white">{businessName}</span>
                 <span className="block truncate text-xs text-slate-400">Santo Domingo, RD · En linea</span>

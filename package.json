@@ -1,6 +1,6 @@
 {
   "name": "orbitpos",
-  "version": "2.1.0-alpha.46",
+  "version": "2.1.0-alpha.47",
   "private": true,
   "author": "JRTech",
   "description": "Sistema de terminal de venta al publico OrbitPOS",
@@ -96,7 +96,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "OrbitPOS"
+      "shortcutName": "OrbitPOS",
+      "license": "docs/EULA.txt"
     },
     "publish": [
       {

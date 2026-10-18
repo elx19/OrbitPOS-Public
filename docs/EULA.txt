@@ -1,0 +1,97 @@
+ACUERDO DE LICENCIA DE USUARIO FINAL (EULA)
+
+Producto: OrbitPOS
+Titular o desarrollador: JRTech
+Versión: 2.1.0-alpha.47
+Fecha de vigencia: 18 de octubre de 2026
+
+1. ACEPTACIÓN DEL ACUERDO
+
+El presente Acuerdo de Licencia de Usuario Final regula la instalación y el uso de OrbitPOS. Al seleccionar «Acepto los términos del acuerdo» y continuar con la instalación, el usuario declara que ha leído y acepta las condiciones aquí establecidas.
+
+Si no está de acuerdo con estas condiciones, deberá seleccionar «No acepto» y cancelar la instalación.
+
+2. CONCESIÓN DE LICENCIA
+
+El titular concede al usuario una licencia limitada, no exclusiva y no transferible para instalar y utilizar el software conforme a la modalidad de licencia adquirida, sus funciones habilitadas y las condiciones comerciales aplicables.
+
+Esta licencia autoriza únicamente el uso del software y no transfiere la propiedad del programa al usuario.
+
+3. PROPIEDAD INTELECTUAL
+
+El software, su código fuente y objeto, diseño, interfaz, documentación, marcas y demás componentes originales pertenecen a sus respectivos titulares.
+
+Salvo autorización expresa o derechos reconocidos por la legislación aplicable, el usuario no podrá copiar, distribuir, vender, sublicenciar, publicar, modificar, descompilar ni realizar ingeniería inversa del software.
+
+Los componentes de terceros estarán sujetos a sus respectivas licencias.
+
+4. ACTIVACIÓN Y CONDICIONES DE USO
+
+Cuando el producto requiera activación, el usuario deberá utilizar una licencia válida emitida por el titular o por un distribuidor autorizado.
+
+La licencia podrá establecer límites de equipos, usuarios, módulos, duración o funcionalidades, siempre que estas condiciones se informen al usuario antes de la compra o activación.
+
+Las licencias de prueba, suscripciones, renovaciones y módulos adicionales se regirán por las condiciones específicas comunicadas para cada modalidad.
+
+No se garantiza que la activación online esté siempre disponible si depende de servicios de terceros, internet o servidores externos.
+
+5. RESTRICCIONES
+
+El usuario no podrá:
+
+- Utilizar el software para fines ilícitos.
+- Eludir deliberadamente los mecanismos de licencia o activación.
+- Distribuir copias no autorizadas del instalador o del programa.
+- Eliminar avisos de propiedad intelectual con fines de apropiación o distribución no autorizada.
+- Interferir de forma maliciosa con el funcionamiento, la seguridad o los servicios del sistema.
+
+Estas restricciones se aplicarán en la medida permitida por la legislación vigente.
+
+6. DATOS, COPIAS DE SEGURIDAD Y SEGURIDAD
+
+El usuario es responsable de conservar copias de seguridad de sus datos empresariales, verificar su restauración y mantener protegidos sus equipos y credenciales.
+
+El tratamiento de datos personales, si existe, se regirá por la política de privacidad correspondiente. Si el software transmite datos a servidores externos, dicha transmisión deberá describirse de manera transparente.
+
+El titular no accederá a los datos comerciales del usuario salvo en los casos autorizados, necesarios para prestar el servicio o permitidos por la legislación aplicable.
+
+7. ACTUALIZACIONES Y SOPORTE
+
+Las actualizaciones, mantenimiento y soporte técnico se proporcionarán según el plan o contrato contratado.
+
+La instalación de actualizaciones podrá modificar funciones, corregir errores o mejorar la seguridad. Las condiciones específicas de actualizaciones obligatorias, compatibilidad y soporte deberán comunicarse al usuario.
+
+8. GARANTÍAS Y LIMITACIÓN DE RESPONSABILIDAD
+
+El titular procurará que el software funcione sustancialmente conforme a la documentación aplicable, sin garantizar que esté libre de errores o interrupciones en todo momento.
+
+En la medida permitida por la ley, el titular no será responsable por daños indirectos derivados de un uso indebido, modificaciones no autorizadas, fallos de equipos, servicios externos o falta de copias de seguridad.
+
+Nada de lo dispuesto en este acuerdo excluye derechos o responsabilidades que legalmente no puedan excluirse o limitarse.
+
+9. SUSPENSIÓN Y TERMINACIÓN
+
+El incumplimiento sustancial de este acuerdo podrá dar lugar a la suspensión o terminación de la licencia, previa notificación cuando corresponda y de acuerdo con la legislación aplicable.
+
+Al terminar la licencia, el usuario deberá cesar el uso del software y eliminar las copias que ya no esté autorizado a conservar, sin perjuicio de los derechos legales que le correspondan.
+
+La terminación de la licencia no autoriza a eliminar arbitrariamente los datos del usuario.
+
+10. LEGISLACIÓN APLICABLE
+
+Este acuerdo se interpretará conforme a las leyes aplicables de la República Dominicana, cuando corresponda, sin perjuicio de las normas imperativas que protejan al usuario.
+
+Las controversias se resolverán ante las autoridades competentes conforme a la legislación aplicable.
+
+11. CONTACTO DEL TITULAR
+
+Titular: JRTech
+Correo electrónico: jrr6867@gmail.com
+Teléfono: +1 (809) 404-2070
+Sitio web: No especificado
+
+ACEPTACIÓN
+
+Al aceptar este acuerdo, el usuario confirma que ha tenido la oportunidad de leerlo y que acepta sus condiciones para instalar y utilizar el software.
+
+OrbitPOS — Todos los derechos reservados, según corresponda.
