@@ -21,6 +21,8 @@ const CONFIG_STATEMENTS = [
   ['business_logo', ''],
   ['business_currency', 'DOP'],
   ['business_currency_symbol', 'RD$'],
+  ['business_type', 'colmado'],
+  ['business_sells_weight', '1'],
   ['tax_rate', '18'],
   ['ticket_footer', 'Gracias por su compra.'],
   ['theme', 'light'],

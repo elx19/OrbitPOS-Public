@@ -10,7 +10,7 @@ import { getInitials, resolveAssetUrl } from '../../lib/assets';
 const DEFAULT_UPDATE_PROVIDER = 'github';
 const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.24';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.25';
 
 const themeOptions = [
   {
@@ -294,7 +294,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
   async function detectPrinter() {
     setMessage('');
     try {
-      const result = await apiRequest('/api/wizard/detect-printer', { method: 'POST' });
+      const result = await apiRequest('/api/wizard/detect-printer', { method: 'POST', token });
       if (result?.name) {
         updateField('printer_name', result.name);
       }
@@ -312,6 +312,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
     try {
       const result = await apiRequest('/api/wizard/detect-scanner', {
         method: 'POST',
+        token,
         body: {
           baudRate: form.scanner_baud_rate
         }
@@ -333,6 +334,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
     try {
       const result = await apiRequest('/api/wizard/detect-scale', {
         method: 'POST',
+        token,
         body: {
           baudRate: form.scale_baud_rate
         }

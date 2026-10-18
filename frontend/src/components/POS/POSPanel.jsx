@@ -7,10 +7,10 @@ import { Field, Input, Select, TextArea } from '../ui/Field';
 import Panel from '../ui/Panel';
 import PaymentSplitEditor from '../ui/PaymentSplitEditor';
 import TicketPreview from '../ui/TicketPreview';
+import { getBusinessCategories } from '../../lib/businessProfile';
 
 const PREVIEW_CACHE_TTL_MS = 15000;
 const PREVIEW_CACHE_LIMIT = 24;
-const CATEGORY_FILTERS = ['Todos', 'Abarrotes', 'Bebidas', 'Carnes', 'Embutidos', 'Lácteos', 'Limpieza'];
 const getInitialPayments = () => [{ method: 'cash', amount: '', reference: '' }];
 
 function ProductVisual({ product, className = 'h-16 w-16 rounded-[18px]' }) {
@@ -25,6 +25,8 @@ export default function POSPanel({
   token,
   taxRate = 18,
   businessName = 'Mi Negocio',
+  businessType = 'colmado',
+  sellsByWeight = true,
   scannerPort = '',
   scannerBaudRate = 9600,
   scaleEnabled = false,
@@ -58,6 +60,8 @@ export default function POSPanel({
   const [readingScanner, setReadingScanner] = useState(false);
   const previewCacheRef = useRef(new Map());
   const deferredQuery = useDeferredValue(query);
+  const businessCategories = useMemo(() => getBusinessCategories(businessType), [businessType]);
+  const categoryFilters = useMemo(() => ['Todos', ...businessCategories], [businessCategories]);
 
   async function loadData({ forceFresh = false } = {}) {
     const [productsResult, customersResult, cashResult] = await Promise.all([
@@ -85,6 +89,11 @@ export default function POSPanel({
 
   const visibleProducts = useMemo(() => filteredProducts.slice(0, visibleProductCount), [filteredProducts, visibleProductCount]);
   useEffect(() => { setVisibleProductCount(deferredQuery.trim() || categoryFilter !== 'Todos' ? 60 : 24); }, [categoryFilter, deferredQuery]);
+  useEffect(() => {
+    if (categoryFilter !== 'Todos' && !businessCategories.includes(categoryFilter)) {
+      setCategoryFilter('Todos');
+    }
+  }, [businessCategories, categoryFilter]);
 
   const selectedCustomer = useMemo(() => customers.find((customer) => String(customer.id) === String(customerId)) || null, [customerId, customers]);
   const saleItems = useMemo(() => cart.map((item) => ({ productId: item.id, quantity: Number(item.quantity || 0), discount: Number(item.discount || 0) })), [cart]);
@@ -193,6 +202,7 @@ export default function POSPanel({
     try {
       const result = await apiRequest('/api/wizard/read-scale', {
         method: 'POST',
+        token,
         body: {
           enabled: scaleEnabled,
           port: scalePort,
@@ -217,6 +227,7 @@ export default function POSPanel({
     try {
       const result = await apiRequest('/api/wizard/read-scanner', {
         method: 'POST',
+        token,
         body: {
           enabled: Boolean(scannerPort),
           port: scannerPort,
@@ -314,7 +325,7 @@ export default function POSPanel({
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2" aria-label="Filtrar productos por categoría">
-            {CATEGORY_FILTERS.map((category) => (
+            {categoryFilters.map((category) => (
               <button
                 key={category}
                 type="button"
@@ -370,10 +381,10 @@ export default function POSPanel({
                       {item.weighed ? (
                         <Button
                           variant="secondary"
-                          disabled={readingScaleId === item.id}
+                          disabled={readingScaleId === item.id || !sellsByWeight}
                           onClick={() => readScaleForProduct(item.id)}
                         >
-                          {readingScaleId === item.id ? 'Leyendo bascula...' : scaleEnabled ? 'Leer bascula' : 'Configurar bascula'}
+                          {readingScaleId === item.id ? 'Leyendo bascula...' : scaleEnabled && sellsByWeight ? 'Leer bascula' : 'Configurar bascula'}
                         </Button>
                       ) : null}
                       <Field label="Descuento item"><Input type="number" step="0.01" min="0" value={item.discount} onChange={(event) => updateCartItem(item.id, { discount: event.target.value })} /></Field>

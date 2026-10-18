@@ -5,6 +5,10 @@
 :root {
   color-scheme: light;
   --ui-scale: 1;
+  --auto-ui-scale: 1;
+  --viewport-width: 100vw;
+  --viewport-height: 100vh;
+  --device-pixel-ratio: 1;
   --app-max-width: calc(100vw - 24px);
   --bg: #f5f7fb;
   --ink: #0f2742;
@@ -176,7 +180,7 @@
 }
 
 html {
-  font-size: calc(16px * var(--ui-scale));
+  font-size: calc(16px * var(--ui-scale) * var(--auto-ui-scale));
 }
 
 html,
@@ -907,6 +911,107 @@ select {
 
   .orbit-page-status {
     justify-content: flex-start;
+  }
+}
+
+/* Responsive runtime: the React viewport observer supplies the logical size/DPI
+   metrics while CSS handles the actual layout at every breakpoint. */
+@media (max-width: 640px) {
+  body,
+  #root,
+  .app-surface {
+    min-height: var(--viewport-height);
+  }
+
+  body {
+    overflow: auto;
+  }
+
+  .orbit-shell .app-frame {
+    display: block !important;
+    min-height: var(--viewport-height);
+    padding: 0 !important;
+  }
+
+  .orbit-shell .orbit-sidebar {
+    position: fixed;
+    z-index: 50;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+    height: 68px;
+    min-height: 68px;
+    padding: 6px 8px !important;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -12px 32px -22px rgba(15, 39, 66, 0.65);
+  }
+
+  .orbit-shell .orbit-sidebar-brand,
+  .orbit-shell .orbit-sidebar-footer {
+    display: none;
+  }
+
+  .orbit-shell .orbit-sidebar-nav {
+    display: flex;
+    height: 100%;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .orbit-shell .orbit-sidebar-nav .orbit-nav-item {
+    width: 58px;
+    min-width: 58px;
+    height: 56px;
+    justify-content: center;
+    padding: 4px !important;
+    border-radius: 14px;
+  }
+
+  .orbit-shell main {
+    min-height: var(--viewport-height);
+    padding-bottom: 76px;
+  }
+
+  .orbit-shell .orbit-app-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    min-height: 64px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(14px);
+  }
+
+  .orbit-shell .orbit-global-search {
+    order: 1;
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .orbit-shell .orbit-header-actions {
+    order: 2;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .orbit-shell .orbit-page-heading {
+    padding: 18px 14px 0;
+  }
+
+  .orbit-shell .orbit-content {
+    padding: 14px;
+  }
+}
+
+@media (min-width: 1800px) {
+  .orbit-shell .orbit-content,
+  .orbit-shell .orbit-page-heading,
+  .orbit-shell .orbit-app-header {
+    max-width: 1880px;
+    margin-right: auto;
+    margin-left: auto;
   }
 }
 

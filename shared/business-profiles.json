@@ -1,0 +1,22 @@
+{
+  "colmado": {
+    "label": "Colmado",
+    "subtitle": "Colmado",
+    "categories": ["Abarrotes", "Bebidas", "Lácteos", "Limpieza", "Panaderia"]
+  },
+  "carniceria": {
+    "label": "Carnicería",
+    "subtitle": "Carnicería",
+    "categories": ["Carnes", "Lácteos"]
+  },
+  "embutidos": {
+    "label": "Embutidos / Deli",
+    "subtitle": "Embutidos · Deli",
+    "categories": ["Embutidos", "Lácteos"]
+  },
+  "mixto": {
+    "label": "Mixto",
+    "subtitle": "Colmado · Carnicería · Embutidos",
+    "categories": ["Abarrotes", "Bebidas", "Carnes", "Embutidos", "Lácteos", "Limpieza", "Panaderia"]
+  }
+}

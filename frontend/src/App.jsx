@@ -17,6 +17,20 @@ const DEFAULT_UPDATE_PROVIDER = 'github';
 const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
 
+function updateViewportMetrics() {
+  const width = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+  const height = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const autoScale = width < 420 ? 0.9 : width < 720 ? 0.95 : width >= 2200 ? 1.04 : 1;
+  const viewportClass = width < 640 ? 'phone' : width < 1024 ? 'tablet' : width < 1440 ? 'desktop' : 'wide';
+
+  document.documentElement.dataset.viewport = viewportClass;
+  document.documentElement.style.setProperty('--viewport-width', `${width}px`);
+  document.documentElement.style.setProperty('--viewport-height', `${height}px`);
+  document.documentElement.style.setProperty('--device-pixel-ratio', String(devicePixelRatio));
+  document.documentElement.style.setProperty('--auto-ui-scale', String(autoScale));
+}
+
 function getStoredValue(key, fallback) {
   try {
     return window.localStorage.getItem(key) || fallback;
@@ -110,6 +124,8 @@ export default function App() {
         business_logo: wizardStatus.config.business.logo,
         business_currency: wizardStatus.config.business.currency,
         business_currency_symbol: wizardStatus.config.business.currency === 'USD' ? '$' : wizardStatus.config.business.currency === 'EUR' ? 'EUR' : 'RD$',
+        business_type: wizardStatus.config.business.businessType || 'colmado',
+        business_sells_weight: wizardStatus.config.business.sellsByWeight ? '1' : '0',
         printer_name: wizardStatus.config.printer.name,
         printer_port: wizardStatus.config.printer.port,
         printer_driver_mode: 'system',
@@ -143,6 +159,20 @@ export default function App() {
       }
     });
   }
+
+  useEffect(() => {
+    updateViewportMetrics();
+    const handleViewportChange = () => updateViewportMetrics();
+    window.addEventListener('resize', handleViewportChange, { passive: true });
+    window.visualViewport?.addEventListener('resize', handleViewportChange, { passive: true });
+    window.visualViewport?.addEventListener('scroll', handleViewportChange, { passive: true });
+
+    return () => {
+      window.removeEventListener('resize', handleViewportChange);
+      window.visualViewport?.removeEventListener('resize', handleViewportChange);
+      window.visualViewport?.removeEventListener('scroll', handleViewportChange);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -242,7 +272,8 @@ export default function App() {
 
   async function handleReconfigure() {
     await apiRequest('/api/wizard/reconfigure', {
-      method: 'POST'
+      method: 'POST',
+      token: session?.token
     });
     persistSession(null);
     setSession(null);

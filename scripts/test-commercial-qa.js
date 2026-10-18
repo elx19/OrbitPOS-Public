@@ -194,7 +194,9 @@ async function runCommercialQa() {
           phone: '809-555-0001',
           address: 'Laboratorio QA',
           logo: '',
-          currency: 'DOP'
+          currency: 'DOP',
+          businessType: 'mixto',
+          sellsByWeight: true
         },
         printer: {
           name: '',
@@ -222,6 +224,14 @@ async function runCommercialQa() {
     recordStep('Wizard completado con demo', {
       daysRemaining: wizardComplete.payload.license.daysRemaining
     });
+
+    const protectedWizardRead = await fetch(`${apiBaseUrl}/api/wizard/read-scanner`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: false, port: '', baudRate: 9600 })
+    });
+    assertCondition(protectedWizardRead.status === 401, 'El hardware del wizard debe exigir sesion despues de completar la configuracion.');
+    recordStep('Hardware del wizard protegido despues de configurar');
 
     const login = await apiRequest(apiBaseUrl, '/api/auth/login', {
       method: 'POST',
@@ -478,6 +488,38 @@ async function runCommercialQa() {
       ],
       categories: ['Bebidas', 'Panaderia', 'Abarrotes', 'Carnes', 'Embutidos']
     });
+
+    await apiRequest(apiBaseUrl, '/api/config', {
+      method: 'PUT',
+      token,
+      body: { business_type: 'carniceria' }
+    });
+    const carniceriaCatalog = await apiRequest(apiBaseUrl, '/api/products', { token });
+    assertCondition(
+      carniceriaCatalog.payload.every((product) => ['Carnes', 'Lácteos'].includes(product.category)),
+      'El perfil de carniceria mostro categorias de otro negocio.'
+    );
+    const rejectedMixedCategory = await fetch(`${apiBaseUrl}/api/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        name: 'Producto fuera de perfil QA',
+        category: 'Abarrotes',
+        cost_price: 5,
+        sale_price: 10,
+        stock: 1
+      })
+    });
+    assertCondition(rejectedMixedCategory.status === 400, 'El perfil de carniceria permitio crear una categoria ajena.');
+    await apiRequest(apiBaseUrl, '/api/config', {
+      method: 'PUT',
+      token,
+      body: { business_type: 'mixto' }
+    });
+    recordStep('Aislamiento por tipo de negocio validado');
 
     const purchase = await apiRequest(apiBaseUrl, '/api/purchases', {
       method: 'POST',
@@ -760,7 +802,7 @@ async function runCommercialQa() {
       body: {
         name: 'Producto Temporal QA',
         barcode: 'QA-TMP-001',
-        category: 'Temporal',
+        category: 'Abarrotes',
         cost_price: 5,
         sale_price: 10,
         stock: 5,

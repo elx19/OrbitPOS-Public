@@ -5,6 +5,7 @@ const { startDemo, activateLicenseKey, getMachineId, refreshLicenseState } = req
 const { listPrinters, testPrinter, autoDetectPrinter } = require('./helpers/printer');
 const { listSerialPorts, testScannerConnection, autoDetectScanner, readScannerBarcode } = require('./helpers/barcode');
 const { testScaleConnection, autoDetectScale, readScaleWeight } = require('./helpers/scale');
+const { authenticateToken, requireAdmin } = require('./middleware/auth');
 const securityQuestions = require('../shared/security-questions.json');
 
 function mapWizardConfig(config, adminUser = null) {
@@ -61,6 +62,14 @@ function flattenWizardPayload(payload) {
   };
 }
 
+function requireSetupOrAdmin(request, response, next) {
+  if (getConfigEntries().wizard_completed !== '1') {
+    return next();
+  }
+
+  return authenticateToken(request, response, () => requireAdmin(request, response, next));
+}
+
 function createWizardRouter() {
   const router = express.Router();
 
@@ -84,6 +93,10 @@ function createWizardRouter() {
       license: refreshLicenseState()
     });
   });
+
+  // El asistente debe funcionar sin sesion durante la primera configuracion.
+  // Una vez completado, sus operaciones de hardware y reconfiguracion son solo administrativas.
+  router.use(requireSetupOrAdmin);
 
   router.post('/detect-printer', async (request, response) => {
     try {

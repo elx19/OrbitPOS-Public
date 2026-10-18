@@ -1,8 +1,19 @@
 const express = require('express');
 const { getDb, createAuditLog } = require('../database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const businessProfiles = require('../../shared/business-profiles.json');
 
 const router = express.Router();
+
+function getBusinessCategories() {
+  const businessType = getDb().prepare("SELECT value FROM config WHERE key = 'business_type'").get()?.value || 'colmado';
+  return businessProfiles[businessType]?.categories || businessProfiles.colmado.categories;
+}
+
+function isAllowedCategory(category) {
+  const normalized = String(category || '').trim().toLowerCase();
+  return !normalized || getBusinessCategories().some((allowed) => allowed.toLowerCase() === normalized);
+}
 
 router.use(authenticateToken);
 
@@ -24,6 +35,10 @@ router.get('/', (request, response) => {
   if (lowStock === '1') {
     filters.push('stock <= min_stock');
   }
+
+  const businessCategories = getBusinessCategories();
+  filters.push(`category IN (${businessCategories.map(() => '?').join(', ')})`);
+  params.push(...businessCategories);
 
   const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
   const products = getDb().prepare(`
@@ -55,6 +70,12 @@ router.post('/', requireAdmin, (request, response) => {
   if (!name || sale_price === undefined || sale_price === null) {
     return response.status(400).json({
       message: 'Nombre y precio de venta son obligatorios.'
+    });
+  }
+
+  if (!isAllowedCategory(category)) {
+    return response.status(400).json({
+      message: 'La categoria no corresponde al tipo de negocio configurado.'
     });
   }
 
@@ -120,6 +141,12 @@ router.put('/:id', requireAdmin, (request, response) => {
     supplier_id: request.body?.supplier_id ?? existing.supplier_id,
     active: request.body?.active === undefined ? existing.active : (request.body.active ? 1 : 0)
   };
+
+  if (!isAllowedCategory(payload.category)) {
+    return response.status(400).json({
+      message: 'La categoria no corresponde al tipo de negocio configurado.'
+    });
+  }
 
   const transaction = getDb().transaction(() => {
     getDb().prepare(`

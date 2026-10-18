@@ -4,6 +4,7 @@ import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import Button from '../ui/Button';
 import { Field, Input, Select } from '../ui/Field';
 import Panel from '../ui/Panel';
+import { getBusinessCategories } from '../../lib/businessProfile';
 
 const emptyForm = {
   id: null,
@@ -19,9 +20,6 @@ const emptyForm = {
   weighed: false,
   active: true
 };
-
-const CATEGORY_OPTIONS = ['Abarrotes', 'Bebidas', 'Carnes', 'Embutidos', 'Lácteos', 'Limpieza'];
-const CATEGORY_FILTERS = ['Todos', ...CATEGORY_OPTIONS];
 
 function ProductImagePreview({ product, className = 'h-16 w-16 rounded-[18px]' }) {
   const imageUrl = resolveAssetUrl(product?.image_path);
@@ -42,7 +40,7 @@ function ProductImagePreview({ product, className = 'h-16 w-16 rounded-[18px]' }
   );
 }
 
-export default function ProductsPanel({ token, onActivity }) {
+export default function ProductsPanel({ token, businessType = 'colmado', onActivity }) {
   const [products, setProducts] = useState([]);
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todos');
@@ -50,6 +48,8 @@ export default function ProductsPanel({ token, onActivity }) {
   const [form, setForm] = useState(emptyForm);
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const categoryOptions = useMemo(() => getBusinessCategories(businessType), [businessType]);
+  const categoryFilters = useMemo(() => ['Todos', ...categoryOptions], [categoryOptions]);
   const selectedProduct = products.find((product) => product.id === form.id) || null;
   const lowStockCount = useMemo(
     () => products.filter((product) => Number(product.stock || 0) <= Number(product.min_stock || 0)).length,
@@ -64,6 +64,12 @@ export default function ProductsPanel({ token, onActivity }) {
     () => filteredProducts.slice(0, visibleProductCount),
     [filteredProducts, visibleProductCount]
   );
+
+  useEffect(() => {
+    if (categoryFilter !== 'Todos' && !categoryOptions.includes(categoryFilter)) {
+      setCategoryFilter('Todos');
+    }
+  }, [categoryFilter, categoryOptions]);
 
   async function loadProducts(search = '', { forceFresh = false } = {}) {
     const normalizedSearch = search.trim().toLowerCase();
@@ -183,7 +189,7 @@ export default function ProductsPanel({ token, onActivity }) {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            {CATEGORY_FILTERS.map((category) => (
+            {categoryFilters.map((category) => (
               <button
                 key={category}
                 type="button"
@@ -296,8 +302,8 @@ export default function ProductsPanel({ token, onActivity }) {
                   <Field label="Categoria">
                     <Select value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}>
                       <option value="">Seleccionar categoria</option>
-                      {form.category && !CATEGORY_OPTIONS.includes(form.category) ? <option value={form.category}>{form.category}</option> : null}
-                      {CATEGORY_OPTIONS.map((category) => <option key={category} value={category}>{category}</option>)}
+                      {form.category && !categoryOptions.includes(form.category) ? <option value={form.category}>{form.category}</option> : null}
+                      {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}
                     </Select>
                   </Field>
                   <Field label="Costo">

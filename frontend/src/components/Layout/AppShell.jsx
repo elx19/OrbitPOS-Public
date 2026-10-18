@@ -3,6 +3,7 @@ import { classNames } from '../../lib/format';
 import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
+import { getBusinessProfile } from '../../lib/businessProfile';
 
 const DashboardHome = lazy(() => import('../Dashboard/DashboardHome'));
 const ConfigPanel = lazy(() => import('../Config/ConfigPanel'));
@@ -23,7 +24,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.24';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.25';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -132,6 +133,8 @@ export default function AppShell({
   const [logoVisible, setLogoVisible] = useState(true);
   const [isPending, startTransition] = useTransition();
   const businessName = config.business_name || 'Mi Negocio';
+  const businessType = config.business_type || 'colmado';
+  const businessProfile = getBusinessProfile(businessType);
   const compactSidebar = String(config.sidebar_compact || '0') === '1';
   const businessLogoUrl = resolveAssetUrl(config.business_logo);
   const businessInitials = getInitials(businessName);
@@ -232,6 +235,8 @@ export default function AppShell({
             token={token}
             taxRate={Number(config.tax_rate || 18)}
             businessName={businessName}
+            businessType={businessType}
+            sellsByWeight={String(config.business_sells_weight) === '1'}
             scannerPort={config.scanner_port || ''}
             scannerBaudRate={Number(config.scanner_baud_rate || 9600)}
             scaleEnabled={String(config.scale_enabled) === '1'}
@@ -247,7 +252,7 @@ export default function AppShell({
       case 'cash':
         return <CashPanel token={token} onActivity={handleActivity} />;
       case 'products':
-        return <ProductsPanel token={token} onActivity={handleActivity} />;
+        return <ProductsPanel token={token} businessType={businessType} onActivity={handleActivity} />;
       case 'suppliers':
         return <SuppliersPanel token={token} onActivity={handleActivity} />;
       case 'purchases':
@@ -311,7 +316,7 @@ export default function AppShell({
             </div>
             <div className="orbit-business-meta">
               <div className="orbit-business-name">{businessName}</div>
-              <div className="orbit-business-subtitle">Colmado · Carniceria · Embutidos</div>
+              <div className="orbit-business-subtitle">{businessProfile.subtitle}</div>
             </div>
           </div>
 
