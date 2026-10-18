@@ -1,10 +1,16 @@
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const packageJson = require('../package.json');
 
 const LICENSE_PREFIX = 'ORB2';
+const MODERN_LICENSE_PREFIX = 'ORB3';
+const LICENSE_PREFIXES = [LICENSE_PREFIX, MODERN_LICENSE_PREFIX];
+const MODERN_LICENSE_ALGORITHM = 'ed25519';
 const LICENSE_SCHEMA_VERSION = 2;
 const MIN_LICENSE_SECRET_LENGTH = 32;
 const MAX_LICENSE_KEY_LENGTH = 32 * 1024;
+const LICENSE_PUBLIC_KEY_PATH = path.join(__dirname, 'license-public-key.pem');
 const LICENSE_DAYS_BY_TYPE = {
   demo: 30,
   monthly: 30,
@@ -33,6 +39,24 @@ function getEncryptionKey() {
 
 function getHmacKey() {
   return crypto.createHash('sha256').update(`hmac:${getLicenseSecret()}`).digest();
+}
+
+function getLicensePublicKey() {
+  const configuredKey = String(process.env.ORBITPOS_LICENSE_PUBLIC_KEY || '').trim();
+  if (configuredKey) {
+    return configuredKey.replace(/\\n/g, '\n');
+  }
+
+  try {
+    return fs.readFileSync(LICENSE_PUBLIC_KEY_PATH, 'utf8').trim();
+  } catch (error) {
+    throw new Error('No se encontro la clave publica de licencias de OrbitPOS.');
+  }
+}
+
+function isLicenseKey(licenseKey) {
+  const normalized = String(licenseKey || '').trim();
+  return LICENSE_PREFIXES.some((prefix) => normalized.startsWith(`${prefix}.`));
 }
 
 function buildLicenseSerial() {
@@ -104,6 +128,44 @@ function calculateExpiration(licenseType, startDate = new Date()) {
   return expiration.toISOString();
 }
 
+function normalizeLicensePayload(payload) {
+  const schema = Number(payload.schema || 1);
+  if (schema !== LICENSE_SCHEMA_VERSION) {
+    throw new Error(`Esquema de licencia no soportado: ${schema}.`);
+  }
+
+  const normalizedLicenseType = assertLicenseType(payload.licenseType);
+  const normalizedIssuedAt = payload.issuedAt ? normalizeDate(payload.issuedAt, 'issuedAt', { nullable: false }) : null;
+  const normalizedExpiresAt = normalizeDate(payload.expiresAt, 'expiresAt');
+  if (normalizedIssuedAt && normalizedExpiresAt && new Date(normalizedExpiresAt) < new Date(normalizedIssuedAt)) {
+    throw new Error('La fecha de expiracion no puede ser anterior a la emision.');
+  }
+
+  return {
+    ...payload,
+    schema,
+    machineId: requireText(payload.machineId, 'machineId'),
+    businessName: requireText(payload.businessName, 'businessName'),
+    licenseType: normalizedLicenseType,
+    issuedAt: normalizedIssuedAt,
+    expiresAt: normalizedExpiresAt,
+    edition: String(payload.edition || 'standard').trim().toLowerCase(),
+    versionMinCompatible: payload.versionMinCompatible || payload.version || packageJson.version,
+    serial: String(payload.serial || '').trim() || 'SIN-SERIAL'
+  };
+}
+
+function createModernLicenseKey(payload, signingKey) {
+  const payloadBuffer = Buffer.from(JSON.stringify(payload), 'utf8');
+  const signature = crypto.sign(null, payloadBuffer, signingKey);
+  const envelope = {
+    alg: MODERN_LICENSE_ALGORITHM,
+    payload: payloadBuffer.toString('base64url'),
+    sig: signature.toString('base64url')
+  };
+  return `${MODERN_LICENSE_PREFIX}.${Buffer.from(JSON.stringify(envelope), 'utf8').toString('base64url')}`;
+}
+
 function createLicenseKey({
   machineId,
   businessName,
@@ -112,7 +174,8 @@ function createLicenseKey({
   edition = 'standard',
   versionMinCompatible = packageJson.version,
   serial = buildLicenseSerial(),
-  issuedAt = new Date().toISOString()
+  issuedAt = new Date().toISOString(),
+  signingKey = null
 }) {
   const normalizedMachineId = requireText(machineId, 'machineId');
   const normalizedBusinessName = requireText(businessName, 'businessName');
@@ -136,6 +199,10 @@ function createLicenseKey({
     serial: String(serial || buildLicenseSerial()).trim()
   };
 
+  if (signingKey) {
+    return createModernLicenseKey(payload, signingKey);
+  }
+
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv('aes-256-cbc', getEncryptionKey(), iv);
   const encrypted = Buffer.concat([
@@ -157,11 +224,45 @@ function createLicenseKey({
   return `${LICENSE_PREFIX}.${Buffer.from(JSON.stringify(envelope), 'utf8').toString('base64url')}`;
 }
 
+function decodeModernLicenseKey(licenseKey) {
+  const parts = licenseKey.split('.');
+  if (parts.length !== 2 || !parts[1]) {
+    throw new Error('La licencia no tiene un formato valido.');
+  }
+
+  const envelope = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+  if (!envelope || envelope.alg !== MODERN_LICENSE_ALGORITHM || !envelope.payload || !envelope.sig) {
+    throw new Error('El sobre de la licencia ORB3 esta incompleto.');
+  }
+
+  const payloadBuffer = Buffer.from(envelope.payload, 'base64url');
+  const signature = Buffer.from(envelope.sig, 'base64url');
+  if (!payloadBuffer.length || signature.length !== 64) {
+    throw new Error('El sobre de la licencia ORB3 tiene longitudes invalidas.');
+  }
+
+  const validSignature = crypto.verify(
+    null,
+    payloadBuffer,
+    crypto.createPublicKey(getLicensePublicKey()),
+    signature
+  );
+  if (!validSignature) {
+    throw new Error('La firma de la licencia no es valida.');
+  }
+
+  return normalizeLicensePayload(JSON.parse(payloadBuffer.toString('utf8')));
+}
+
 function decodeLicenseKey(licenseKey) {
   try {
     const normalizedLicenseKey = typeof licenseKey === 'string' ? licenseKey.trim() : '';
-    if (!normalizedLicenseKey || normalizedLicenseKey.length > MAX_LICENSE_KEY_LENGTH || !normalizedLicenseKey.startsWith(`${LICENSE_PREFIX}.`)) {
+    if (!normalizedLicenseKey || normalizedLicenseKey.length > MAX_LICENSE_KEY_LENGTH || !isLicenseKey(normalizedLicenseKey)) {
       throw new Error('La licencia no tiene un formato valido.');
+    }
+
+    if (normalizedLicenseKey.startsWith(`${MODERN_LICENSE_PREFIX}.`)) {
+      return decodeModernLicenseKey(normalizedLicenseKey);
     }
 
     const parts = normalizedLicenseKey.split('.');
@@ -197,31 +298,7 @@ function decodeLicenseKey(licenseKey) {
       decipher.final()
     ]);
 
-    const payload = JSON.parse(decrypted.toString('utf8'));
-    const normalizedLicenseType = assertLicenseType(payload.licenseType);
-    const normalizedIssuedAt = payload.issuedAt ? normalizeDate(payload.issuedAt, 'issuedAt', { nullable: false }) : null;
-    const normalizedExpiresAt = normalizeDate(payload.expiresAt, 'expiresAt');
-    if (normalizedIssuedAt && normalizedExpiresAt && new Date(normalizedExpiresAt) < new Date(normalizedIssuedAt)) {
-      throw new Error('La fecha de expiracion no puede ser anterior a la emision.');
-    }
-
-    const schema = Number(payload.schema || 1);
-    if (schema !== LICENSE_SCHEMA_VERSION) {
-      throw new Error(`Esquema de licencia no soportado: ${schema}.`);
-    }
-
-    return {
-      ...payload,
-      schema,
-      machineId: requireText(payload.machineId, 'machineId'),
-      businessName: requireText(payload.businessName, 'businessName'),
-      licenseType: normalizedLicenseType,
-      issuedAt: normalizedIssuedAt,
-      expiresAt: normalizedExpiresAt,
-      edition: String(payload.edition || 'standard').trim().toLowerCase(),
-      versionMinCompatible: payload.versionMinCompatible || payload.version || packageJson.version,
-      serial: String(payload.serial || '').trim() || 'SIN-SERIAL'
-    };
+    return normalizeLicensePayload(JSON.parse(decrypted.toString('utf8')));
   } catch (error) {
     if (error.message === 'La firma de la licencia no es valida.' || error.message === 'La licencia no tiene un formato valido.') {
       throw error;
@@ -277,12 +354,18 @@ module.exports = {
   LICENSE_DAYS_BY_TYPE,
   LICENSE_SCHEMA_VERSION,
   LICENSE_PREFIX,
+  MODERN_LICENSE_PREFIX,
+  LICENSE_PREFIXES,
+  MODERN_LICENSE_ALGORITHM,
   MIN_LICENSE_SECRET_LENGTH,
   MAX_LICENSE_KEY_LENGTH,
+  LICENSE_PUBLIC_KEY_PATH,
   buildLicenseSerial,
   calculateExpiration,
   createLicenseKey,
   decodeLicenseKey,
+  getLicensePublicKey,
+  isLicenseKey,
   verifyLicensePayload,
   compareVersions,
   normalizeDate,

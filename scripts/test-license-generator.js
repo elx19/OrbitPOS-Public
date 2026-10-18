@@ -1,4 +1,5 @@
 const assert = require('assert');
+const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -10,6 +11,10 @@ const {
   decodeLicenseKey,
   verifyLicensePayload
 } = require('../shared/license-core');
+
+const { privateKey: modernPrivateKey, publicKey: modernPublicKey } = crypto.generateKeyPairSync('ed25519');
+const modernPublicPem = modernPublicKey.export({ type: 'spki', format: 'pem' });
+process.env.ORBITPOS_LICENSE_PUBLIC_KEY = modernPublicPem;
 
 const key = createLicenseKey({
   machineId: 'machine-test-001',
@@ -26,6 +31,24 @@ assert.equal(payload.businessName, 'Tienda San Jose');
 assert.equal(payload.licenseType, 'monthly');
 assert.equal(payload.serial, 'JR-QA-001');
 assert.equal(payload.schema, 2);
+
+const modernKey = createLicenseKey({
+  machineId: 'machine-modern-001',
+  businessName: 'Tienda ORB3',
+  licenseType: 'annual',
+  edition: 'professional',
+  versionMinCompatible: '2.1.0-alpha.27',
+  serial: 'JR-ORB3-001',
+  signingKey: modernPrivateKey
+});
+assert.match(modernKey, /^ORB3\./);
+const previousSecret = process.env.ORBITPOS_LICENSE_SECRET;
+delete process.env.ORBITPOS_LICENSE_SECRET;
+const modernPayload = decodeLicenseKey(modernKey);
+assert.equal(modernPayload.machineId, 'machine-modern-001');
+assert.equal(modernPayload.serial, 'JR-ORB3-001');
+assert.equal(verifyLicensePayload(modernPayload, { machineId: 'machine-modern-001' }).valid, true);
+process.env.ORBITPOS_LICENSE_SECRET = previousSecret;
 
 const verification = verifyLicensePayload(payload, {
   machineId: 'machine-test-001',
@@ -75,6 +98,10 @@ assert.throws(
 const generatorPath = path.join(__dirname, 'license-generator.js');
 const keyFile = path.join(__dirname, '..', '.qa', 'license-generator-test.key');
 const secretFile = path.join(__dirname, '..', '.qa', 'license-generator-test.secret');
+const privateKeyFile = path.join(__dirname, '..', '.qa', 'license-generator-test-private.pem');
+const publicKeyFile = path.join(__dirname, '..', '.qa', 'license-generator-test-public.pem');
+fs.writeFileSync(privateKeyFile, modernPrivateKey.export({ type: 'pkcs8', format: 'pem' }), { encoding: 'utf8', mode: 0o600 });
+fs.writeFileSync(publicKeyFile, modernPublicPem, { encoding: 'utf8', mode: 0o644 });
 const generated = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-cli-001', '--business', 'Tienda CLI', '--type', 'monthly', '--out', keyFile, '--json'], {
   env: process.env,
   encoding: 'utf8'
@@ -95,6 +122,21 @@ const verifiedText = spawnSync(process.execPath, [generatorPath, 'verify', '--ke
   encoding: 'utf8'
 });
 assert.equal(verifiedText.status, 2, `verify en texto debe fallar con codigo 2: ${verifiedText.stderr}`);
+fs.unlinkSync(keyFile);
+
+const generatedModern = spawnSync(process.execPath, [generatorPath, 'generate', '--private-key-file', privateKeyFile, '--machine-id', 'machine-cli-orb3', '--business', 'Tienda CLI ORB3', '--type', 'annual', '--out', keyFile, '--json'], {
+  env: { ...process.env, ORBITPOS_LICENSE_SECRET: '', ORBITPOS_LICENSE_PUBLIC_KEY: modernPublicPem },
+  encoding: 'utf8'
+});
+assert.equal(generatedModern.status, 0, generatedModern.stderr);
+const generatedModernResult = JSON.parse(generatedModern.stdout);
+assert.match(generatedModernResult.key, /^ORB3\./);
+const verifiedModern = spawnSync(process.execPath, [generatorPath, 'verify', '--key-file', keyFile, '--machine-id', 'machine-cli-orb3', '--json'], {
+  env: { ORBITPOS_LICENSE_SECRET: '', ORBITPOS_LICENSE_PUBLIC_KEY: modernPublicPem },
+  encoding: 'utf8'
+});
+assert.equal(verifiedModern.status, 0, verifiedModern.stderr);
+assert.equal(JSON.parse(verifiedModern.stdout).valid, true);
 fs.unlinkSync(keyFile);
 
 const malformedVerification = spawnSync(process.execPath, [generatorPath, 'verify', '--key', 'ORB2.invalid-key', '--json'], {
@@ -152,5 +194,7 @@ const forcedProtectedOutput = spawnSync(process.execPath, [generatorPath, 'gener
 });
 assert.equal(forcedProtectedOutput.status, 0, forcedProtectedOutput.stderr);
 fs.unlinkSync(protectedOutputPath);
+fs.unlinkSync(privateKeyFile);
+fs.unlinkSync(publicKeyFile);
 
 console.log('License generator QA: OK');

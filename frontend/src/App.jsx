@@ -18,10 +18,14 @@ const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
 
 function updateViewportMetrics() {
-  const width = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-  const height = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+  const viewportWidth = window.visualViewport?.width || window.innerWidth || document.documentElement.clientWidth || 0;
+  const viewportHeight = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0;
+  const width = Math.round(viewportWidth);
+  const height = Math.round(viewportHeight);
   const devicePixelRatio = window.devicePixelRatio || 1;
-  const autoScale = width < 420 ? 0.9 : width < 720 ? 0.95 : width >= 2200 ? 1.04 : 1;
+  const widthScale = width < 420 ? 0.9 : width < 720 ? 0.95 : width >= 2200 ? 1.04 : 1;
+  const heightScale = height < 650 ? 0.86 : height < 760 ? 0.94 : 1;
+  const autoScale = Math.max(0.82, Math.min(1.04, widthScale * heightScale));
   const viewportClass = width < 640 ? 'phone' : width < 1024 ? 'tablet' : width < 1440 ? 'desktop' : 'wide';
 
   document.documentElement.dataset.viewport = viewportClass;
@@ -29,6 +33,19 @@ function updateViewportMetrics() {
   document.documentElement.style.setProperty('--viewport-height', `${height}px`);
   document.documentElement.style.setProperty('--device-pixel-ratio', String(devicePixelRatio));
   document.documentElement.style.setProperty('--auto-ui-scale', String(autoScale));
+}
+
+async function updateElectronDisplayMetrics() {
+  try {
+    const metrics = await window.orbit?.display?.getMetrics?.();
+    if (!metrics) return;
+    document.documentElement.style.setProperty('--electron-scale-factor', String(metrics.scaleFactor || 1));
+    document.documentElement.style.setProperty('--screen-work-area-width', `${metrics.workAreaSize?.width || 0}px`);
+    document.documentElement.style.setProperty('--screen-work-area-height', `${metrics.workAreaSize?.height || 0}px`);
+    document.documentElement.dataset.electronDisplay = `${metrics.workAreaSize?.width || 0}x${metrics.workAreaSize?.height || 0}@${metrics.scaleFactor || 1}`;
+  } catch (error) {
+    // El navegador web no expone métricas Electron; el detector CSS sigue activo.
+  }
 }
 
 function getStoredValue(key, fallback) {
@@ -162,6 +179,7 @@ export default function App() {
 
   useEffect(() => {
     updateViewportMetrics();
+    updateElectronDisplayMetrics();
     const handleViewportChange = () => updateViewportMetrics();
     window.addEventListener('resize', handleViewportChange, { passive: true });
     window.visualViewport?.addEventListener('resize', handleViewportChange, { passive: true });

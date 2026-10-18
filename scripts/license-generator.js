@@ -28,8 +28,13 @@ Opciones de generate:
   --issued-at ISO          Emision exacta; util para migraciones o QA
   --serial JR-...         Serial manual opcional
   --out ruta.txt           Guarda la clave sin imprimir secretos adicionales
+  --private-key-file ruta  Firma una licencia ORB3 con una clave Ed25519 externa
   --force                  Permite reemplazar --out si ya existe
   --json                   Devuelve respuesta JSON
+
+Opciones de keygen:
+  keygen --private-out ruta.pem --public-out ruta.pem
+  Genera un par Ed25519. La clave privada debe conservarse fuera del repositorio.
 
 Opciones de verify:
   --machine-id ID          Comprueba que la licencia pertenece a la maquina
@@ -41,7 +46,8 @@ Opciones generales:
   --key-file ruta.txt      Lee la licencia desde un archivo en decode o verify
 
 Tipos admitidos: ${Object.keys(LICENSE_DAYS_BY_TYPE).join(', ')}
-Requiere ORBITPOS_LICENSE_SECRET en el entorno del generador y del POS.
+ORB2 requiere ORBITPOS_LICENSE_SECRET. ORB3 usa Ed25519: el generador conserva la
+clave privada y el POS solo necesita la clave publica incluida en shared/license-public-key.pem.
 `);
 }
 
@@ -113,7 +119,7 @@ function safePayload(payload) {
   };
 }
 
-function writeKeyFile(filePath, key, { force = false } = {}) {
+function writeTextFile(filePath, content, { force = false, mode = 0o600 } = {}) {
   const absolutePath = path.resolve(filePath);
   fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
 
@@ -123,9 +129,9 @@ function writeKeyFile(filePath, key, { force = false } = {}) {
 
   const temporaryPath = `${absolutePath}.${process.pid}.${crypto.randomBytes(6).toString('hex')}.tmp`;
   try {
-    fs.writeFileSync(temporaryPath, `${key}\n`, { encoding: 'utf8', mode: 0o600 });
+    fs.writeFileSync(temporaryPath, `${content}\n`, { encoding: 'utf8', mode });
     try {
-      fs.chmodSync(temporaryPath, 0o600);
+      fs.chmodSync(temporaryPath, mode);
     } catch (error) {
       // Windows puede no exponer permisos POSIX; el archivo ya fue creado correctamente.
     }
@@ -141,6 +147,40 @@ function writeKeyFile(filePath, key, { force = false } = {}) {
     throw error;
   }
   return absolutePath;
+}
+
+function writeKeyFile(filePath, key, options = {}) {
+  return writeTextFile(filePath, key, options);
+}
+
+function readPrivateSigningKey(options) {
+  const privateKeyPath = path.resolve(String(options['private-key-file'] || ''));
+  if (!options['private-key-file']) {
+    throw new Error('Falta la opcion --private-key-file para generar una licencia ORB3.');
+  }
+  if (!fs.existsSync(privateKeyPath) || !fs.statSync(privateKeyPath).isFile()) {
+    throw new Error(`No existe la clave privada: ${privateKeyPath}`);
+  }
+  if (fs.statSync(privateKeyPath).size > 16 * 1024) {
+    throw new Error('El archivo de clave privada excede el tamano maximo permitido de 16 KB.');
+  }
+  try {
+    return crypto.createPrivateKey(fs.readFileSync(privateKeyPath, 'utf8'));
+  } catch (error) {
+    throw new Error(`La clave privada no es valida: ${error.message}`);
+  }
+}
+
+function generateKeyPair(options) {
+  const privateOut = requiredOption(options, 'private-out');
+  const publicOut = requiredOption(options, 'public-out');
+  const { privateKey, publicKey } = crypto.generateKeyPairSync('ed25519');
+  const privatePem = privateKey.export({ type: 'pkcs8', format: 'pem' });
+  const publicPem = publicKey.export({ type: 'spki', format: 'pem' });
+  const privatePath = writeTextFile(privateOut, privatePem, { force: Boolean(options.force), mode: 0o600 });
+  const publicPath = writeTextFile(publicOut, publicPem, { force: Boolean(options.force), mode: 0o644 });
+  const result = { ok: true, command: 'keygen', privatePath, publicPath, algorithm: 'ed25519' };
+  return options.json ? result : `Clave privada: ${privatePath}\nClave publica: ${publicPath}`;
 }
 
 function loadSecretFromOptions(options) {
@@ -177,10 +217,18 @@ function run(command, options) {
       : machineId;
   }
 
+  if (command === 'keygen') {
+    return generateKeyPair(options);
+  }
+
   if (command === 'generate') {
     const machineId = requiredOption(options, 'machine-id');
     const businessName = requiredOption(options, 'business');
     const licenseType = assertLicenseType(requiredOption(options, 'type'));
+    const signingKey = options['private-key-file'] ? readPrivateSigningKey(options) : null;
+    if (signingKey && options['secret-file']) {
+      throw new Error('Usa --private-key-file o --secret-file, no ambos.');
+    }
     const key = createLicenseKey({
       machineId,
       businessName,
@@ -189,7 +237,8 @@ function run(command, options) {
       issuedAt: options['issued-at'] || undefined,
       edition: options.edition || 'standard',
       versionMinCompatible: options['version-min'] || undefined,
-      serial: options.serial || undefined
+      serial: options.serial || undefined,
+      signingKey
     });
     const payload = decodeLicenseKey(key);
     const outputPath = options.out
@@ -261,7 +310,7 @@ function main() {
   }
 
   try {
-    if (command !== 'machine-id') {
+    if (options['secret-file']) {
       loadSecretFromOptions(options);
     }
     const result = run(command, options);

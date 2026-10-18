@@ -24,7 +24,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.26';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.27';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -58,6 +58,27 @@ const navigationOrder = [
   'dashboard', 'pos', 'products', 'purchases', 'customers', 'suppliers', 'reports',
   'cash', 'credits', 'returns', 'quotes', 'discounts', 'notifications', 'branches', 'users', 'config', 'help', 'license'
 ];
+
+const commonUserModules = new Set([
+  'dashboard',
+  'pos',
+  'cash',
+  'customers',
+  'credits',
+  'returns',
+  'notifications',
+  'help'
+]);
+
+const primaryAdminModules = new Set([
+  'dashboard',
+  'pos',
+  'products',
+  'purchases',
+  'customers',
+  'cash',
+  'reports'
+]);
 
 const iconPaths = {
   spark: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z',
@@ -131,6 +152,7 @@ export default function AppShell({
   const [activityVersion, setActivityVersion] = useState(0);
   const [notificationSummary, setNotificationSummary] = useState({ total: 0, unread: 0 });
   const [logoVisible, setLogoVisible] = useState(true);
+  const [showAdvancedModules, setShowAdvancedModules] = useState(false);
   const [isPending, startTransition] = useTransition();
   const businessName = config.business_name || 'Mi Negocio';
   const businessType = config.business_type || 'colmado';
@@ -142,15 +164,31 @@ export default function AppShell({
 
   const visibleModules = useMemo(
     () => moduleDefinitions
+      .filter((module) => (businessProfile.modules || []).includes(module.key))
       .filter((module) => !module.adminOnly || user.role === 'admin')
+      .filter((module) => user.role === 'admin' || commonUserModules.has(module.key))
       .sort((left, right) => navigationOrder.indexOf(left.key) - navigationOrder.indexOf(right.key)),
-    [user.role]
+    [businessProfile.modules, user.role]
   );
 
   const activeModuleDefinition = useMemo(
     () => visibleModules.find((module) => module.key === activeModule) || visibleModules[0],
     [activeModule, visibleModules]
   );
+
+  const primaryModules = useMemo(
+    () => user.role === 'admin'
+      ? visibleModules.filter((module) => primaryAdminModules.has(module.key))
+      : visibleModules,
+    [user.role, visibleModules]
+  );
+
+  const advancedModules = useMemo(
+    () => visibleModules.filter((module) => user.role === 'admin' && !primaryAdminModules.has(module.key)),
+    [user.role, visibleModules]
+  );
+
+  const modulesToRender = primaryModules;
 
   const activeGroupDefinition = useMemo(
     () => moduleGroups.find((group) => group.key === activeModuleDefinition?.group) || null,
@@ -214,6 +252,12 @@ export default function AppShell({
       setActiveModule(visibleModules[0].key);
     }
   }, [activeModule, visibleModules]);
+
+  useEffect(() => {
+    if (user.role === 'admin' && activeModule && !primaryAdminModules.has(activeModule)) {
+      setShowAdvancedModules(true);
+    }
+  }, [activeModule, user.role]);
 
   function handleActivity() {
     setActivityVersion((current) => current + 1);
@@ -321,7 +365,7 @@ export default function AppShell({
           </div>
 
           <nav className="orbit-sidebar-nav soft-scrollbar flex-1 overflow-auto">
-            {visibleModules.map((module) => {
+            {modulesToRender.map((module) => {
               const isActive = activeModule === module.key;
               return (
                 <button
@@ -345,6 +389,46 @@ export default function AppShell({
                 </button>
               );
             })}
+            {user.role === 'admin' && advancedModules.length ? (
+              <button
+                type="button"
+                className="orbit-nav-more"
+                onClick={() => setShowAdvancedModules((current) => !current)}
+                aria-expanded={showAdvancedModules}
+                aria-controls="orbit-advanced-modules"
+              >
+                <span className="orbit-nav-more-label">{showAdvancedModules ? 'Ocultar módulos' : 'Más módulos'}</span>
+                <span className="orbit-nav-more-count">{advancedModules.length}</span>
+                <span className={classNames('orbit-nav-more-chevron', showAdvancedModules && 'is-open')} aria-hidden="true">⌄</span>
+              </button>
+            ) : null}
+            {user.role === 'admin' && showAdvancedModules ? (
+              <div id="orbit-advanced-modules" className="orbit-nav-advanced" aria-label="Módulos administrativos">
+                {advancedModules.map((module) => {
+                  const isActive = activeModule === module.key;
+                  return (
+                    <button
+                      key={module.key}
+                      type="button"
+                      onClick={() => selectModule(module.key)}
+                      aria-label={`${module.label}: ${module.description}`}
+                      className="orbit-nav-item orbit-nav-item-advanced w-full text-left transition"
+                      data-active={isActive}
+                    >
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-3">
+                          <NavIcon name={module.icon} active={isActive} />
+                          <span className="text-sm font-semibold">{module.label}</span>
+                        </span>
+                        {module.key === 'notifications' && notificationSummary.unread > 0 ? (
+                          <span className="orbit-notification-count">{notificationSummary.unread}</span>
+                        ) : null}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
           </nav>
 
           <div className="orbit-sidebar-footer">
@@ -362,13 +446,21 @@ export default function AppShell({
           </div>
         </aside>
 
-        <main className="flex min-h-screen min-w-0 flex-col">
+        <main className="flex min-h-screen min-w-0 flex-col" data-module={activeModule}>
           <header className="orbit-app-header">
             <label className="orbit-global-search">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 20-4.5-4.5m2-5.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" /></svg>
               <input aria-label="Buscar en OrbitPOS" placeholder="Buscar productos, clientes o facturas..." />
             </label>
             <div className="orbit-header-actions">
+              <div className="orbit-header-business" title="Sucursal activa">
+                <NavIcon name="warehouse" />
+                <span className="min-w-0">
+                  <strong className="block truncate">{businessName}</strong>
+                  <small className="block truncate">Santo Domingo, RD</small>
+                </span>
+                <span className="orbit-header-chevron">⌄</span>
+              </div>
               <button type="button" className="orbit-icon-button" aria-label="Notificaciones" onClick={() => selectModule('notifications')}>
                 <NavIcon name="bell" />
                 {notificationSummary.unread > 0 ? <span className="orbit-header-badge">{notificationSummary.unread}</span> : null}
@@ -384,7 +476,7 @@ export default function AppShell({
             </div>
           </header>
 
-          <div className="orbit-page-heading">
+          <div className="orbit-page-heading" aria-hidden="true">
             <div>
               <div className="orbit-breadcrumb">OrbitPOS <span>/</span> {activeGroupDefinition?.label || 'Sistema'}</div>
               <h1>{activeModuleDefinition?.label || 'Panel'}</h1>

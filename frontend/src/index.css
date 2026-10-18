@@ -9,6 +9,9 @@
   --viewport-width: 100vw;
   --viewport-height: 100vh;
   --device-pixel-ratio: 1;
+  --electron-scale-factor: 1;
+  --screen-work-area-width: 100vw;
+  --screen-work-area-height: 100vh;
   --app-max-width: calc(100vw - 24px);
   --bg: #f5f7fb;
   --ink: #0f2742;
@@ -558,6 +561,69 @@ select {
   background: transparent;
 }
 
+.orbit-nav-more {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  margin: 7px 2px 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #a9bfd1;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: left;
+  transition: 140ms ease;
+}
+
+.orbit-nav-more:hover,
+.orbit-nav-more[aria-expanded='true'] {
+  border-color: rgba(87, 215, 161, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.orbit-nav-more-label {
+  flex: 1;
+}
+
+.orbit-nav-more-count {
+  display: inline-flex;
+  min-width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #d3e4f2;
+  font-size: 0.65rem;
+}
+
+.orbit-nav-more-chevron {
+  font-size: 1rem;
+  line-height: 1;
+  transform: translateY(-1px);
+  transition: transform 140ms ease;
+}
+
+.orbit-nav-more-chevron.is-open {
+  transform: rotate(180deg) translateY(1px);
+}
+
+.orbit-nav-advanced {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 5px 0 1px 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.orbit-nav-item-advanced {
+  min-height: 40px !important;
+  padding-block: 7px !important;
+}
+
 .orbit-notification-count,
 .orbit-header-badge {
   display: inline-flex;
@@ -673,6 +739,40 @@ select {
   display: flex;
   align-items: center;
   gap: 18px;
+}
+
+.orbit-header-business {
+  display: flex;
+  min-width: 190px;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border: 1px solid #e1e9f1;
+  border-radius: 9px;
+  background: #fff;
+  color: #142c49;
+}
+
+.orbit-header-business > .orbit-icon {
+  width: 29px;
+  height: 29px;
+  color: #0b8d61;
+}
+
+.orbit-header-business strong {
+  font-size: .78rem;
+  line-height: 1.15;
+}
+
+.orbit-header-business small {
+  margin-top: 2px;
+  color: #7a8ea4;
+  font-size: .65rem;
+}
+
+.orbit-header-chevron {
+  margin-left: auto;
+  color: #70849a;
 }
 
 .orbit-icon-button {
@@ -881,6 +981,22 @@ select {
     gap: 0;
   }
 
+  .orbit-nav-more {
+    justify-content: center;
+    padding-inline: 6px;
+  }
+
+  .orbit-nav-more-label,
+  .orbit-nav-more-count,
+  .orbit-nav-more-chevron {
+    display: none;
+  }
+
+  .orbit-nav-advanced {
+    padding-left: 0;
+    border-left: 0;
+  }
+
   .orbit-app-header,
   .orbit-page-heading {
     padding-inline: 18px;
@@ -902,6 +1018,10 @@ select {
 
   .orbit-header-actions {
     margin-left: auto;
+  }
+
+  .orbit-header-business {
+    display: none;
   }
 
   .orbit-page-heading {
@@ -940,8 +1060,8 @@ select {
     bottom: 0;
     left: 0;
     display: block;
-    height: 68px;
-    min-height: 68px;
+    height: 68px !important;
+    min-height: 68px !important;
     padding: 6px 8px !important;
     border-radius: 18px 18px 0 0;
     box-shadow: 0 -12px 32px -22px rgba(15, 39, 66, 0.65);
@@ -1059,6 +1179,114 @@ select {
 .orbit-business-form{display:grid;gap:24px}.orbit-business-form>.block>div:first-child,.orbit-business-section-label{color:#102746;font-size:1rem;font-weight:700}.orbit-business-form .theme-input{min-height:52px!important;border-radius:10px!important;font-size:1rem!important}.orbit-business-section{display:grid;gap:11px}.orbit-business-types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.orbit-business-type{display:flex;min-height:120px;align-items:center;justify-content:center;gap:11px;flex-direction:column;border:1px solid #d6e0ea;border-radius:10px;background:#fff;color:#102746;font-size:.95rem;transition:.18s}.orbit-business-type .orbit-reference-icon{width:38px;height:38px}.orbit-business-type-green{color:#08a66c}.orbit-business-type-red{color:#f05b4f}.orbit-business-type-orange{color:#ed8a27}.orbit-business-type-navy{color:#384b65}.orbit-business-type.is-selected{border:2px solid #0bad70;background:#f1fbf7;box-shadow:0 8px 20px -18px #0bad70}.orbit-business-type strong{color:#102746}.orbit-business-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:end}.orbit-weight-toggle{display:flex;align-items:center;justify-content:space-between;min-height:52px;color:#102746;font-size:1rem;font-weight:700}.orbit-weight-toggle button{position:relative;width:72px;height:38px;border:0;border-radius:999px;background:#dfe7ee;transition:.18s}.orbit-weight-toggle button.is-on{background:#10ae72}.orbit-weight-toggle i{position:absolute;top:5px;left:5px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 2px 5px #1233;transition:.18s}.orbit-weight-toggle button.is-on i{left:39px}.orbit-business-extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.orbit-business-extra-grid .block:last-child{grid-column:span 2}
 @media(max-width:1050px){.orbit-login-brand h1{font-size:2.5rem}.orbit-wizard-layout{grid-template-columns:360px minmax(0,1fr)!important}.orbit-wizard-main{padding-inline:30px!important}.orbit-business-types{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:768px){.orbit-login-stage{padding:12px!important}.orbit-login-card{min-height:auto!important}.orbit-login-brand{min-height:600px!important;padding:35px 28px 20px!important}.orbit-login-brand h1{margin-top:55px;font-size:2.5rem}.orbit-login-form{min-height:auto!important;padding:34px 25px!important}.orbit-wizard-layout{width:calc(100vw - 24px)!important;grid-template-columns:1fr!important}.orbit-wizard-promo{min-height:330px!important}.orbit-wizard-promo h1{margin-top:40px!important;font-size:2.25rem!important}.orbit-business-bottom-grid,.orbit-business-extra-grid{grid-template-columns:1fr}.orbit-business-extra-grid .block:last-child{grid-column:auto}}
+
+/* Final module pass: align every authenticated screen to the supplied OrbitPOS references. */
+.orbit-shell main[data-module] .orbit-page-heading { display: none; }
+.orbit-shell main[data-module] .orbit-content { padding: 28px 32px 36px; }
+.orbit-shell main[data-module] .orbit-content > .space-y-6 { gap: 22px; }
+.orbit-shell main[data-module] .orbit-content .orbit-card,
+.orbit-shell main[data-module] .orbit-content .orbit-kpi {
+  border-radius: 12px !important;
+  border-color: #e2e9f0 !important;
+  box-shadow: 0 8px 25px -24px rgba(15, 39, 66, .46) !important;
+}
+.orbit-shell main[data-module] .orbit-content .orbit-card { padding: 22px; }
+.orbit-shell main[data-module] .orbit-content .orbit-card.p-0 { padding: 0; }
+.orbit-shell main[data-module] .orbit-content [class*="rounded-[24px]"],
+.orbit-shell main[data-module] .orbit-content [class*="rounded-[22px]"],
+.orbit-shell main[data-module] .orbit-content [class*="rounded-[20px]"] {
+  border-radius: 10px !important;
+}
+.orbit-shell main[data-module] .orbit-content [class*="bg-white/"] {
+  border: 1px solid #e5ebf1;
+  background: #fff;
+}
+.orbit-shell main[data-module] .orbit-content input,
+.orbit-shell main[data-module] .orbit-content select,
+.orbit-shell main[data-module] .orbit-content textarea {
+  min-height: 42px;
+  border-radius: 9px;
+  border-color: #d6e1eb;
+  background: #fff;
+}
+.orbit-shell main[data-module] .orbit-content button:not(.orbit-nav-item) {
+  border-radius: 9px;
+}
+.orbit-shell main[data-module] .orbit-content h2,
+.orbit-shell main[data-module] .orbit-content h3 {
+  letter-spacing: -.045em;
+}
+
+/* Dashboard and analytics use the compact KPI / chart rhythm from the references. */
+.orbit-shell main[data-module="dashboard"] .orbit-content > .space-y-6 > .orbit-card:first-child,
+.orbit-shell main[data-module="reports"] .orbit-content > .space-y-6 > .orbit-card:first-child {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.orbit-shell main[data-module="dashboard"] .orbit-content > .space-y-6 > .orbit-card:first-child h2,
+.orbit-shell main[data-module="reports"] .orbit-content > .space-y-6 > .orbit-card:first-child h2 {
+  font-size: clamp(1.9rem, 3vw, 2.55rem);
+}
+.orbit-shell main[data-module="dashboard"] .orbit-kpi,
+.orbit-shell main[data-module="reports"] .orbit-kpi {
+  min-height: 132px;
+  padding: 20px;
+}
+.orbit-shell main[data-module="dashboard"] .orbit-content .recharts-wrapper,
+.orbit-shell main[data-module="reports"] .orbit-content .recharts-wrapper {
+  font-size: 12px;
+}
+
+/* POS, inventory and operations need denser working surfaces than settings screens. */
+.orbit-shell main[data-module="pos"] .orbit-content,
+.orbit-shell main[data-module="products"] .orbit-content,
+.orbit-shell main[data-module="purchases"] .orbit-content {
+  padding-top: 22px;
+}
+.orbit-shell main[data-module="pos"] .orbit-content .orbit-card,
+.orbit-shell main[data-module="products"] .orbit-content .orbit-card,
+.orbit-shell main[data-module="purchases"] .orbit-content .orbit-card {
+  background: #fff;
+}
+.orbit-shell main[data-module="pos"] .orbit-content .orbit-primary-button,
+.orbit-shell main[data-module="products"] .orbit-content .orbit-primary-button,
+.orbit-shell main[data-module="purchases"] .orbit-content .orbit-primary-button {
+  min-height: 46px;
+  font-weight: 800;
+}
+.orbit-shell main[data-module="pos"] .orbit-content [class*="grid-cols-3"] {
+  min-height: 0;
+}
+.orbit-shell main[data-module="products"] .orbit-content .orbit-category-chip,
+.orbit-shell main[data-module="pos"] .orbit-content .orbit-category-chip {
+  min-height: 38px;
+  border-radius: 9px;
+}
+
+/* Reference panels use a right-hand detail drawer on management modules. */
+.orbit-shell main[data-module="credits"] .orbit-content,
+.orbit-shell main[data-module="customers"] .orbit-content,
+.orbit-shell main[data-module="suppliers"] .orbit-content,
+.orbit-shell main[data-module="users"] .orbit-content,
+.orbit-shell main[data-module="branches"] .orbit-content {
+  max-width: 1640px;
+  width: 100%;
+  margin-inline: auto;
+}
+.orbit-shell main[data-module="credits"] .orbit-content .orbit-card,
+.orbit-shell main[data-module="customers"] .orbit-content .orbit-card,
+.orbit-shell main[data-module="suppliers"] .orbit-content .orbit-card,
+.orbit-shell main[data-module="users"] .orbit-content .orbit-card,
+.orbit-shell main[data-module="branches"] .orbit-content .orbit-card {
+  background: #fff;
+}
+
+@media (max-width: 900px) {
+  .orbit-shell main[data-module] .orbit-content { padding: 18px 16px 90px; }
+  .orbit-shell main[data-module] .orbit-content .orbit-card { padding: 18px; }
+}
 
 .orbit-login-card {
   max-width: 1180px !important;

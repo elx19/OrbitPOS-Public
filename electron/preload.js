@@ -15,6 +15,9 @@ contextBridge.exposeInMainWorld('orbit', {
     getStatus: () => ipcRenderer.invoke('customer-display:status'),
     update: (payload) => ipcRenderer.send('customer-display:update', payload)
   },
+  display: {
+    getMetrics: () => ipcRenderer.invoke('display:metrics')
+  },
   updater: {
     getStatus: () => ipcRenderer.invoke('updater:status'),
     check: () => ipcRenderer.invoke('updater:check'),

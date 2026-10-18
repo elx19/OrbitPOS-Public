@@ -337,11 +337,15 @@ function broadcastCustomerDisplayState() {
 
 function createMainWindow() {
   appendStartupLog('Creando ventana principal.');
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const workArea = primaryDisplay.workAreaSize || { width: 1480, height: 920 };
+  const initialWidth = Math.min(1480, Math.max(900, workArea.width));
+  const initialHeight = Math.min(920, Math.max(620, workArea.height));
   mainWindow = new BrowserWindow({
-    width: 1480,
-    height: 920,
-    minWidth: 1240,
-    minHeight: 760,
+    width: initialWidth,
+    height: initialHeight,
+    minWidth: Math.min(980, workArea.width),
+    minHeight: Math.min(620, workArea.height),
     show: false,
     autoHideMenuBar: true,
     backgroundColor: '#f7efe1',
@@ -376,6 +380,7 @@ function createMainWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize();
+    appendStartupLog(`Ventana adaptada a pantalla. scaleFactor=${primaryDisplay.scaleFactor || 1} workArea=${workArea.width}x${workArea.height}`);
     mainWindow.show();
     scheduleStartupUpdateCheck();
   });
@@ -387,6 +392,20 @@ function createMainWindow() {
     mainWindow.loadFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
   }
 }
+
+ipcMain.handle('display:metrics', () => {
+  const display = mainWindow && !mainWindow.isDestroyed()
+    ? screen.getDisplayMatching(mainWindow.getBounds())
+    : screen.getPrimaryDisplay();
+  return {
+    id: display.id,
+    scaleFactor: display.scaleFactor || 1,
+    bounds: display.bounds,
+    workArea: display.workArea,
+    workAreaSize: display.workAreaSize,
+    size: display.size
+  };
+});
 
 function createCustomerDisplayWindow() {
   if (customerDisplayWindow && !customerDisplayWindow.isDestroyed()) {

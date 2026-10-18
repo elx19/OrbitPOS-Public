@@ -2,21 +2,25 @@
   "colmado": {
     "label": "Colmado",
     "subtitle": "Colmado",
-    "categories": ["Abarrotes", "Bebidas", "Lácteos", "Limpieza", "Panaderia"]
+    "categories": ["Abarrotes", "Bebidas", "Lácteos", "Limpieza", "Panaderia"],
+    "modules": ["dashboard", "pos", "cash", "customers", "credits", "returns", "quotes", "products", "purchases", "suppliers", "discounts", "reports", "notifications", "config", "users", "branches", "help", "license"]
   },
   "carniceria": {
     "label": "Carnicería",
     "subtitle": "Carnicería",
-    "categories": ["Carnes", "Lácteos"]
+    "categories": ["Carnes", "Lácteos"],
+    "modules": ["dashboard", "pos", "cash", "customers", "credits", "returns", "quotes", "products", "purchases", "suppliers", "discounts", "reports", "notifications", "config", "users", "branches", "help", "license"]
   },
   "embutidos": {
     "label": "Embutidos / Deli",
     "subtitle": "Embutidos · Deli",
-    "categories": ["Embutidos", "Lácteos"]
+    "categories": ["Embutidos", "Lácteos"],
+    "modules": ["dashboard", "pos", "cash", "customers", "credits", "returns", "quotes", "products", "purchases", "suppliers", "discounts", "reports", "notifications", "config", "users", "branches", "help", "license"]
   },
   "mixto": {
     "label": "Mixto",
     "subtitle": "Colmado · Carnicería · Embutidos",
-    "categories": ["Abarrotes", "Bebidas", "Carnes", "Embutidos", "Lácteos", "Limpieza", "Panaderia"]
+    "categories": ["Abarrotes", "Bebidas", "Carnes", "Embutidos", "Lácteos", "Limpieza", "Panaderia"],
+    "modules": ["dashboard", "pos", "cash", "customers", "credits", "returns", "quotes", "products", "purchases", "suppliers", "discounts", "reports", "notifications", "config", "users", "branches", "help", "license"]
   }
 }

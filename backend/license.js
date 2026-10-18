@@ -7,7 +7,7 @@ const { getDb, getConfigValue, createAuditLog } = require('./database');
 const { getMachineId } = require('../shared/machine-id');
 const {
   LICENSE_DAYS_BY_TYPE,
-  LICENSE_PREFIX,
+  LICENSE_PREFIXES,
   calculateExpiration,
   createLicenseKey,
   decodeLicenseKey
@@ -435,7 +435,7 @@ function refreshLicenseState() {
   let decodedPayload = null;
   let decodeError = null;
 
-  if (record.key && record.key.startsWith(`${LICENSE_PREFIX}.`)) {
+  if (record.key && LICENSE_PREFIXES.some((prefix) => record.key.startsWith(`${prefix}.`))) {
     try {
       decodedPayload = decodeLicenseKey(record.key);
     } catch (error) {
