@@ -21,6 +21,7 @@ export default function PurchasesPanel({ token, onActivity }) {
   const [purchases, setPurchases] = useState([]);
   const [supplierId, setSupplierId] = useState('');
   const [invoiceRef, setInvoiceRef] = useState('');
+  const [productQuery, setProductQuery] = useState('');
   const [notes, setNotes] = useState('');
   const [lines, setLines] = useState([createLine()]);
   const [message, setMessage] = useState('');
@@ -44,6 +45,21 @@ export default function PurchasesPanel({ token, onActivity }) {
   const purchaseTotal = useMemo(
     () => lines.reduce((sum, line) => sum + (Number(line.quantity || 0) * Number(line.unitCost || 0)), 0),
     [lines]
+  );
+
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = productQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return products;
+    }
+    return products.filter((product) => `${product.name} ${product.barcode || ''} ${product.category || ''}`.toLowerCase().includes(normalizedQuery));
+  }, [productQuery, products]);
+
+  const purchaseCount = purchases.length;
+  const hasValidLine = lines.some((line) => line.productId && Number(line.quantity || 0) > 0 && Number(line.unitCost || 0) >= 0);
+  const registeredTotal = useMemo(
+    () => purchases.reduce((sum, purchase) => sum + Number(purchase.total || 0), 0),
+    [purchases]
   );
 
   function updateLine(index, patch) {
@@ -85,6 +101,7 @@ export default function PurchasesPanel({ token, onActivity }) {
       setMessage('Compra registrada y stock actualizado.');
       setSupplierId('');
       setInvoiceRef('');
+      setProductQuery('');
       setNotes('');
       setLines([createLine()]);
       await loadData();
@@ -101,24 +118,26 @@ export default function PurchasesPanel({ token, onActivity }) {
       <Panel>
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Compras</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Entrada de inventario</h2>
+            <h2 className="text-4xl font-bold text-ink">Compras</h2>
             <p className="mt-3 text-sm text-slate-600">
-              Registra compras por proveedor, actualiza costos y agrega lineas sin perder de vista el historial.
+              Gestiona tus órdenes de compra y recibe inventario de forma fácil.
             </p>
           </div>
           <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Proveedores</div>
+            <div className="rounded-[24px] border border-slate-200 bg-white/80 px-5 py-4">
+              <div className="text-xs font-medium text-slate-500">Compras registradas</div>
+              <div className="mt-2 text-2xl font-bold text-ink">{purchaseCount}</div>
+              <div className="mt-1 text-xs text-slate-500">en este equipo</div>
+            </div>
+            <div className="rounded-[24px] border border-slate-200 bg-white/80 px-5 py-4">
+              <div className="text-xs font-medium text-slate-500">Total comprado</div>
+              <div className="mt-2 text-2xl font-bold text-ink">{formatCurrency(registeredTotal)}</div>
+              <div className="mt-1 text-xs text-emerald-600">historial acumulado</div>
+            </div>
+            <div className="rounded-[24px] border border-slate-200 bg-white/80 px-5 py-4">
+              <div className="text-xs font-medium text-slate-500">Proveedores activos</div>
               <div className="mt-2 text-2xl font-bold text-ink">{suppliers.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Lineas en compra</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{lines.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Total estimado</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{formatCurrency(purchaseTotal)}</div>
+              <div className="mt-1 text-xs text-slate-500">disponibles para comprar</div>
             </div>
           </div>
         </div>
@@ -128,8 +147,8 @@ export default function PurchasesPanel({ token, onActivity }) {
         <Panel>
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div>
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Nueva compra</div>
-              <h3 className="mt-2 text-2xl font-bold text-ink">Captura de entrada</h3>
+              <h3 className="text-2xl font-bold text-ink">Nueva compra</h3>
+              <div className="mt-1 text-sm text-slate-500">Registra los productos recibidos y actualiza sus costos.</div>
             </div>
             <div className="rounded-[24px] bg-white/78 px-5 py-4 text-right">
               <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Proveedor actual</div>
@@ -153,6 +172,12 @@ export default function PurchasesPanel({ token, onActivity }) {
             </Field>
           </div>
 
+          <div className="mt-5">
+            <Field label="Buscar producto">
+              <Input value={productQuery} onChange={(event) => setProductQuery(event.target.value)} placeholder="Buscar producto por nombre, código o escanear..." />
+            </Field>
+          </div>
+
           <div className="soft-scrollbar mt-5 max-h-[430px] space-y-4 overflow-auto pr-1">
             {lines.map((line, index) => (
               <div key={index} className="rounded-[24px] bg-white/78 p-4">
@@ -166,7 +191,7 @@ export default function PurchasesPanel({ token, onActivity }) {
                   <Field label="Producto">
                     <Select value={line.productId} onChange={(event) => updateLine(index, { productId: event.target.value })}>
                       <option value="">Seleccionar producto</option>
-                      {products.map((product) => (
+                      {filteredProducts.map((product) => (
                         <option key={product.id} value={product.id}>{product.name}</option>
                       ))}
                     </Select>
@@ -216,7 +241,7 @@ export default function PurchasesPanel({ token, onActivity }) {
           ) : null}
 
           <div className="mt-5">
-            <Button disabled={saving} onClick={handleSubmit}>
+            <Button disabled={saving || !hasValidLine} onClick={handleSubmit}>
               {saving ? 'Guardando...' : 'Registrar compra'}
             </Button>
           </div>
@@ -225,36 +250,78 @@ export default function PurchasesPanel({ token, onActivity }) {
         <Panel className="overflow-hidden">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Historial</div>
-              <h3 className="mt-2 text-2xl font-bold text-ink">Compras recientes</h3>
+              <h3 className="text-2xl font-bold text-ink">Entrada de inventario</h3>
+              <div className="mt-1 text-sm text-slate-500">Confirma las cantidades recibidas para actualizar el stock.</div>
             </div>
-            <div className="rounded-full bg-white/75 px-3 py-2 text-xs text-slate-500">
-              {purchases.length} registro(s)
-            </div>
+            <span className="rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">Lista para recibir</span>
           </div>
-          <div className="soft-scrollbar mt-6 max-h-[calc(100vh-21rem)] space-y-3 overflow-auto pr-1">
-            {purchases.length ? purchases.map((purchase) => (
-              <div key={purchase.id} className="rounded-[24px] bg-white/78 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="font-semibold text-slate-800">{purchase.supplier_name || 'Sin proveedor'}</div>
-                    <div className="mt-1 text-xs text-slate-500">
-                      {purchase.invoice_ref || 'Sin referencia'} | {formatDateTime(purchase.created_at)}
+
+          <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-blue-900">
+            <div className="font-semibold">Recibir inventario de esta compra</div>
+            <div className="mt-1 text-xs text-blue-700">El registro confirma la compra y suma las cantidades al inventario.</div>
+          </div>
+
+          <div className="mt-5">
+            <div className="text-sm font-semibold text-slate-700">Productos a recibir</div>
+            <div className="mt-3 space-y-3">
+              {lines.filter((line) => line.productId).length ? lines.filter((line) => line.productId).map((line, index) => {
+                const product = products.find((item) => String(item.id) === String(line.productId));
+                return (
+                  <div key={`${line.productId}-${index}`} className="rounded-2xl border border-slate-200 bg-white/80 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-slate-800">{product?.name || 'Producto seleccionado'}</div>
+                        <div className="mt-1 text-xs text-slate-500">{line.quantity || 0} {product?.unit || 'unidad'}</div>
+                      </div>
+                      <div className="text-sm font-semibold text-ink">{formatCurrency(Number(line.quantity || 0) * Number(line.unitCost || 0))}</div>
                     </div>
                   </div>
-                  <div className="text-right text-sm font-semibold text-ink">
-                    {formatCurrency(purchase.total)}
-                  </div>
-                </div>
-              </div>
-            )) : (
-              <div className="rounded-[24px] bg-white/78 px-4 py-5 text-sm text-slate-500">
-                Todavia no hay compras registradas.
-              </div>
-            )}
+                );
+              }) : (
+                <div className="rounded-2xl border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500">Agrega productos para ver la entrada.</div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-2xl bg-emerald-50 p-4">
+            <div className="flex items-center justify-between gap-3 text-sm text-slate-600">
+              <span>Total de la compra</span>
+              <span className="text-xl font-bold text-emerald-700">{formatCurrency(purchaseTotal)}</span>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <Button className="w-full" disabled={saving || !hasValidLine} onClick={handleSubmit}>
+              {saving ? 'Confirmando...' : 'Confirmar entrada'}
+            </Button>
           </div>
         </Panel>
       </div>
+
+      <Panel className="overflow-hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Historial</div>
+            <h3 className="mt-2 text-2xl font-bold text-ink">Compras recientes</h3>
+          </div>
+          <div className="rounded-full bg-white/75 px-3 py-2 text-xs text-slate-500">{purchases.length} registro(s)</div>
+        </div>
+        <div className="soft-scrollbar mt-6 max-h-[320px] space-y-3 overflow-auto pr-1">
+          {purchases.length ? purchases.map((purchase) => (
+            <div key={purchase.id} className="rounded-[24px] bg-white/78 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="font-semibold text-slate-800">{purchase.supplier_name || 'Sin proveedor'}</div>
+                  <div className="mt-1 text-xs text-slate-500">{purchase.invoice_ref || 'Sin referencia'} | {formatDateTime(purchase.created_at)}</div>
+                </div>
+                <div className="text-right text-sm font-semibold text-ink">{formatCurrency(purchase.total)}</div>
+              </div>
+            </div>
+          )) : (
+            <div className="rounded-[24px] bg-white/78 px-4 py-5 text-sm text-slate-500">Todavia no hay compras registradas.</div>
+          )}
+        </div>
+      </Panel>
     </div>
   );
 }
