@@ -23,7 +23,7 @@ function getDashboardStatements() {
     db,
     businessType,
     salesToday: db.prepare(`
-      SELECT COALESCE(SUM(total), 0) AS total
+      SELECT COUNT(*) AS transactions, COALESCE(SUM(total), 0) AS total
       FROM sales
       WHERE DATE(created_at) = DATE('now', 'localtime')
         AND status IN ('open', 'paid')
@@ -96,6 +96,7 @@ router.get('/summary', (request, response) => {
 
     return {
       salesToday: salesToday.total,
+      transactionsToday: Number(salesToday.transactions || 0),
       creditsOpen: creditsOpen.total,
       lowStockCount: lowStock.total,
       receivables: receivables.total,
