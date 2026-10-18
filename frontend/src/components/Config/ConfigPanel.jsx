@@ -10,7 +10,7 @@ import { getInitials, resolveAssetUrl } from '../../lib/assets';
 const DEFAULT_UPDATE_PROVIDER = 'github';
 const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.43';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.44';
 
 const themeOptions = [
   {
@@ -144,7 +144,7 @@ function ConfigSectionButton({ label, helper, active, onClick }) {
       type="button"
       onClick={onClick}
       className={active
-        ? 'w-full rounded-[22px] border border-transparent bg-ink px-4 py-3 text-left text-white shadow-soft transition'
+        ? 'w-full rounded-[22px] border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-left text-emerald-800 shadow-soft transition'
         : 'w-full rounded-[22px] border border-slate-200/80 bg-white/72 px-4 py-3 text-left text-slate-700 transition hover:bg-white'}
     >
       <div className="text-sm font-semibold">{label}</div>
@@ -546,26 +546,15 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
 
   return (
     <div className="space-y-6">
-      <Panel className="p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Configuracion del sistema</div>
-            <h2 className="mt-3 text-3xl font-bold text-ink">Centro de configuracion</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-              Aqui puedes actualizar datos del negocio, respaldos, integracion de nube
-              y el canal de actualizaciones del sistema.
-            </p>
-          </div>
-            <div className="rounded-[24px] bg-white/80 p-5 text-sm text-slate-600">
-              <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Version actual</div>
-              <div className="mt-2 text-lg font-bold text-ink">{meta?.version || APP_VERSION}</div>
-              <div className="mt-2">Canal: {form.update_channel}</div>
-              <div className="mt-1">Origen: {form.update_provider === 'github' ? 'GitHub Releases' : 'Servidor generico'}</div>
-            </div>
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-ink">Configuración</h2>
+          <p className="mt-2 text-sm text-slate-600">Administra la información de tu negocio y personaliza tu sistema OrbitPOS.</p>
         </div>
-      </Panel>
+        <div className="rounded-2xl bg-white/80 px-4 py-3 text-sm text-slate-600">Versión {meta?.version || APP_VERSION}</div>
+      </div>
 
-      <div className="grid gap-6 xl:grid-cols-[280px,minmax(0,1fr)]">
+      <div className="grid gap-6 xl:grid-cols-[280px,minmax(0,1fr),320px]">
         <Panel className="p-4">
           <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Modulos de configuracion</div>
           <div className="mt-4 space-y-2">
@@ -1085,6 +1074,30 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
         </div>
       </form>
       </div>
+
+      <aside className="space-y-6">
+        <Panel>
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600">◉</div>
+            <div><h3 className="text-lg font-bold text-ink">Vista previa de identidad</h3><p className="text-xs text-slate-500">Así se mostrará tu negocio en tickets, facturas y reportes.</p></div>
+          </div>
+          <div className="mt-5 rounded-2xl border border-slate-100 bg-white p-5 text-center">
+            {logoUrl && logoPreviewVisible ? <img src={logoUrl} alt={`Logo de ${form.business_name || 'Mi Negocio'}`} className="mx-auto mb-4 h-20 max-w-full object-contain" onError={() => setLogoPreviewVisible(false)} /> : <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-emerald-50 text-2xl font-bold text-emerald-700">{logoInitials}</div>}
+            <div className="text-lg font-bold text-ink">{form.business_name || 'Mi Negocio'}</div>
+            <div className="mt-2 text-xs text-slate-600">RNC: {form.business_rnc || 'No configurado'}</div>
+            <div className="mt-1 text-xs text-slate-600">Tel: {form.business_phone || 'No configurado'}</div>
+            <div className="mt-4 border-t border-dashed border-slate-200 pt-4 text-sm text-slate-700">{form.business_address || 'Agrega la dirección del negocio'}</div>
+            <div className="mt-4 text-sm font-semibold text-ink">¡Gracias por tu compra!</div>
+            <div className="mt-1 text-xs text-slate-500">{form.ticket_footer || 'Gracias por su compra.'}</div>
+          </div>
+        </Panel>
+        <Panel>
+          <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">✓</div><div><h3 className="text-lg font-bold text-ink">Estado del sistema</h3><p className="text-xs text-slate-500">Todo en orden</p></div></div>
+          <div className="mt-4 space-y-3 text-sm">
+            {[['Información del negocio', form.business_name ? 'Configurado' : 'Pendiente'], ['Impresora de tickets', form.printer_name ? 'Conectada' : 'No configurada'], ['Base de datos', form.backup_path ? 'Respaldada' : 'Pendiente'], ['Versión de OrbitPOS', meta?.version || APP_VERSION]].map(([label, value]) => <div key={label} className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3"><span className="flex items-center gap-2 text-slate-700"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />{label}</span><span className="text-right text-xs font-semibold text-emerald-700">{value}</span></div>)}
+          </div>
+        </Panel>
+      </aside>
     </div>
     </div>
   );

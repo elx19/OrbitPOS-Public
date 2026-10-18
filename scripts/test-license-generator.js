@@ -37,7 +37,7 @@ const modernKey = createLicenseKey({
   businessName: 'Tienda ORB3',
   licenseType: 'annual',
   edition: 'professional',
-  versionMinCompatible: '2.1.0-alpha.43',
+  versionMinCompatible: '2.1.0-alpha.44',
   serial: 'JR-ORB3-001',
   signingKey: modernPrivateKey
 });
