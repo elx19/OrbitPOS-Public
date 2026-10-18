@@ -64,7 +64,8 @@ router.get('/', (request, response) => {
     SELECT
       r.*,
       s.invoice_number,
-      c.name AS customer_name
+      c.name AS customer_name,
+      (SELECT GROUP_CONCAT(ri.product_name, ', ') FROM return_items ri WHERE ri.return_id = r.id) AS product_names
     FROM returns r
     LEFT JOIN sales s ON s.id = r.sale_id
     LEFT JOIN customers c ON c.id = s.customer_id
@@ -122,7 +123,8 @@ router.get('/:id', (request, response) => {
     SELECT
       r.*,
       s.invoice_number,
-      c.name AS customer_name
+      c.name AS customer_name,
+      (SELECT GROUP_CONCAT(ri.product_name, ', ') FROM return_items ri WHERE ri.return_id = r.id) AS product_names
     FROM returns r
     LEFT JOIN sales s ON s.id = r.sale_id
     LEFT JOIN customers c ON c.id = s.customer_id

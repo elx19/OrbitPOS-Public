@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiRequest } from '../../lib/api';
 import { formatCurrency, formatDateTime } from '../../lib/format';
 import Button from '../ui/Button';
-import { Field, Input, Select, TextArea } from '../ui/Field';
+import { Field, Input, Select } from '../ui/Field';
 import Panel from '../ui/Panel';
 import TicketPreview from '../ui/TicketPreview';
 
@@ -12,6 +12,7 @@ export default function ReturnsPanel({ token, onActivity }) {
   const [selectedId, setSelectedId] = useState(null);
   const [selectedSale, setSelectedSale] = useState(null);
   const [returns, setReturns] = useState([]);
+  const [historySearch, setHistorySearch] = useState('');
   const [reason, setReason] = useState('');
   const [refundMethod, setRefundMethod] = useState('cash');
   const [lines, setLines] = useState({});
@@ -136,105 +137,124 @@ export default function ReturnsPanel({ token, onActivity }) {
     }
   }
 
+  function startNewReturn() {
+    setMessage('');
+    setReason('');
+    setRefundMethod('cash');
+    setSearch('');
+    loadSales('');
+  }
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const returnsToday = returns.filter((entry) => String(entry.created_at || '').slice(0, 10) === todayKey).length;
+  const returnedTotal = returns.reduce((sum, entry) => sum + Number(entry.total || 0), 0);
+  const pendingReturns = returns.filter((entry) => entry.status && entry.status !== 'completed').length;
+  const visibleReturns = returns.filter((entry) => {
+    const needle = historySearch.trim().toLowerCase();
+    if (!needle) return true;
+    return [entry.invoice_number, entry.customer_name, entry.product_names, entry.reason]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(needle));
+  });
+
   return (
     <div className="space-y-6">
-      <Panel>
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Devoluciones</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Procesar devoluciones</h2>
-            <p className="mt-3 text-sm text-slate-600">
-              Busca una venta, selecciona los items a devolver y genera la nota sin perder el historial reciente.
-            </p>
-          </div>
-          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Ventas encontradas</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{sales.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Historial</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{returns.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Factura actual</div>
-              <div className="mt-2 truncate text-lg font-bold text-ink">{selectedSale?.invoice_number || 'Sin seleccionar'}</div>
-            </div>
-          </div>
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-ink">Devoluciones</h2>
+          <p className="mt-2 text-sm text-slate-600">Gestiona devoluciones de productos y reembolsos de tus clientes.</p>
         </div>
-      </Panel>
+        <Button onClick={startNewReturn}>＋ Nueva devolución</Button>
+      </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(320px,0.92fr),minmax(0,1.08fr)]">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/65 p-5">
+          <div className="text-sm text-slate-600">Devoluciones de hoy</div>
+          <div className="mt-2 text-3xl font-bold text-ink">{returnsToday}</div>
+          <div className="mt-1 text-xs text-emerald-700">{returns.length} registradas en total</div>
+        </div>
+        <div className="rounded-[24px] border border-blue-100 bg-blue-50/65 p-5">
+          <div className="text-sm text-slate-600">Monto devuelto</div>
+          <div className="mt-2 text-3xl font-bold text-ink">{formatCurrency(returnedTotal)}</div>
+          <div className="mt-1 text-xs text-blue-700">Reembolsos registrados</div>
+        </div>
+        <div className="rounded-[24px] border border-amber-100 bg-amber-50/70 p-5">
+          <div className="text-sm text-slate-600">Pendientes</div>
+          <div className="mt-2 text-3xl font-bold text-ink">{pendingReturns}</div>
+          <div className="mt-1 text-xs text-amber-700">Por procesar</div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.18fr),minmax(340px,0.82fr)]">
         <Panel className="overflow-hidden">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Buscar venta</div>
-              <h3 className="mt-2 text-2xl font-bold text-ink">Facturas elegibles</h3>
-            </div>
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  loadSales(event.currentTarget.value);
-                }
-              }}
-              placeholder="Factura o cliente"
-            />
+            <h3 className="text-2xl font-bold text-ink">Historial de devoluciones</h3>
+            <Input value={historySearch} onChange={(event) => setHistorySearch(event.target.value)} placeholder="Factura, cliente o producto..." />
           </div>
-
-          <div className="soft-scrollbar mt-6 max-h-[calc(100vh-21rem)] space-y-3 overflow-auto pr-1">
-            {sales.length ? sales.map((sale) => (
-              <button
-                key={sale.id}
-                type="button"
-                onClick={() => setSelectedId(sale.id)}
-                className={`w-full rounded-[24px] p-4 text-left transition ${selectedId === sale.id ? 'bg-ink text-white shadow-soft' : 'bg-white/78 hover:bg-white'}`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="truncate font-semibold">{sale.customer_name || 'Consumidor final'}</div>
-                    <div className={`mt-1 text-xs ${selectedId === sale.id ? 'text-white/75' : 'text-slate-500'}`}>
-                      Factura #{sale.invoice_number}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold">{formatCurrency(sale.total)}</div>
-                    <div className={`mt-1 text-xs ${selectedId === sale.id ? 'text-white/75' : 'text-slate-500'}`}>
-                      {formatDateTime(sale.created_at)}
-                    </div>
-                  </div>
-                </div>
-              </button>
-            )) : (
-              <div className="rounded-[24px] bg-white/78 px-4 py-5 text-sm text-slate-500">
-                No se encontraron ventas para devolver.
+          <div className="mt-5 overflow-x-auto">
+              <div className="min-w-[780px]">
+              <div className="grid grid-cols-[0.95fr,1.1fr,1.4fr,0.9fr,0.8fr,0.8fr,0.7fr] gap-3 border-b border-slate-100 px-3 pb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                <span>Factura</span><span>Cliente</span><span>Producto(s)</span><span>Motivo</span><span>Monto</span><span>Estado</span><span>Fecha</span>
               </div>
-            )}
+              <div className="divide-y divide-slate-100">
+                {visibleReturns.length ? visibleReturns.map((entry) => (
+                  <div key={entry.id} className="grid grid-cols-[0.95fr,1.1fr,1.4fr,0.9fr,0.8fr,0.8fr,0.7fr] items-center gap-3 px-3 py-4 text-sm">
+                    <div className="font-semibold text-ink">#{entry.invoice_number || '—'}<div className="mt-1 text-xs text-slate-500">DEV-{String(entry.id).padStart(5, '0')}</div></div>
+                    <div className="truncate text-slate-700">{entry.customer_name || 'Consumidor final'}</div>
+                    <div className="truncate text-slate-700" title={entry.product_names || ''}>{entry.product_names || 'Producto devuelto'}</div>
+                    <div className="truncate text-slate-500">{entry.reason || 'No indicado'}</div>
+                    <div className="font-semibold text-ink">{formatCurrency(entry.total)}</div>
+                    <div><span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${entry.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{entry.status === 'completed' ? 'Completada' : 'Pendiente'}</span></div>
+                    <div className="text-xs text-slate-500">{formatDateTime(entry.created_at)}</div>
+                    <div className="col-span-7 flex justify-end pt-1"><Button variant="ghost" onClick={() => reprintReturn(entry.id)}>Reimprimir nota</Button></div>
+                  </div>
+                )) : <div className="px-3 py-8 text-sm text-slate-500">Todavía no hay devoluciones registradas.</div>}
+              </div>
+            </div>
           </div>
+          {visibleReturns.length ? <div className="mt-4 text-xs text-slate-500">Mostrando {visibleReturns.length} de {returns.length} devoluciones</div> : null}
         </Panel>
 
         <div className="space-y-6">
+          <Panel className="overflow-hidden">
+            <h3 className="text-2xl font-bold text-ink">Procesar devolución</h3>
+            <div className="mt-5">
+              <Field label="Factura de origen">
+                <Input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') loadSales(event.currentTarget.value);
+                  }}
+                  placeholder="Buscar factura o cliente..."
+                />
+              </Field>
+            </div>
+            <div className="soft-scrollbar mt-3 max-h-36 space-y-2 overflow-auto pr-1">
+              {sales.slice(0, 5).map((sale) => (
+                <button key={sale.id} type="button" onClick={() => setSelectedId(sale.id)} className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs ${selectedId === sale.id ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-50 text-slate-700'}`}>
+                  <span className="font-semibold">#{sale.invoice_number} · {sale.customer_name || 'Consumidor final'}</span>
+                  <span>{formatCurrency(sale.total)}</span>
+                </button>
+              ))}
+            </div>
+            {selectedSale ? <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
+              <div><span className="font-semibold">Cliente:</span> {selectedSale.customer_name || 'Consumidor final'}</div>
+              <div className="mt-1"><span className="font-semibold">Fecha:</span> {formatDateTime(selectedSale.created_at)}</div>
+              <div className="mt-1"><span className="font-semibold">Total factura:</span> {formatCurrency(selectedSale.total)}</div>
+            </div> : <div className="mt-4 text-sm text-slate-500">Selecciona una factura para procesar la devolución.</div>}
+          </Panel>
+
           {selectedSale ? (
             <>
               <Panel className="overflow-hidden">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <div>
-                    <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Detalle de venta</div>
-                    <h3 className="mt-2 text-2xl font-bold text-ink">Factura #{selectedSale.invoice_number}</h3>
-                    <div className="mt-2 text-sm text-slate-500">
-                      {selectedSale.customer_name || 'Consumidor final'} | {formatDateTime(selectedSale.created_at)}
-                    </div>
-                  </div>
-                  <div className="rounded-[24px] bg-white/78 px-5 py-4 text-right">
-                    <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Total original</div>
-                    <div className="mt-2 text-2xl font-bold text-ink">{formatCurrency(selectedSale.total)}</div>
-                  </div>
+                <div className="flex items-center justify-between gap-3">
+                  <h4 className="text-lg font-bold text-ink">Productos a devolver</h4>
+                  <span className="text-xs text-slate-500">Factura #{selectedSale.invoice_number}</span>
                 </div>
-
-                <div className="soft-scrollbar mt-6 max-h-[420px] space-y-4 overflow-auto pr-1">
+                <div className="soft-scrollbar mt-4 max-h-[360px] space-y-3 overflow-auto pr-1">
                   {selectedSale.items.map((item) => (
-                    <div key={item.id} className="rounded-[24px] bg-white/78 p-4">
+                    <div key={item.id} className="rounded-2xl border border-slate-100 bg-white/80 p-4">
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <div className="font-semibold text-slate-800">{item.product_name}</div>
@@ -254,7 +274,7 @@ export default function ReturnsPanel({ token, onActivity }) {
                             onChange={(event) => updateLine(item.product_id, { quantity: event.target.value })}
                           />
                         </Field>
-                        <label className="flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-4 text-sm font-semibold text-slate-700">
+                        <label className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-700">
                           <input
                             type="checkbox"
                             checked={Boolean(lines[item.product_id]?.restock)}
@@ -269,31 +289,30 @@ export default function ReturnsPanel({ token, onActivity }) {
               </Panel>
 
               <Panel>
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr),240px]">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Metodo de reembolso">
-                      <Select value={refundMethod} onChange={(event) => setRefundMethod(event.target.value)}>
-                        <option value="cash">Efectivo</option>
-                        <option value="credit_note">Nota de credito</option>
-                        <option value="exchange">Cambio de producto</option>
-                      </Select>
-                    </Field>
-                    <Field label="Motivo">
-                      <TextArea rows={3} value={reason} onChange={(event) => setReason(event.target.value)} />
-                    </Field>
-                  </div>
-
-                  <div className="rounded-[24px] bg-white/78 p-5">
-                    <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Accion principal</div>
-                    <div className="mt-3 text-sm text-slate-500">
-                      Guarda la devolucion y genera la nota para impresion o reimpresion posterior.
-                    </div>
-                    <div className="mt-5">
-                      <Button disabled={submitting} onClick={registerReturn}>
-                        {submitting ? 'Registrando...' : 'Guardar devolucion'}
-                      </Button>
+                <div className="space-y-4">
+                  <Field label="Motivo de la devolución">
+                    <Select value={reason} onChange={(event) => setReason(event.target.value)}>
+                      <option value="">Selecciona un motivo</option>
+                      <option value="Producto en mal estado">Producto en mal estado</option>
+                      <option value="No era lo que esperaba">No era lo que esperaba</option>
+                      <option value="Error en la compra">Error en la compra</option>
+                      <option value="Cantidad incorrecta">Cantidad incorrecta</option>
+                    </Select>
+                  </Field>
+                  <div>
+                    <div className="mb-2 text-sm font-semibold text-slate-700">Método de reembolso</div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {[['cash', 'Efectivo'], ['credit_note', 'Crédito en tienda'], ['exchange', 'Cambio de producto'], ['transfer', 'Transferencia / Otro']].map(([value, label]) => (
+                        <label key={value} className="flex items-center gap-2 rounded-xl border border-slate-100 px-3 py-2 text-sm text-slate-700">
+                          <input type="radio" name="refund-method" value={value} checked={refundMethod === value} onChange={(event) => setRefundMethod(event.target.value)} />
+                          {label}
+                        </label>
+                      ))}
                     </div>
                   </div>
+                  <Button disabled={submitting} onClick={registerReturn}>
+                    {submitting ? 'Registrando...' : '✓ Confirmar devolución'}
+                  </Button>
                 </div>
               </Panel>
             </>
@@ -310,32 +329,6 @@ export default function ReturnsPanel({ token, onActivity }) {
           ) : null}
         </div>
       </div>
-
-      <Panel className="overflow-hidden">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Historial reciente</div>
-          <div className="rounded-full bg-white/75 px-3 py-2 text-xs text-slate-500">{returns.length} nota(s)</div>
-        </div>
-        <div className="soft-scrollbar mt-5 max-h-[320px] grid gap-3 overflow-auto pr-1 md:grid-cols-2 xl:grid-cols-3">
-          {returns.length ? returns.map((entry) => (
-            <div key={entry.id} className="rounded-[24px] bg-white/78 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="font-semibold text-slate-800">{entry.customer_name || 'Consumidor final'}</div>
-                <Button variant="ghost" onClick={() => reprintReturn(entry.id)}>
-                  Reimprimir
-                </Button>
-              </div>
-              <div className="mt-1 text-xs text-slate-500">Factura #{entry.invoice_number}</div>
-              <div className="mt-3 text-sm font-semibold text-ink">{formatCurrency(entry.total)}</div>
-              <div className="mt-1 text-xs text-slate-500">{formatDateTime(entry.created_at)}</div>
-            </div>
-          )) : (
-            <div className="rounded-[24px] bg-white/78 px-4 py-5 text-sm text-slate-500">
-              Todavia no hay devoluciones registradas.
-            </div>
-          )}
-        </div>
-      </Panel>
 
       <TicketPreview title="Nota de devolucion" content={notePreview} />
     </div>
