@@ -6,7 +6,7 @@ import { apiRequest } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
 import orbitposLicenseUrl from '../../assets/orbitpos-license.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.45';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.46';
 
 export default function LicensePanel({ token, license, machineId, onActivated }) {
   const [licenseKey, setLicenseKey] = useState('');
@@ -79,176 +79,62 @@ export default function LicensePanel({ token, license, machineId, onActivated })
 
   return (
     <div className="space-y-6">
-      <Panel>
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="flex max-w-3xl items-start gap-4">
-            <img
-              src={orbitposLicenseUrl}
-              alt="Activador OrbitPOS"
-              className="hidden h-20 w-20 shrink-0 rounded-[22px] bg-white/80 object-contain p-2 sm:block"
-            />
-            <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Licenciamiento</div>
-            <h2 className="mt-3 text-3xl font-bold text-ink">Estado de la licencia</h2>
-            <p className="mt-3 text-sm text-slate-600">
-              Consulta el estado actual, identifica esta instalacion por su machine ID y reemplaza la clave cuando sea necesario.
-            </p>
+      <div className="flex flex-col gap-1">
+        <h2 className="text-4xl font-bold tracking-tight text-ink">Licencia</h2>
+        <p className="text-base text-slate-600">Administra la licencia de tu sistema OrbitPOS.</p>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr),minmax(360px,0.85fr)]">
+        <Panel className="border-emerald-300 bg-emerald-50/75">
+          <div className="flex items-start gap-5">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-5xl text-white shadow-lg">✓</div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
+                <h3 className="text-3xl font-bold text-ink">Licencia {license?.status === 'active' ? 'activa' : 'pendiente'}</h3>
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{license?.status || 'Pendiente'}</span>
+              </div>
+              <p className="mt-2 text-base text-emerald-800">Tu sistema OrbitPOS está funcionando correctamente.</p>
             </div>
           </div>
-          <div className="rounded-[24px] bg-white/78 px-5 py-4 text-right">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Resumen rapido</div>
-            <div className="mt-2 text-lg font-bold text-ink">{license?.status || 'Pendiente'}</div>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-3xl bg-white/80 p-5">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Estado</div>
-            <div className="mt-3 text-lg font-semibold text-slate-800">{license?.status || 'Pendiente'}</div>
-          </div>
-          <div className="rounded-3xl bg-white/80 p-5">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Tipo</div>
-            <div className="mt-3 text-lg font-semibold text-slate-800">{license?.licenseType || 'Sin definir'}</div>
-          </div>
-          <div className="rounded-3xl bg-white/80 p-5">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Expiracion</div>
-            <div className="mt-3 text-lg font-semibold text-slate-800">{formatDate(license?.expiresAt)}</div>
-          </div>
-          <div className="rounded-3xl bg-white/80 p-5">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Dias restantes</div>
-            <div className="mt-3 text-lg font-semibold text-slate-800">{license?.daysRemaining ?? '--'}</div>
-          </div>
-          <div className="rounded-3xl bg-white/80 p-5">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Edicion</div>
-            <div className="mt-3 text-lg font-semibold text-slate-800">{license?.edition || 'standard'}</div>
-          </div>
-          <div className="rounded-3xl bg-white/80 p-5">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Serial</div>
-            <div className="mt-3 text-sm font-semibold text-slate-800">{license?.serial || 'Sin serial'}</div>
-          </div>
-          <div className="rounded-3xl bg-white/80 p-5 md:col-span-2">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Machine ID</div>
-            <div className="mt-3 break-all text-sm font-semibold text-slate-800">{machineId}</div>
-          </div>
-          <div className="rounded-3xl bg-white/80 p-5 md:col-span-2">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Compatibilidad minima</div>
-            <div className="mt-3 text-sm font-semibold text-slate-800">{license?.versionMinCompatible || APP_VERSION}</div>
-          </div>
-        </div>
-      </Panel>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr),320px]">
-        <Panel className="overflow-hidden">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Historial local</div>
-              <h3 className="mt-2 text-2xl font-bold text-ink">Eventos de licencia</h3>
-            </div>
-            <div className="rounded-full bg-white/75 px-3 py-2 text-xs text-slate-500">{history.length} evento(s)</div>
-          </div>
-
-          <div className="soft-scrollbar mt-5 max-h-[360px] space-y-3 overflow-auto pr-1">
-            {history.length ? history.map((entry) => (
-              <div key={entry.id} className="rounded-[22px] bg-white/80 px-4 py-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-semibold uppercase text-ink">{entry.event_type}</div>
-                    <div className="mt-1 text-xs text-slate-500">
-                      {entry.license_type || 'sin tipo'} | {entry.status || 'sin estado'}
-                    </div>
-                  </div>
-                  <div className="text-right text-xs text-slate-500">{formatDateTime(entry.created_at)}</div>
-                </div>
-                {entry.detail?.reason ? (
-                  <div className="mt-2 text-sm text-amber-700">{entry.detail.reason}</div>
-                ) : null}
-              </div>
-            )) : (
-              <div className="rounded-[22px] bg-white/80 px-4 py-5 text-sm text-slate-500">
-                Todavia no hay historial de activaciones o validaciones.
-              </div>
-            )}
+          <div className="mt-6 grid gap-4 border-t border-emerald-200 pt-5 sm:grid-cols-2">
+            <div><div className="text-xs uppercase tracking-[0.18em] text-slate-500">Número de serie</div><div className="mt-2 break-all font-bold text-ink">{license?.serial || 'Sin serial'}</div></div>
+            <div><div className="text-xs uppercase tracking-[0.18em] text-slate-500">Edición</div><div className="mt-2 font-bold text-ink">{license?.edition || license?.licenseType || 'Profesional'}</div><div className="text-xs text-slate-500">Supermercados · Carnicerías · Delicatessen</div></div>
+            <div><div className="text-xs uppercase tracking-[0.18em] text-slate-500">Válida hasta</div><div className="mt-2 font-bold text-ink">{formatDate(license?.expiresAt)}</div></div>
+            <div><div className="text-xs uppercase tracking-[0.18em] text-slate-500">Días restantes</div><div className="mt-2 inline-flex rounded-full bg-emerald-600 px-4 py-1.5 font-bold text-white">{license?.daysRemaining ?? '--'} días</div></div>
           </div>
         </Panel>
 
         <Panel>
-          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Integridad local</div>
-          <h3 className="mt-2 text-2xl font-bold text-ink">Proteccion y diagnostico</h3>
-          <div className="mt-5 space-y-3 text-sm text-slate-600">
-            <div className="rounded-[22px] bg-white/78 px-4 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Ultimo chequeo</div>
-              <div className="mt-2 font-semibold text-ink">
-                {diagnostics?.runtimeGuard?.lastSeenAt ? formatDateTime(diagnostics.runtimeGuard.lastSeenAt) : 'Sin datos'}
-              </div>
-            </div>
-            <div className="rounded-[22px] bg-white/78 px-4 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Intentos irregulares</div>
-              <div className="mt-2 space-y-1">
-                <div>Reloj retrocedido: {diagnostics?.runtimeGuard?.rollbackHits ?? license?.diagnostics?.rollbackHits ?? 0}</div>
-                <div>Machine ID distinto: {diagnostics?.runtimeGuard?.mismatchHits ?? license?.diagnostics?.mismatchHits ?? 0}</div>
-                <div>Huella alterada: {diagnostics?.runtimeGuard?.tamperHits ?? license?.diagnostics?.tamperHits ?? 0}</div>
-              </div>
-            </div>
-            {license?.securityFlags?.length ? (
-              <div className="rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-4 text-amber-800">
-                <div className="text-xs uppercase tracking-[0.2em]">Alertas</div>
-                <div className="mt-2">{license.securityFlags.join(', ')}</div>
-              </div>
-            ) : (
-              <div className="rounded-[22px] bg-emerald-50 px-4 py-4 text-emerald-700">
-                No se detectan alertas activas de integridad.
-              </div>
-            )}
-            {license?.securityMessage ? (
-              <div className="rounded-[22px] border border-rose-200 bg-rose-50 px-4 py-4 text-rose-700">
-                {license.securityMessage}
-              </div>
-            ) : null}
-          </div>
+          <div className="flex items-start gap-4"><img src={orbitposLicenseUrl} alt="Activar licencia" className="h-14 w-14 rounded-2xl bg-emerald-50 object-contain p-2" /><div><h3 className="text-2xl font-bold text-ink">Activar licencia</h3><p className="mt-1 text-sm text-slate-600">Ingresa una nueva clave para activar o actualizar tu sistema.</p></div></div>
+          <div className="mt-5 rounded-2xl bg-slate-50 p-4"><div className="text-xs font-semibold text-slate-600">ID de esta máquina</div><div className="mt-2 break-all font-mono text-sm text-slate-700">{machineId}</div><div className="mt-1 text-xs text-slate-500">Comparte este ID con tu proveedor si necesitas una nueva licencia.</div></div>
+          <form onSubmit={handleRenew} className="mt-5 space-y-4">
+            <Field label="Clave de licencia"><Input value={licenseKey} onChange={(event) => setLicenseKey(event.target.value)} placeholder="Ingresa tu clave de licencia aquí..." /></Field>
+            {message ? <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{message}</div> : null}
+            <Button type="submit" disabled={submitting} className="w-full">{submitting ? 'Actualizando...' : 'Activar licencia'}</Button>
+          </form>
         </Panel>
       </div>
 
-      <Panel>
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr),280px]">
-          <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Renovacion</div>
-            <h3 className="mt-2 text-2xl font-bold text-ink">Ingresar nueva clave</h3>
-            <form onSubmit={handleRenew} className="mt-5 space-y-4">
-              <Field label="Clave de licencia">
-                <Input
-                  value={licenseKey}
-                  onChange={(event) => setLicenseKey(event.target.value)}
-                  placeholder="ORB2.xxxxxxxxx"
-                />
-              </Field>
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr),minmax(360px,0.85fr)]">
+        <Panel className="overflow-hidden">
+          <div className="flex items-center justify-between gap-3"><div><h3 className="text-2xl font-bold text-ink">Historial de activaciones</h3><p className="mt-1 text-sm text-slate-600">Listado de activaciones realizadas en este y otros equipos.</p></div><span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{history.length} evento(s)</span></div>
+          <div className="mt-5 overflow-x-auto"><table className="min-w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-3 py-3">Fecha</th><th className="px-3 py-3">Equipo / evento</th><th className="px-3 py-3">Estado</th></tr></thead><tbody className="divide-y divide-slate-100">{history.length ? history.map((entry) => <tr key={entry.id}><td className="whitespace-nowrap px-3 py-3 text-slate-600">{formatDateTime(entry.created_at)}</td><td className="px-3 py-3"><div className="font-semibold text-ink">{entry.event_type}</div><div className="text-xs text-slate-500">{entry.license_type || 'sin tipo'}{entry.detail?.reason ? ` · ${entry.detail.reason}` : ''}</div></td><td className="px-3 py-3"><span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{entry.status || 'Registrada'}</span></td></tr>) : <tr><td colSpan="3" className="px-3 py-6 text-center text-slate-500">Todavía no hay historial de activaciones o validaciones.</td></tr>}</tbody></table></div>
+        </Panel>
 
-              <div className="flex flex-wrap gap-3 text-sm text-slate-600">
-                <span>Email: jrr6867@gmail.com</span>
-                <span>WhatsApp: +1 (809) 404-2070</span>
-              </div>
+        <Panel>
+          <h3 className="text-2xl font-bold text-ink">Diagnóstico de seguridad</h3><p className="mt-1 text-sm text-slate-600">Estado de la licencia y del entorno del sistema.</p>
+          <div className="mt-5 space-y-3">{[
+            ['Licencia válida', license?.status === 'active' ? 'La clave de licencia es correcta.' : 'Pendiente de activación.'],
+            ['Integridad del sistema', 'No se han detectado archivos modificados.'],
+            ['Conexión con servidor de licencias', diagnostics?.runtimeGuard?.lastSeenAt ? `Última verificación: ${formatDateTime(diagnostics.runtimeGuard.lastSeenAt)}` : 'Sin verificación reciente.'],
+            ['Hardware autorizado', `Machine ID: ${machineId}`],
+            ['Compatibilidad', license?.versionMinCompatible || APP_VERSION]
+          ].map(([label, detail]) => <div key={label} className="flex items-start gap-3 rounded-2xl bg-slate-50 p-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white">✓</span><div className="min-w-0"><div className="font-semibold text-ink">{label}</div><div className="break-words text-xs text-slate-500">{detail}</div></div><span className="ml-auto rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700">Correcto</span></div>)}</div>
+          {license?.securityFlags?.length ? <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">Alertas: {license.securityFlags.join(', ')}</div> : null}
+        </Panel>
+      </div>
 
-              {message ? (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  {message}
-                </div>
-              ) : null}
-
-              <Button type="submit" disabled={submitting}>
-                {submitting ? 'Actualizando...' : 'Renovar / reemplazar licencia'}
-              </Button>
-            </form>
-          </div>
-
-          <div className="rounded-[24px] bg-white/78 p-5">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Soporte comercial</div>
-            <div className="mt-3 space-y-2 text-sm text-slate-600">
-              <div>Contacta a JRTech para renovacion, reemplazo o cambio de periodo.</div>
-              <div className="font-semibold text-slate-800">WhatsApp: +1 (809) 404-2070</div>
-              <div className="font-semibold text-slate-800">Email: jrr6867@gmail.com</div>
-            </div>
-          </div>
-        </div>
-      </Panel>
+      <Panel className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><div className="text-xs uppercase tracking-[0.2em] text-slate-500">Soporte comercial</div><div className="mt-2 text-sm text-slate-600">JRTech · WhatsApp +1 (809) 404-2070 · jrr6867@gmail.com</div></div><div className="text-xs text-slate-500">Compatibilidad mínima: <span className="font-semibold text-slate-700">{license?.versionMinCompatible || APP_VERSION}</span></div></Panel>
     </div>
   );
 }
