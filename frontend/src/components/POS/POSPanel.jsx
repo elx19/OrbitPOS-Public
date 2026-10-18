@@ -302,11 +302,21 @@ export default function POSPanel({
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 xl:grid-cols-4">
-        <div className="rounded-[24px] bg-white/76 px-5 py-4"><div className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Caja</div><div className="mt-2 text-xl font-bold text-ink">{register ? 'Abierta' : 'Pendiente'}</div><div className="mt-1 text-sm text-slate-500">{register ? `Sucursal ${register.branch_name || 'Principal'}` : 'Abrir aqui mismo para vender'}</div></div>
-        <div className="rounded-[24px] bg-white/76 px-5 py-4"><div className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Venta actual</div><div className="mt-2 text-xl font-bold text-ink">{saleType === 'credit' ? 'Credito' : 'Contado'}</div><div className="mt-1 text-sm text-slate-500">{cart.length} producto(s) en carrito</div></div>
-        <div className="rounded-[24px] bg-white/76 px-5 py-4"><div className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Cliente</div><div className="mt-2 truncate text-xl font-bold text-ink">{selectedCustomer?.name || 'Consumidor final'}</div><div className="mt-1 text-sm text-slate-500">Total proyectado {formatCurrency(totals.total)}</div></div>
-        <div className="rounded-[24px] bg-white/76 px-5 py-4"><div className="text-[11px] uppercase tracking-[0.22em] text-slate-500">Catalogo</div><div className="mt-2 text-xl font-bold text-ink">{filteredProducts.length} producto(s)</div><div className="mt-1 text-sm text-slate-500">Listo para vender sin cambiar de pantalla</div></div>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Punto de venta</div>
+          <h2 className="mt-2 text-4xl font-bold tracking-[-0.05em] text-ink">Nueva venta</h2>
+          <p className="mt-2 text-base text-slate-600">Escanea un codigo de barras, busca un producto o seleccionalo de la derecha.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="rounded-[12px] border border-slate-200 bg-white px-4 py-3 text-sm">
+            <span className="text-slate-500">Caja: </span>
+            <strong className={register ? 'text-emerald-700' : 'text-amber-700'}>{register ? 'Abierta' : 'Pendiente'}</strong>
+          </div>
+          <div className="rounded-[12px] border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
+            {cart.length} producto(s) · {formatCurrency(totals.total)}
+          </div>
+        </div>
       </div>
 
       {message ? <Panel><div className="text-sm font-semibold text-amber-800">{message}</div></Panel> : null}
