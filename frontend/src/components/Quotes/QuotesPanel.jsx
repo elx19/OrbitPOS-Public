@@ -36,6 +36,10 @@ export default function QuotesPanel({ token, onActivity }) {
   const [preview, setPreview] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const draftCount = quotes.filter((quote) => ['pending', 'draft'].includes(quote.status)).length;
+  const sentCount = quotes.filter((quote) => ['sent', 'approved'].includes(quote.status)).length;
+  const convertedCount = quotes.filter((quote) => quote.status === 'converted').length;
+
   async function loadData() {
     const [quotesResult, customersResult, productsResult] = await Promise.all([
       apiRequest('/api/quotes', { token }),
@@ -195,33 +199,32 @@ export default function QuotesPanel({ token, onActivity }) {
     }
   }
 
+  function startNewQuote() {
+    setSelectedId(null);
+    setSelectedQuote(null);
+    setCustomerId('');
+    setValidUntil('');
+    setNotes('');
+    setDiscount('0');
+    setLines([createLine()]);
+    setMessage('');
+  }
+
   return (
     <div className="space-y-6">
-      <Panel>
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Cotizaciones</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Presupuestos y conversion a venta</h2>
-            <p className="mt-3 text-sm text-slate-600">
-              Crea cotizaciones, compártelas con el cliente y conviértelas en venta desde la misma pantalla.
-            </p>
-          </div>
-          <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[520px]">
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Cotizaciones</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{quotes.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Lineas activas</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{lines.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Seleccionada</div>
-              <div className="mt-2 truncate text-lg font-bold text-ink">{selectedQuote?.quote_number || 'Ninguna'}</div>
-            </div>
-          </div>
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-ink">Cotizaciones</h2>
+          <p className="mt-2 text-sm text-slate-600">Crea y envía cotizaciones a tus clientes. Convierte en venta cuando estén listos.</p>
         </div>
-      </Panel>
+        <Button onClick={startNewQuote}>＋ Nueva cotización</Button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-[24px] border border-slate-100 bg-white/80 p-5"><div className="text-sm text-slate-600">Borradores</div><div className="mt-2 text-3xl font-bold text-ink">{draftCount}</div><div className="mt-1 text-xs text-slate-500">Cotizaciones en proceso</div></div>
+        <div className="rounded-[24px] border border-blue-100 bg-blue-50/60 p-5"><div className="text-sm text-slate-600">Enviadas</div><div className="mt-2 text-3xl font-bold text-ink">{sentCount}</div><div className="mt-1 text-xs text-blue-700">Pendientes de respuesta</div></div>
+        <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/60 p-5"><div className="text-sm text-slate-600">Convertidas a venta</div><div className="mt-2 text-3xl font-bold text-ink">{convertedCount}</div><div className="mt-1 text-xs text-emerald-700">Este mes</div></div>
+      </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.02fr),minmax(320px,0.98fr)]">
         <Panel>
