@@ -16,7 +16,16 @@ contextBridge.exposeInMainWorld('orbit', {
     update: (payload) => ipcRenderer.send('customer-display:update', payload)
   },
   display: {
-    getMetrics: () => ipcRenderer.invoke('display:metrics')
+    getMetrics: () => ipcRenderer.invoke('display:metrics'),
+    onMetricsChange: (handler) => {
+      if (typeof handler !== 'function') {
+        return () => {};
+      }
+
+      const listener = (_event, metrics) => handler(metrics);
+      ipcRenderer.on('display:metrics-changed', listener);
+      return () => ipcRenderer.removeListener('display:metrics-changed', listener);
+    }
   },
   updater: {
     getStatus: () => ipcRenderer.invoke('updater:status'),

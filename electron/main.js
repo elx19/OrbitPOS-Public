@@ -335,6 +335,27 @@ function broadcastCustomerDisplayState() {
   }
 }
 
+function getMainDisplayMetrics() {
+  const display = mainWindow && !mainWindow.isDestroyed()
+    ? screen.getDisplayMatching(mainWindow.getBounds())
+    : screen.getPrimaryDisplay();
+
+  return {
+    id: display.id,
+    scaleFactor: display.scaleFactor || 1,
+    bounds: display.bounds,
+    workArea: display.workArea,
+    workAreaSize: display.workAreaSize,
+    size: display.size
+  };
+}
+
+function broadcastDisplayMetrics() {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('display:metrics-changed', getMainDisplayMetrics());
+  }
+}
+
 function createMainWindow() {
   appendStartupLog('Creando ventana principal.');
   const primaryDisplay = screen.getPrimaryDisplay();
@@ -378,10 +399,25 @@ function createMainWindow() {
     appendStartupLog('Ventana principal cerrada.');
   });
 
+  const notifyDisplayMetrics = () => {
+    clearTimeout(mainWindow.__orbitDisplayMetricsTimer);
+    mainWindow.__orbitDisplayMetricsTimer = setTimeout(() => {
+      broadcastDisplayMetrics();
+    }, 100);
+  };
+  mainWindow.on('resize', notifyDisplayMetrics);
+  mainWindow.on('move', notifyDisplayMetrics);
+  mainWindow.on('maximize', notifyDisplayMetrics);
+  mainWindow.on('unmaximize', notifyDisplayMetrics);
+  screen.on('display-metrics-changed', notifyDisplayMetrics);
+  screen.on('display-added', notifyDisplayMetrics);
+  screen.on('display-removed', notifyDisplayMetrics);
+
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize();
     appendStartupLog(`Ventana adaptada a pantalla. scaleFactor=${primaryDisplay.scaleFactor || 1} workArea=${workArea.width}x${workArea.height}`);
     mainWindow.show();
+    broadcastDisplayMetrics();
     scheduleStartupUpdateCheck();
   });
 
@@ -394,17 +430,7 @@ function createMainWindow() {
 }
 
 ipcMain.handle('display:metrics', () => {
-  const display = mainWindow && !mainWindow.isDestroyed()
-    ? screen.getDisplayMatching(mainWindow.getBounds())
-    : screen.getPrimaryDisplay();
-  return {
-    id: display.id,
-    scaleFactor: display.scaleFactor || 1,
-    bounds: display.bounds,
-    workArea: display.workArea,
-    workAreaSize: display.workAreaSize,
-    size: display.size
-  };
+  return getMainDisplayMetrics();
 });
 
 function createCustomerDisplayWindow() {

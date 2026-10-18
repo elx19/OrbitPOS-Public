@@ -35,14 +35,18 @@ function updateViewportMetrics() {
   document.documentElement.style.setProperty('--auto-ui-scale', String(autoScale));
 }
 
+function applyElectronDisplayMetrics(metrics) {
+  if (!metrics) return;
+  document.documentElement.style.setProperty('--electron-scale-factor', String(metrics.scaleFactor || 1));
+  document.documentElement.style.setProperty('--screen-work-area-width', `${metrics.workAreaSize?.width || 0}px`);
+  document.documentElement.style.setProperty('--screen-work-area-height', `${metrics.workAreaSize?.height || 0}px`);
+  document.documentElement.dataset.electronDisplay = `${metrics.workAreaSize?.width || 0}x${metrics.workAreaSize?.height || 0}@${metrics.scaleFactor || 1}`;
+}
+
 async function updateElectronDisplayMetrics() {
   try {
     const metrics = await window.orbit?.display?.getMetrics?.();
-    if (!metrics) return;
-    document.documentElement.style.setProperty('--electron-scale-factor', String(metrics.scaleFactor || 1));
-    document.documentElement.style.setProperty('--screen-work-area-width', `${metrics.workAreaSize?.width || 0}px`);
-    document.documentElement.style.setProperty('--screen-work-area-height', `${metrics.workAreaSize?.height || 0}px`);
-    document.documentElement.dataset.electronDisplay = `${metrics.workAreaSize?.width || 0}x${metrics.workAreaSize?.height || 0}@${metrics.scaleFactor || 1}`;
+    applyElectronDisplayMetrics(metrics);
   } catch (error) {
     // El navegador web no expone métricas Electron; el detector CSS sigue activo.
   }
@@ -181,6 +185,7 @@ export default function App() {
     updateViewportMetrics();
     updateElectronDisplayMetrics();
     const handleViewportChange = () => updateViewportMetrics();
+    const removeDisplayListener = window.orbit?.display?.onMetricsChange?.(applyElectronDisplayMetrics) || (() => {});
     window.addEventListener('resize', handleViewportChange, { passive: true });
     window.visualViewport?.addEventListener('resize', handleViewportChange, { passive: true });
     window.visualViewport?.addEventListener('scroll', handleViewportChange, { passive: true });
@@ -189,6 +194,7 @@ export default function App() {
       window.removeEventListener('resize', handleViewportChange);
       window.visualViewport?.removeEventListener('resize', handleViewportChange);
       window.visualViewport?.removeEventListener('scroll', handleViewportChange);
+      removeDisplayListener();
     };
   }, []);
 
