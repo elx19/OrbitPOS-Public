@@ -514,6 +514,30 @@ async function runCommercialQa() {
       })
     });
     assertCondition(rejectedMixedCategory.status === 400, 'El perfil de carniceria permitio crear una categoria ajena.');
+    const rejectedMixedSale = await fetch(`${apiBaseUrl}/api/sales/preview`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        items: [{ productId: productBread.payload.id, quantity: 1 }]
+      })
+    });
+    assertCondition(rejectedMixedSale.status === 400, 'El POS permitio vender un producto fuera del perfil.');
+    const rejectedMixedPurchase = await fetch(`${apiBaseUrl}/api/purchases`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        supplierId: supplier.payload.id,
+        invoiceRef: 'QA-COMPRA-FUERA-PERFIL',
+        items: [{ productId: productBread.payload.id, quantity: 1, unitCost: 10 }]
+      })
+    });
+    assertCondition(rejectedMixedPurchase.status === 400, 'Compras permitio recibir un producto fuera del perfil.');
     await apiRequest(apiBaseUrl, '/api/config', {
       method: 'PUT',
       token,

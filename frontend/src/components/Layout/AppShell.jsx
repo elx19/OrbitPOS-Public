@@ -24,7 +24,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.33';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.34';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -68,6 +68,16 @@ const commonUserModules = new Set([
   'returns',
   'notifications',
   'help'
+]);
+
+// A common user keeps the four daily workflows visible. The rest remains
+// available from the compact secondary menu, so the sidebar does not become
+// a long operational checklist on small screens.
+const commonPrimaryModules = new Set([
+  'dashboard',
+  'pos',
+  'cash',
+  'customers'
 ]);
 
 const primaryAdminModules = new Set([
@@ -179,12 +189,14 @@ export default function AppShell({
   const primaryModules = useMemo(
     () => user.role === 'admin'
       ? visibleModules.filter((module) => primaryAdminModules.has(module.key))
-      : visibleModules,
+      : visibleModules.filter((module) => commonPrimaryModules.has(module.key)),
     [user.role, visibleModules]
   );
 
   const advancedModules = useMemo(
-    () => visibleModules.filter((module) => user.role === 'admin' && !primaryAdminModules.has(module.key)),
+    () => visibleModules.filter((module) => user.role === 'admin'
+      ? !primaryAdminModules.has(module.key)
+      : !commonPrimaryModules.has(module.key)),
     [user.role, visibleModules]
   );
 
@@ -254,10 +266,10 @@ export default function AppShell({
   }, [activeModule, visibleModules]);
 
   useEffect(() => {
-    if (user.role === 'admin' && activeModule && !primaryAdminModules.has(activeModule)) {
+    if (activeModule && !primaryModules.some((module) => module.key === activeModule)) {
       setShowAdvancedModules(true);
     }
-  }, [activeModule, user.role]);
+  }, [activeModule, primaryModules]);
 
   function handleActivity() {
     setActivityVersion((current) => current + 1);
@@ -389,7 +401,7 @@ export default function AppShell({
                 </button>
               );
             })}
-            {user.role === 'admin' && advancedModules.length ? (
+            {advancedModules.length ? (
               <button
                 type="button"
                 className="orbit-nav-more"
@@ -402,8 +414,8 @@ export default function AppShell({
                 <span className={classNames('orbit-nav-more-chevron', showAdvancedModules && 'is-open')} aria-hidden="true">⌄</span>
               </button>
             ) : null}
-            {user.role === 'admin' && showAdvancedModules ? (
-              <div id="orbit-advanced-modules" className="orbit-nav-advanced" aria-label="Módulos administrativos">
+            {showAdvancedModules ? (
+              <div id="orbit-advanced-modules" className="orbit-nav-advanced" aria-label="Más módulos">
                 {advancedModules.map((module) => {
                   const isActive = activeModule === module.key;
                   return (

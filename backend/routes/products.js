@@ -1,19 +1,9 @@
 const express = require('express');
 const { getDb, createAuditLog } = require('../database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const businessProfiles = require('../../shared/business-profiles.json');
+const { getBusinessCategories, isAllowedBusinessCategory } = require('../helpers/businessProfile');
 
 const router = express.Router();
-
-function getBusinessCategories() {
-  const businessType = getDb().prepare("SELECT value FROM config WHERE key = 'business_type'").get()?.value || 'colmado';
-  return businessProfiles[businessType]?.categories || businessProfiles.colmado.categories;
-}
-
-function isAllowedCategory(category) {
-  const normalized = String(category || '').trim().toLowerCase();
-  return !normalized || getBusinessCategories().some((allowed) => allowed.toLowerCase() === normalized);
-}
 
 router.use(authenticateToken);
 
@@ -73,7 +63,7 @@ router.post('/', requireAdmin, (request, response) => {
     });
   }
 
-  if (!isAllowedCategory(category)) {
+  if (!isAllowedBusinessCategory(category)) {
     return response.status(400).json({
       message: 'La categoria no corresponde al tipo de negocio configurado.'
     });
@@ -142,7 +132,7 @@ router.put('/:id', requireAdmin, (request, response) => {
     active: request.body?.active === undefined ? existing.active : (request.body.active ? 1 : 0)
   };
 
-  if (!isAllowedCategory(payload.category)) {
+  if (!isAllowedBusinessCategory(payload.category)) {
     return response.status(400).json({
       message: 'La categoria no corresponde al tipo de negocio configurado.'
     });

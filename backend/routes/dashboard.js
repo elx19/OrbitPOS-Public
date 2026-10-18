@@ -2,6 +2,7 @@ const express = require('express');
 const { getDb } = require('../database');
 const { withRuntimeCache } = require('../helpers/runtimeCache');
 const { authenticateToken } = require('../middleware/auth');
+const { getBusinessType, getBusinessCategories } = require('../helpers/businessProfile');
 
 const router = express.Router();
 
@@ -9,13 +10,18 @@ let dashboardStatements = null;
 
 function getDashboardStatements() {
   const db = getDb();
+  const businessType = getBusinessType();
 
-  if (dashboardStatements?.db === db) {
+  if (dashboardStatements?.db === db && dashboardStatements.businessType === businessType) {
     return dashboardStatements;
   }
 
+  const businessCategories = getBusinessCategories();
+  const categoryPlaceholders = businessCategories.map(() => '?').join(', ');
+
   dashboardStatements = {
     db,
+    businessType,
     salesToday: db.prepare(`
       SELECT COALESCE(SUM(total), 0) AS total
       FROM sales
@@ -34,6 +40,7 @@ function getDashboardStatements() {
       FROM products
       WHERE active = 1
         AND stock <= min_stock
+        AND category IN (${categoryPlaceholders})
     `),
     receivables: db.prepare(`
       SELECT COALESCE(SUM(balance), 0) AS total
@@ -47,9 +54,11 @@ function getDashboardStatements() {
       LIMIT 5
     `),
     topProducts: db.prepare(`
-      SELECT product_name AS name, COALESCE(SUM(quantity), 0) AS quantity
-      FROM sale_items
-      GROUP BY product_name
+      SELECT si.product_name AS name, COALESCE(SUM(si.quantity), 0) AS quantity
+      FROM sale_items si
+      INNER JOIN products p ON p.id = si.product_id
+      WHERE p.category IN (${categoryPlaceholders})
+      GROUP BY si.product_name
       ORDER BY quantity DESC
       LIMIT 5
     `),
@@ -82,7 +91,7 @@ router.get('/summary', (request, response) => {
     const statements = getDashboardStatements();
     const salesToday = statements.salesToday.get();
     const creditsOpen = statements.creditsOpen.get();
-    const lowStock = statements.lowStock.get();
+    const lowStock = statements.lowStock.get(...getBusinessCategories());
     const receivables = statements.receivables.get();
 
     return {
@@ -91,7 +100,7 @@ router.get('/summary', (request, response) => {
       lowStockCount: lowStock.total,
       receivables: receivables.total,
       chart: statements.chart.all(),
-      topProducts: statements.topProducts.all(),
+      topProducts: statements.topProducts.all(...getBusinessCategories()),
       recentSales: statements.recentSales.all(),
       overdueCustomers: statements.overdueCustomers.all()
     };

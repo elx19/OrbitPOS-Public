@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
 const { getDb, getConfigValue } = require('../database');
 const { withRuntimeCache } = require('../helpers/runtimeCache');
+const { getBusinessType, getBusinessCategories } = require('../helpers/businessProfile');
 
 let reportStatements = null;
 
@@ -57,13 +58,18 @@ function resolveRange(query) {
 
 function getReportStatements() {
   const db = getDb();
+  const businessType = getBusinessType();
 
-  if (reportStatements?.db === db) {
+  if (reportStatements?.db === db && reportStatements.businessType === businessType) {
     return reportStatements;
   }
 
+  const businessCategories = getBusinessCategories();
+  const categoryPlaceholders = businessCategories.map(() => '?').join(', ');
+
   reportStatements = {
     db,
+    businessType,
     metrics: db.prepare(`
       SELECT
         COUNT(*) AS total_sales,
@@ -121,8 +127,10 @@ function getReportStatements() {
         COALESCE(SUM(si.subtotal), 0) AS revenue
       FROM sale_items si
       INNER JOIN sales s ON s.id = si.sale_id
+      INNER JOIN products p ON p.id = si.product_id
       WHERE s.status != 'cancelled'
         AND s.created_at BETWEEN ? AND ?
+        AND p.category IN (${categoryPlaceholders})
       GROUP BY si.product_name
       ORDER BY quantity DESC, revenue DESC
       LIMIT 8
@@ -130,10 +138,13 @@ function getReportStatements() {
     salesByDay: db.prepare(`
       SELECT
         substr(s.created_at, 1, 10) AS day,
-        COALESCE(SUM(s.total), 0) AS total_amount
+        COALESCE(SUM(si.subtotal), 0) AS total_amount
       FROM sales s
+      INNER JOIN sale_items si ON si.sale_id = s.id
+      INNER JOIN products p ON p.id = si.product_id
       WHERE s.status != 'cancelled'
         AND s.created_at BETWEEN ? AND ?
+        AND p.category IN (${categoryPlaceholders})
       GROUP BY substr(s.created_at, 1, 10)
       ORDER BY day ASC
     `),
@@ -141,8 +152,10 @@ function getReportStatements() {
       SELECT COALESCE(SUM(si.quantity), 0) AS items_sold
       FROM sale_items si
       INNER JOIN sales s ON s.id = si.sale_id
+      INNER JOIN products p ON p.id = si.product_id
       WHERE s.status != 'cancelled'
         AND s.created_at BETWEEN ? AND ?
+        AND p.category IN (${categoryPlaceholders})
     `),
     salesByUser: db.prepare(`
       SELECT
@@ -178,6 +191,7 @@ function getReportStatements() {
       FROM products
       WHERE active = 1
         AND stock <= min_stock
+        AND category IN (${categoryPlaceholders})
       ORDER BY stock ASC, name ASC
       LIMIT 10
     `)
@@ -223,12 +237,12 @@ function buildReportData(query = {}) {
         quotedTotal: Number(quotes.quoted_total || 0),
         convertedQuotes: Number(quotes.converted_quotes || 0)
       },
-      topProducts: statements.topProducts.all(range.sqlStart, range.sqlEnd),
-      salesByDay: statements.salesByDay.all(range.sqlStart, range.sqlEnd),
-      itemsSold: Number(statements.itemsSold.get(range.sqlStart, range.sqlEnd).items_sold || 0),
+      topProducts: statements.topProducts.all(range.sqlStart, range.sqlEnd, ...getBusinessCategories()),
+      salesByDay: statements.salesByDay.all(range.sqlStart, range.sqlEnd, ...getBusinessCategories()),
+      itemsSold: Number(statements.itemsSold.get(range.sqlStart, range.sqlEnd, ...getBusinessCategories()).items_sold || 0),
       salesByUser: statements.salesByUser.all(range.sqlStart, range.sqlEnd),
       recentSales: statements.recentSales.all(range.sqlStart, range.sqlEnd),
-      lowStock: statements.lowStock.all()
+      lowStock: statements.lowStock.all(...getBusinessCategories())
     };
   });
 }

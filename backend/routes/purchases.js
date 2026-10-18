@@ -1,6 +1,7 @@
 const express = require('express');
 const { getDb, createAuditLog } = require('../database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { getBusinessCategories } = require('../helpers/businessProfile');
 
 const router = express.Router();
 
@@ -72,6 +73,7 @@ router.post('/', requireAdmin, (request, response) => {
 
   const productIds = [...new Set(items.map((item) => Number(item.productId)).filter(Boolean))];
   const db = getDb();
+  const businessCategories = getBusinessCategories();
   const selectedSupplier = supplierId
     ? db.prepare('SELECT * FROM suppliers WHERE id = ?').get(supplierId)
     : null;
@@ -87,7 +89,8 @@ router.post('/', requireAdmin, (request, response) => {
         SELECT *
         FROM products
         WHERE id IN (${productIds.map(() => '?').join(',')})
-      `).all(...productIds)
+          AND category IN (${businessCategories.map(() => '?').join(',')})
+      `).all(...productIds, ...businessCategories)
     : [];
   const productsMap = new Map(productRows.map((product) => [product.id, product]));
 

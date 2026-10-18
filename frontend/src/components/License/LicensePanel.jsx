@@ -6,7 +6,7 @@ import { apiRequest } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
 import orbitposLicenseUrl from '../../assets/orbitpos-license.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.33';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.34';
 
 export default function LicensePanel({ token, license, machineId, onActivated }) {
   const [licenseKey, setLicenseKey] = useState('');

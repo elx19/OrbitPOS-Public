@@ -4,6 +4,7 @@ const { generateQrCode } = require('../helpers/qrcode');
 const { buildSaleTicket } = require('../helpers/receipt');
 const { refreshLicenseState } = require('../license');
 const { evaluateAutomaticDiscounts, getLineKey } = require('./discounts');
+const { getBusinessCategories } = require('../helpers/businessProfile');
 
 function nextSequence(tableName) {
   const row = getDb().prepare(`SELECT id FROM ${tableName} ORDER BY id DESC LIMIT 1`).get();
@@ -91,12 +92,14 @@ function calculateSalePreview({
 
   const db = getDb();
   const productIds = [...new Set(items.map((item) => Number(item.productId)).filter(Boolean))];
+  const businessCategories = getBusinessCategories();
   const productRows = productIds.length
     ? db.prepare(`
         SELECT *
         FROM products
         WHERE id IN (${productIds.map(() => '?').join(',')})
-      `).all(...productIds)
+          AND category IN (${businessCategories.map(() => '?').join(',')})
+      `).all(...productIds, ...businessCategories)
     : [];
   const productsMap = new Map(productRows.map((product) => [product.id, product]));
   const selectedCustomer = customerId
