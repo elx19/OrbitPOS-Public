@@ -8,7 +8,7 @@ import { formatDate } from '../../lib/format';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 import loginStorefrontUrl from '../../assets/login-storefront.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.31';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.32';
 
 function ReferenceIcon({ name, className = '' }) {
   const paths = {

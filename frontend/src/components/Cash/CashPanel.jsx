@@ -103,12 +103,10 @@ export default function CashPanel({ token, onActivity }) {
       <Panel className="p-5 md:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Operacion de caja</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">
-              {current ? 'Caja activa' : 'Preparar apertura'}
-            </h2>
+            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Caja</div>
+            <h2 className="mt-2 text-3xl font-bold text-ink">Caja</h2>
             <div className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-              Controla apertura, cierre, resumen de efectivo y el historial reciente de movimientos.
+              Gestiona la caja, revisa sus movimientos y realiza el arqueo para cerrar.
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
