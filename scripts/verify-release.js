@@ -155,8 +155,8 @@ function checkBrandAndReferences() {
   const references = fs.readdirSync(referenceDirectory)
     .filter((fileName) => fileName.endsWith('-reference.png'))
     .sort();
-  if (references.length !== 19) {
-    failures.push(`Se esperaban 19 referencias visuales PNG y se encontraron ${references.length}.`);
+  if (references.length !== 20) {
+    failures.push(`Se esperaban 20 referencias visuales PNG y se encontraron ${references.length}.`);
   }
 
   const authoritativeDirectory = absolute('docs/ui-reference/authoritative');
@@ -166,8 +166,8 @@ function checkBrandAndReferences() {
     const authoritativeReferences = fs.readdirSync(authoritativeDirectory)
       .filter((fileName) => fileName.toLowerCase().endsWith('.png'))
       .sort();
-    if (authoritativeReferences.length !== 19) {
-      failures.push(`Se esperaban 19 referencias autoritativas PNG y se encontraron ${authoritativeReferences.length}.`);
+    if (authoritativeReferences.length !== 20) {
+      failures.push(`Se esperaban 20 referencias autoritativas PNG y se encontraron ${authoritativeReferences.length}.`);
     }
   }
 

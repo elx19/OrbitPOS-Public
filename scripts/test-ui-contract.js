@@ -66,6 +66,25 @@ if (manifest) {
   }
 }
 
+const profiles = readJson('shared/business-profiles.json');
+if (profiles) {
+  Object.entries(profiles).forEach(([profileKey, profile]) => {
+    const modules = new Set(profile.modules || []);
+    const primaryModules = profile.primaryModules || [];
+    if (!primaryModules.length || primaryModules.length > 5) {
+      fail(`El perfil ${profileKey} debe declarar entre 1 y 5 modulos primarios.`);
+    }
+    if (new Set(primaryModules).size !== primaryModules.length) {
+      fail(`El perfil ${profileKey} repite modulos primarios.`);
+    }
+    primaryModules.forEach((moduleKey) => {
+      if (!modules.has(moduleKey)) {
+        fail(`El perfil ${profileKey} expone ${moduleKey} como primario pero no lo permite en modules.`);
+      }
+    });
+  });
+}
+
 if (failures.length) {
   console.error('UI contract QA: FALLO');
   failures.forEach((failure) => console.error(`- ${failure}`));

@@ -1,6 +1,6 @@
 # OrbitPOS UI reference
 
-La carpeta `authoritative/` contiene las referencias visuales entregadas para esta iteracion. Esas 19 pantallas son la fuente visual prioritaria para la implementacion; las PNG del nivel superior conservan las primeras propuestas del rediseño.
+La carpeta `authoritative/` contiene las referencias visuales entregadas y generadas para esta iteracion. Estas 20 pantallas son la fuente visual prioritaria para la implementacion; las PNG del nivel superior conservan las propuestas del rediseño.
 
 | Modulo | Referencia autoritativa |
 | --- | --- |
@@ -19,6 +19,7 @@ La carpeta `authoritative/` contiene las referencias visuales entregadas para es
 | Cotizaciones | `authoritative/quotes-reference.png` |
 | Notificaciones | `authoritative/notifications-reference.png` |
 | Usuarios | `authoritative/users-reference.png` |
+| Sucursales | `authoritative/branches-reference.png` |
 | Configuración | `authoritative/config-reference.png` |
 | Ayuda | `authoritative/help-reference.png` |
 | Licencia | `authoritative/license-reference.png` |
