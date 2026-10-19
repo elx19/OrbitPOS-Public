@@ -11,7 +11,7 @@ import { readImageFileAsDataUrl } from '../../lib/logoPicker';
 const DEFAULT_UPDATE_PROVIDER = 'github';
 const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.64';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.65';
 
 const themeOptions = [
   {

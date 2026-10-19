@@ -66,8 +66,12 @@ if (manifest) {
   }
 
   const shellSource = fs.readFileSync(absolute('frontend/src/components/Layout/AppShell.jsx'), 'utf8');
+  const styleSource = fs.readFileSync(absolute('frontend/src/index.css'), 'utf8');
   if (!shellSource.includes('businessLogoUrl') || !shellSource.includes('orbit-profile-menu-logo')) {
     fail('El logo del negocio debe mostrarse dentro del menu de perfil.');
+  }
+  if (!styleSource.includes('height: 100dvh !important') || !styleSource.includes('height: min(800px, calc(100dvh - 40px)) !important')) {
+    fail('El login debe calcular su altura con el viewport dinamico en pantallas de escritorio.');
   }
   if (!shellSource.includes('Cerrar sesión') || !shellSource.includes('onLogout()')) {
     fail('Cerrar sesión debe permanecer disponible desde el perfil del usuario.');

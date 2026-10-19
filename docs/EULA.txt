@@ -2,7 +2,7 @@ ACUERDO DE LICENCIA DE USUARIO FINAL (EULA)
 
 Producto: OrbitPOS
 Titular o desarrollador: JRTech
-Versión: 2.1.0-alpha.64
+Versión: 2.1.0-alpha.65
 Fecha de vigencia: 18 de octubre de 2026
 
 1. ACEPTACIÓN DEL ACUERDO
