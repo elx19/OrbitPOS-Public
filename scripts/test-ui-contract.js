@@ -66,6 +66,15 @@ if (manifest) {
   }
 
   const shellSource = fs.readFileSync(absolute('frontend/src/components/Layout/AppShell.jsx'), 'utf8');
+  if (!shellSource.includes('businessLogoUrl') || !shellSource.includes('orbit-profile-menu-logo')) {
+    fail('El logo del negocio debe mostrarse dentro del menu de perfil.');
+  }
+  if (!shellSource.includes('Cerrar sesión') || !shellSource.includes('onLogout()')) {
+    fail('Cerrar sesión debe permanecer disponible desde el perfil del usuario.');
+  }
+  if (/orbit-sidebar-footer[\s\S]*orbit-logout/.test(shellSource)) {
+    fail('El sidebar no debe contener el control de cerrar sesión.');
+  }
   ['DashboardHome', 'POSPanel', 'ProductsPanel', 'PurchasesPanel', 'ReportsPanel'].forEach((componentName) => {
     const componentPattern = new RegExp(`<${componentName}\\s+key=\\{businessType\\}`);
     if (!componentPattern.test(shellSource)) {

@@ -37,6 +37,10 @@ function updateViewportMetrics() {
 
 function applyElectronDisplayMetrics(metrics) {
   if (!metrics) return;
+  // A window can move to a monitor with a different DPI without changing the
+  // React tree. Re-read the logical viewport after Electron reports the new
+  // display so the automatic scale is recalculated immediately.
+  updateViewportMetrics();
   document.documentElement.style.setProperty('--electron-scale-factor', String(metrics.scaleFactor || 1));
   document.documentElement.style.setProperty('--screen-work-area-width', `${metrics.workAreaSize?.width || 0}px`);
   document.documentElement.style.setProperty('--screen-work-area-height', `${metrics.workAreaSize?.height || 0}px`);
