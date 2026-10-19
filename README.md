@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.66** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.67** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea será `release/OrbitPOS Setup 2.1.0-alpha.66.exe` después de ejecutar la construcción. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea será `release/OrbitPOS Setup 2.1.0-alpha.67.exe` después de ejecutar la construcción. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.66` conserva la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes y administradores de negocios especializados, refuerza el aislamiento por tipo de negocio y alinea Inicio, Ventas, Configuración, Ayuda y Licencia con las referencias visuales. Esta iteración mantiene el login adaptativo a la altura dinámica del viewport y endurece el flujo operativo del generador de licencias: solo acepta Ed25519, inspecciona huellas con `key-info` sin exponer secretos y evita colisiones entre rutas privada/pública durante `keygen`. También conserva la navegación administrativa específica, el catálogo inicial operativo y categorizado, la emisión ORB3/Ed25519, los permisos por usuario, los controles de autorización en la API, el workspace de Ventas sin scroll externo, el endurecimiento de ventanas a monitores pequeños y secundarios, la identidad del negocio en el perfil fuera del sidebar y la EULA declarada en el instalador NSIS. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
+La línea `v2.1.0-alpha.67` conserva la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes y muestra al administrador los módulos autorizados de su tipo de negocio como en las referencias. Esta iteración cierra el menú de perfil al hacer clic fuera o pulsar Escape, mantiene la identidad del negocio dentro del perfil y endurece el empaquetado Electron: deshabilita `RunAsNode`/Inspector, activa cifrado de cookies, exige integridad de `app.asar` y restringe la carga al paquete firmado, conservando el snapshot integrado de Electron. También conserva el generador ORB3/Ed25519, `key-info`, el catálogo inicial categorizado, los permisos por usuario, los controles de autorización en la API, el workspace de Ventas sin scroll externo, el autoajuste a monitores pequeños y secundarios, y la EULA declarada en el instalador NSIS. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
 
 ## Generador de licencias
 

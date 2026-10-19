@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useState, useTransition } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { classNames } from '../../lib/format';
 import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
@@ -25,7 +25,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.66';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.67';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -68,27 +68,6 @@ const commonPrimaryModules = new Set([
   'pos',
   'cash',
   'customers'
-]);
-
-const primaryAdminModules = new Set([
-  'dashboard',
-  'pos',
-  'products',
-  'purchases',
-  'customers',
-  'cash',
-  'reports',
-  'suppliers',
-  'credits',
-  'returns',
-  'quotes',
-  'discounts',
-  'notifications',
-  'branches',
-  'users',
-  'config',
-  'help',
-  'license'
 ]);
 
 const iconPaths = {
@@ -166,6 +145,7 @@ export default function AppShell({
   const [logoVisible, setLogoVisible] = useState(true);
   const [showAdvancedModules, setShowAdvancedModules] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef(null);
   const [isPending, startTransition] = useTransition();
   const businessName = config.business_name || 'Mi Negocio';
   const businessType = config.business_type || 'colmado';
@@ -193,16 +173,16 @@ export default function AppShell({
 
   const primaryModules = useMemo(
     () => user.role === 'admin'
-      ? visibleModules.filter((module) => new Set(businessProfile.adminPrimaryModules || primaryAdminModules).has(module.key))
+      ? visibleModules
       : visibleModules.filter((module) => new Set(businessProfile.primaryModules || commonPrimaryModules).has(module.key)),
-    [businessProfile.adminPrimaryModules, businessProfile.primaryModules, user.role, visibleModules]
+    [businessProfile.primaryModules, user.role, visibleModules]
   );
 
   const advancedModules = useMemo(
-    () => visibleModules.filter((module) => user.role === 'admin'
-      ? !new Set(businessProfile.adminPrimaryModules || primaryAdminModules).has(module.key)
-      : !new Set(businessProfile.primaryModules || commonPrimaryModules).has(module.key)),
-    [businessProfile.adminPrimaryModules, businessProfile.primaryModules, user.role, visibleModules]
+    () => user.role === 'admin'
+      ? []
+      : visibleModules.filter((module) => !new Set(businessProfile.primaryModules || commonPrimaryModules).has(module.key)),
+    [businessProfile.primaryModules, user.role, visibleModules]
   );
 
   const modulesToRender = primaryModules;
@@ -275,6 +255,31 @@ export default function AppShell({
       setShowAdvancedModules(true);
     }
   }, [activeModule, primaryModules]);
+
+  useEffect(() => {
+    if (!showProfileMenu) {
+      return undefined;
+    }
+
+    function closeProfileMenu(event) {
+      if (!profileMenuRef.current?.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    }
+
+    function closeProfileMenuWithEscape(event) {
+      if (event.key === 'Escape') {
+        setShowProfileMenu(false);
+      }
+    }
+
+    document.addEventListener('pointerdown', closeProfileMenu);
+    document.addEventListener('keydown', closeProfileMenuWithEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeProfileMenu);
+      document.removeEventListener('keydown', closeProfileMenuWithEscape);
+    };
+  }, [showProfileMenu]);
 
   function handleActivity() {
     setActivityVersion((current) => current + 1);
@@ -483,7 +488,7 @@ export default function AppShell({
                 <NavIcon name="bell" />
                 {notificationSummary.unread > 0 ? <span className="orbit-header-badge">{notificationSummary.unread}</span> : null}
               </button>
-              <div className="orbit-profile-wrap">
+              <div ref={profileMenuRef} className="orbit-profile-wrap">
                 <button
                   type="button"
                   className="orbit-user-menu"

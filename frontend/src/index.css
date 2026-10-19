@@ -1288,6 +1288,46 @@ select {
   }
 }
 
+/* Admin reference layouts show the complete business-authorized navigation;
+   common users keep the compact primary flow above. Short desktop windows
+   use a tighter rhythm inside the sidebar instead of growing the page. */
+@media (min-width: 641px) and (max-height: 760px) {
+  .orbit-sidebar {
+    padding-top: 12px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .orbit-sidebar-nav {
+    gap: 1px;
+    margin-top: 15px;
+  }
+
+  .orbit-sidebar-nav .orbit-nav-item {
+    min-height: 35px;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+  }
+
+  .orbit-sidebar-nav .orbit-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .orbit-sidebar-nav .orbit-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .orbit-sidebar-footer {
+    padding-top: 8px;
+  }
+
+  .orbit-store-switcher {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+}
+
 /* Exact visual treatment for the supplied login and initial-configuration references. */
 .orbit-login-stage{background:#f4f8fb!important;padding:28px!important}
 .orbit-login-card{min-height:800px!important;max-width:1350px!important;border-radius:18px!important;background:#fff!important;box-shadow:0 30px 80px -44px rgba(11,40,69,.32)!important}

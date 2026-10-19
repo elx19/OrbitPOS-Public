@@ -1,6 +1,6 @@
 {
   "name": "orbitpos",
-  "version": "2.1.0-alpha.66",
+  "version": "2.1.0-alpha.67",
   "private": true,
   "author": "JRTech",
   "description": "Sistema de terminal de venta al publico OrbitPOS",
@@ -24,9 +24,10 @@
     "qa:license": "node scripts/test-license-generator.js",
     "qa:hardware": "node scripts/test-hardware.js",
     "qa:display": "node scripts/test-display-layout.js",
+    "qa:fuses": "node scripts/verify-electron-fuses.js",
     "qa:ui": "node scripts/test-ui-contract.js",
     "qa:packaged": "node scripts/test-packaged-runtime.js",
-    "qa:production": "npm run qa:license && npm run qa:hardware && npm run qa:display && npm run qa:ui && npm run qa:commercial:node22 && npm run qa:packaged && npm run qa:release",
+    "qa:production": "npm run qa:license && npm run qa:hardware && npm run qa:display && npm run qa:ui && npm run qa:commercial:node22 && npm run qa:packaged && npm run qa:fuses && npm run qa:release",
     "qa:release": "node scripts/verify-release.js",
     "release:clean-data": "node scripts/clean-release-runtime-data.js",
     "qa:commercial": "node scripts/test-commercial-qa.js",
@@ -61,6 +62,7 @@
     "serialport": "^13.0.0"
   },
   "devDependencies": {
+    "@electron/fuses": "^2.1.3",
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.1.2",
@@ -93,6 +95,7 @@
       "target": "nsis",
       "signAndEditExecutable": false
     },
+    "afterPack": "scripts/after-pack.mjs",
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
