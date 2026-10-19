@@ -9,6 +9,45 @@ const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
 const DEFAULT_UPDATE_GITHUB_RELEASE_TYPE = 'release';
 
+const DEMO_CATALOGS = {
+  colmado: [
+    ['Arroz Selecto 5 lb', 'Abarrotes', 'DEMO-ABA-001', 120, 165, 60, 8, 'saco', 0],
+    ['Habichuelas rojas 1 lb', 'Abarrotes', 'DEMO-ABA-002', 48, 70, 45, 8, 'unidad', 0],
+    ['Aceite vegetal 1 L', 'Abarrotes', 'DEMO-ABA-003', 110, 150, 35, 8, 'unidad', 0],
+    ['Agua 1 L', 'Bebidas', 'DEMO-BEB-001', 18, 35, 80, 12, 'unidad', 0],
+    ['Leche entera 1 L', 'Lácteos', 'DEMO-LAC-001', 58, 82, 28, 6, 'unidad', 0],
+    ['Pan de molde', 'Panaderia', 'DEMO-PAN-001', 65, 95, 24, 5, 'unidad', 0],
+    ['Detergente en polvo', 'Limpieza', 'DEMO-LIM-001', 72, 110, 20, 5, 'unidad', 0]
+  ],
+  carniceria: [
+    ['Carne de res (Kg)', 'Carnes', 'DEMO-CAR-001', 250, 380, 24, 8, 'kg', 1],
+    ['Pechuga de pollo (Kg)', 'Carnes', 'DEMO-CAR-002', 180, 295, 20, 6, 'kg', 1],
+    ['Chuleta de cerdo (Kg)', 'Carnes', 'DEMO-CAR-003', 210, 320, 18, 6, 'kg', 1],
+    ['Carne molida (Kg)', 'Carnes', 'DEMO-CAR-004', 190, 310, 16, 5, 'kg', 1],
+    ['Queso blanco', 'Lácteos', 'DEMO-LAC-001', 220, 320, 25, 6, 'kg', 1]
+  ],
+  embutidos: [
+    ['Longganiza (500g)', 'Embutidos', 'DEMO-EMB-001', 180, 280, 22, 6, 'unidad', 0],
+    ['Salami premium (200g)', 'Embutidos', 'DEMO-EMB-002', 90, 145, 28, 8, 'unidad', 0],
+    ['Jamón cocido (200g)', 'Embutidos', 'DEMO-EMB-003', 75, 125, 24, 6, 'unidad', 0],
+    ['Mortadela (500g)', 'Embutidos', 'DEMO-EMB-004', 125, 195, 18, 5, 'unidad', 0],
+    ['Queso gouda', 'Lácteos', 'DEMO-LAC-001', 240, 350, 20, 5, 'kg', 1]
+  ],
+  mixto: [
+    ['Arroz Selecto 5 lb', 'Abarrotes', 'DEMO-ABA-001', 120, 165, 60, 8, 'saco', 0],
+    ['Habichuelas rojas 1 lb', 'Abarrotes', 'DEMO-ABA-002', 48, 70, 45, 8, 'unidad', 0],
+    ['Aceite vegetal 1 L', 'Abarrotes', 'DEMO-ABA-003', 110, 150, 35, 8, 'unidad', 0],
+    ['Agua 1 L', 'Bebidas', 'DEMO-BEB-001', 18, 35, 80, 12, 'unidad', 0],
+    ['Leche entera 1 L', 'Lácteos', 'DEMO-LAC-001', 58, 82, 28, 6, 'unidad', 0],
+    ['Carne de res (Kg)', 'Carnes', 'DEMO-CAR-001', 250, 380, 24, 8, 'kg', 1],
+    ['Pechuga de pollo (Kg)', 'Carnes', 'DEMO-CAR-002', 180, 295, 20, 6, 'kg', 1],
+    ['Longganiza (500g)', 'Embutidos', 'DEMO-EMB-001', 180, 280, 22, 6, 'unidad', 0],
+    ['Salami premium (200g)', 'Embutidos', 'DEMO-EMB-002', 90, 145, 28, 8, 'unidad', 0],
+    ['Pan de molde', 'Panaderia', 'DEMO-PAN-001', 65, 95, 24, 5, 'unidad', 0],
+    ['Detergente en polvo', 'Limpieza', 'DEMO-LIM-001', 72, 110, 20, 5, 'unidad', 0]
+  ]
+};
+
 const DATA_DIR = process.env.ORBITPOS_DATA_DIR
   ? path.resolve(process.env.ORBITPOS_DATA_DIR)
   : path.join(__dirname, '..', 'data');
@@ -524,6 +563,28 @@ function seedCoreData() {
   });
 }
 
+function seedDemoCatalog(businessType = 'colmado') {
+  const catalog = DEMO_CATALOGS[businessType] || DEMO_CATALOGS.colmado;
+  const existing = getDb().prepare('SELECT COUNT(*) AS total FROM products').get();
+  if (Number(existing?.total || 0) > 0 || !catalog.length) {
+    return 0;
+  }
+
+  const insertProduct = getDb().prepare(`
+    INSERT INTO products (
+      name, barcode, category, image_path, cost_price, sale_price, stock, min_stock, unit, weighed, active
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+  `);
+  const insertCatalog = getDb().transaction((rows) => {
+    rows.forEach(([name, category, barcode, costPrice, salePrice, stock, minStock, unit, weighed]) => {
+      insertProduct.run(name, barcode, category, null, costPrice, salePrice, stock, minStock, unit, weighed ? 1 : 0);
+    });
+  });
+
+  insertCatalog(catalog);
+  return catalog.length;
+}
+
 function getConfigValue(key, fallback = null) {
   const row = getDb().prepare('SELECT value FROM config WHERE key = ?').get(key);
   return row ? row.value : fallback;
@@ -594,5 +655,6 @@ module.exports = {
   getConfigValue,
   getConfigEntries,
   setConfigEntries,
+  seedDemoCatalog,
   createAuditLog
 };

@@ -225,7 +225,8 @@ async function runCommercialQa() {
     assertCondition(wizardComplete.payload.license?.isDemo, 'El wizard no inicio la demo automatica.');
     assertCondition(wizardComplete.payload.license?.daysRemaining === 30, 'La demo no quedo con 30 dias.');
     recordStep('Wizard completado con demo', {
-      daysRemaining: wizardComplete.payload.license.daysRemaining
+      daysRemaining: wizardComplete.payload.license.daysRemaining,
+      demoCatalogCount: wizardComplete.payload.demoCatalogCount
     });
 
     const protectedWizardRead = await fetch(`${apiBaseUrl}/api/wizard/read-scanner`, {
@@ -246,6 +247,14 @@ async function runCommercialQa() {
     let token = login.payload.token;
     assertCondition(Boolean(token), 'El login admin no devolvio token.');
     recordStep('Login administrador', { role: login.payload.user?.role });
+
+    const demoCatalog = await apiRequest(apiBaseUrl, '/api/products', { token });
+    assertCondition(demoCatalog.payload.length > 0, 'La demo no inicio con un catalogo operativo.');
+    assertCondition(
+      demoCatalog.payload.every((product) => ['Abarrotes', 'Bebidas', 'Carnes', 'Embutidos', 'Lácteos', 'Limpieza', 'Panaderia'].includes(product.category)),
+      'El catalogo demo contiene una categoria desconocida.'
+    );
+    recordStep('Catalogo demo operativo y categorizado', { products: demoCatalog.payload.length });
 
     const recoveryQuestion = await apiRequest(apiBaseUrl, '/api/auth/recovery/question?username=admin');
     assertCondition(recoveryQuestion.payload.question === adminQuestion, 'La pregunta de seguridad no coincide.');

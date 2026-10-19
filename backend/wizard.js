@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { getDb, getConfigEntries, setConfigEntries, createAuditLog } = require('./database');
+const { getDb, getConfigEntries, setConfigEntries, seedDemoCatalog, createAuditLog } = require('./database');
 const { startDemo, activateLicenseKey, getMachineId, refreshLicenseState } = require('./license');
 const { listPrinters, testPrinter, autoDetectPrinter } = require('./helpers/printer');
 const { listSerialPorts, testScannerConnection, autoDetectScanner, readScannerBarcode } = require('./helpers/barcode');
@@ -221,6 +221,9 @@ function createWizardRouter() {
       const summary = licenseKey
         ? activateLicenseKey(licenseKey)
         : startDemo(business?.name || 'Mi Negocio');
+      const demoCatalogCount = licenseKey
+        ? 0
+        : seedDemoCatalog(business?.businessType || 'colmado');
 
       createAuditLog({
         action: 'wizard_completed',
@@ -235,7 +238,8 @@ function createWizardRouter() {
 
       response.json({
         ok: true,
-        license: summary
+        license: summary,
+        demoCatalogCount
       });
     } catch (error) {
       response.status(400).json({
