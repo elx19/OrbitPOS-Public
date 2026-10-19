@@ -152,6 +152,12 @@ function normalizeLicensePayload(payload) {
   const normalizedLicenseType = assertLicenseType(payload.licenseType);
   const normalizedIssuedAt = payload.issuedAt ? normalizeDate(payload.issuedAt, 'issuedAt', { nullable: false }) : null;
   const normalizedExpiresAt = normalizeDate(payload.expiresAt, 'expiresAt');
+  if (!normalizedIssuedAt) {
+    throw new Error('La licencia debe incluir una fecha de emision.');
+  }
+  if (normalizedLicenseType !== 'permanent' && !normalizedExpiresAt) {
+    throw new Error('Las licencias con duracion deben incluir una fecha de expiracion.');
+  }
   if (normalizedIssuedAt && normalizedExpiresAt && new Date(normalizedExpiresAt) < new Date(normalizedIssuedAt)) {
     throw new Error('La fecha de expiracion no puede ser anterior a la emision.');
   }

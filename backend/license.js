@@ -10,7 +10,8 @@ const {
   LICENSE_PREFIXES,
   calculateExpiration,
   createLicenseKey,
-  decodeLicenseKey
+  decodeLicenseKey,
+  verifyLicensePayload
 } = require('../shared/license-core');
 const { authenticateToken, requireAdmin } = require('./middleware/auth');
 
@@ -523,6 +524,26 @@ function activateLicenseKey(licenseKey, options = {}) {
   const payload = decodeLicenseKey(licenseKey);
   const currentMachineId = getMachineId();
 
+  const verification = verifyLicensePayload(payload, {
+    machineId: currentMachineId,
+    appVersion: packageJson.version
+  });
+  if (!verification.valid) {
+    if (verification.expired) {
+      throw new Error('La licencia ya esta vencida.');
+    }
+    if (verification.notYetIssued) {
+      throw new Error('La licencia aun no esta vigente.');
+    }
+    if (!verification.versionCompatible) {
+      throw new Error(`La licencia requiere OrbitPOS ${payload.versionMinCompatible} o superior.`);
+    }
+    if (verification.machineMatches === false) {
+      throw new Error('La licencia no corresponde a esta maquina.');
+    }
+    throw new Error('La licencia no pudo validarse.');
+  }
+
   if (payload.machineId !== currentMachineId) {
     throw new Error('La licencia no corresponde a esta maquina.');
   }
@@ -593,6 +614,14 @@ function activateLicenseKey(licenseKey, options = {}) {
 function createLicenseRouter() {
   const router = express.Router();
 
+  function requireSetupOrAdmin(request, response, next) {
+    if (getConfigValue('wizard_completed', '0') !== '1') {
+      return next();
+    }
+
+    return authenticateToken(request, response, () => requireAdmin(request, response, next));
+  }
+
   router.get('/status', (request, response) => {
     response.json(refreshLicenseState());
   });
@@ -603,7 +632,7 @@ function createLicenseRouter() {
     });
   });
 
-  router.post('/activate', (request, response) => {
+  router.post('/activate', requireSetupOrAdmin, (request, response) => {
     try {
       const { licenseKey } = request.body || {};
       const summary = activateLicenseKey(licenseKey);

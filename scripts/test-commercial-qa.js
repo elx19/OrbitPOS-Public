@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const packageJson = require('../package.json');
 
 const securityQuestions = require('../shared/security-questions.json');
@@ -78,6 +79,8 @@ async function runCommercialQa() {
   process.env.ORBITPOS_DATA_DIR = dataDir;
   process.env.PORT = String(port);
   process.env.NODE_ENV = 'test';
+  const { privateKey: qaLicensePrivateKey, publicKey: qaLicensePublicKey } = crypto.generateKeyPairSync('ed25519');
+  process.env.ORBITPOS_LICENSE_PUBLIC_KEY = qaLicensePublicKey.export({ type: 'spki', format: 'pem' });
 
   const results = {
     runId,
@@ -254,10 +257,12 @@ async function runCommercialQa() {
       businessName: 'OrbitPOS QA Comercial',
       licenseType: 'monthly',
       edition: 'standard',
-      versionMinCompatible: packageJson.version
+      versionMinCompatible: packageJson.version,
+      signingKey: qaLicensePrivateKey
     });
     const activated = await apiRequest(apiBaseUrl, '/api/license/activate', {
       method: 'POST',
+      token,
       body: {
         licenseKey
       }
@@ -265,8 +270,40 @@ async function runCommercialQa() {
     assertCondition(activated.payload.isActive === true, 'La licencia no quedo activa.');
     recordStep('Activacion de licencia mensual', {
       licenseStatus: activated.payload.status,
-      edition: activated.payload.edition
+      edition: activated.payload.edition,
+      format: licenseKey.startsWith('ORB3.') ? 'ORB3' : 'ORB2'
     });
+
+    const unauthenticatedActivation = await fetch(`${apiBaseUrl}/api/license/activate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ licenseKey })
+    });
+    assertCondition(unauthenticatedActivation.status === 401, 'La activacion posterior al wizard debe exigir un administrador autenticado.');
+
+    const expiredLicenseKey = createLicenseKey({
+      machineId: machineIdResponse.payload.machineId,
+      businessName: 'OrbitPOS QA Comercial',
+      licenseType: 'monthly',
+      issuedAt: '2020-01-01T00:00:00.000Z',
+      expiresAt: '2020-01-31T23:59:59.999Z',
+      versionMinCompatible: packageJson.version,
+      signingKey: qaLicensePrivateKey
+    });
+    const expiredActivation = await fetch(`${apiBaseUrl}/api/license/activate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ licenseKey: expiredLicenseKey })
+    });
+    const expiredActivationPayload = await expiredActivation.json();
+    assertCondition(
+      expiredActivation.status === 400 && /vencida/i.test(expiredActivationPayload.message || ''),
+      'La API permitio activar una licencia vencida.'
+    );
+    recordStep('Licencias ORB3, autenticacion y expiracion validadas');
 
     const loginAfterActivation = await apiRequest(apiBaseUrl, '/api/auth/login', {
       method: 'POST',

@@ -13,7 +13,7 @@ import embutidosIconUrl from '../../assets/business-types/embutidos.png';
 import mixtoIconUrl from '../../assets/business-types/mixto.png';
 import { readImageFileAsDataUrl } from '../../lib/logoPicker';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.55';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.56';
 
 function WizardIcon({ type }) {
   const paths = {
@@ -647,7 +647,7 @@ export default function WizardScreen({
               <Input
                 value={form.licenseKey}
                 onChange={(event) => setForm((current) => ({ ...current, licenseKey: event.target.value }))}
-                placeholder="ORB2.xxxxxxxxx"
+                placeholder="ORB3.xxxxxxxxx"
               />
             </Field>
           </div>

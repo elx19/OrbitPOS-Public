@@ -82,7 +82,7 @@ export default function LicenseGate({ license, machineId, onActivated }) {
             <Input
               value={licenseKey}
               onChange={(event) => setLicenseKey(event.target.value)}
-              placeholder="ORB2.xxxxxxxxx"
+              placeholder="ORB3.xxxxxxxxx"
             />
           </Field>
 

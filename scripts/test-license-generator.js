@@ -38,7 +38,7 @@ const modernKey = createLicenseKey({
   businessName: 'Tienda ORB3',
   licenseType: 'annual',
   edition: 'professional',
-  versionMinCompatible: '2.1.0-alpha.54',
+  versionMinCompatible: '2.1.0-alpha.56',
   serial: 'JR-ORB3-001',
   signingKey: modernPrivateKey
 });
@@ -105,6 +105,13 @@ const keygenPrivateFile = path.join(__dirname, '..', '.qa', 'license-generator-k
 const keygenPublicFile = path.join(__dirname, '..', '.qa', 'license-generator-keygen-public.pem');
 const mismatchPublicKeyFile = path.join(__dirname, '..', '.qa', 'license-generator-mismatch-public.pem');
 
+const secureDefault = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-secure-default', '--business', 'Tienda Segura', '--type', 'monthly', '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(secureDefault.status, 1);
+assert.match(JSON.parse(secureDefault.stdout).error, /emision segura|private-key-file/i);
+
 const generatedKeyPair = spawnSync(process.execPath, [generatorPath, 'keygen', '--private-out', keygenPrivateFile, '--public-out', keygenPublicFile, '--json'], {
   env: process.env,
   encoding: 'utf8'
@@ -123,7 +130,7 @@ fs.writeFileSync(privateKeyFile, modernPrivateKey.export({ type: 'pkcs8', format
 fs.writeFileSync(publicKeyFile, modernPublicPem, { encoding: 'utf8', mode: 0o644 });
 const { publicKey: mismatchPublicKey } = crypto.generateKeyPairSync('ed25519');
 fs.writeFileSync(mismatchPublicKeyFile, mismatchPublicKey.export({ type: 'spki', format: 'pem' }), { encoding: 'utf8', mode: 0o644 });
-const generated = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-cli-001', '--business', 'Tienda CLI', '--type', 'monthly', '--out', keyFile, '--json'], {
+const generated = spawnSync(process.execPath, [generatorPath, 'generate', '--legacy-orb2', '--machine-id', 'machine-cli-001', '--business', 'Tienda CLI', '--type', 'monthly', '--out', keyFile, '--json'], {
   env: process.env,
   encoding: 'utf8'
 });
@@ -183,7 +190,7 @@ assert.equal(machineIdResult.status, 0, machineIdResult.stderr);
 assert.ok(JSON.parse(machineIdResult.stdout).machineId);
 
 fs.writeFileSync(secretFile, 'orbitpos-secret-file-test-change-me-32\n', 'utf8');
-const generatedWithSecretFile = spawnSync(process.execPath, [generatorPath, 'generate', '--secret-file', secretFile, '--machine-id', 'machine-secret-file', '--business', 'Tienda Secret File', '--type', 'monthly', '--json'], {
+const generatedWithSecretFile = spawnSync(process.execPath, [generatorPath, 'generate', '--legacy-orb2', '--secret-file', secretFile, '--machine-id', 'machine-secret-file', '--business', 'Tienda Secret File', '--type', 'monthly', '--json'], {
   env: { ...process.env, ORBITPOS_LICENSE_SECRET: '' },
   encoding: 'utf8'
 });
@@ -198,7 +205,7 @@ assert.equal(verifiedWithSecretFile.status, 0, verifiedWithSecretFile.stderr);
 assert.equal(JSON.parse(verifiedWithSecretFile.stdout).valid, true);
 fs.unlinkSync(secretFile);
 
-const weakSecret = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-weak-secret', '--business', 'Tienda Debil', '--type', 'monthly', '--json'], {
+const weakSecret = spawnSync(process.execPath, [generatorPath, 'generate', '--legacy-orb2', '--machine-id', 'machine-weak-secret', '--business', 'Tienda Debil', '--type', 'monthly', '--json'], {
   env: { ...process.env, ORBITPOS_LICENSE_SECRET: 'too-short' },
   encoding: 'utf8'
 });
@@ -207,17 +214,17 @@ assert.equal(JSON.parse(weakSecret.stdout).ok, false);
 assert.match(JSON.parse(weakSecret.stdout).error, /32 caracteres/i);
 
 const protectedOutputPath = path.join(__dirname, '..', '.qa', 'license-generator-protected.key');
-const firstProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--json'], {
+const firstProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--legacy-orb2', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--json'], {
   env: process.env,
   encoding: 'utf8'
 });
 assert.equal(firstProtectedOutput.status, 0, firstProtectedOutput.stderr);
-const secondProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--json'], {
+const secondProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--legacy-orb2', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--json'], {
   env: process.env,
   encoding: 'utf8'
 });
 assert.equal(secondProtectedOutput.status, 1, 'generate no debe reemplazar una licencia existente sin --force.');
-const forcedProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--force', '--json'], {
+const forcedProtectedOutput = spawnSync(process.execPath, [generatorPath, 'generate', '--legacy-orb2', '--machine-id', 'machine-protected', '--business', 'Tienda Protegida', '--type', 'monthly', '--out', protectedOutputPath, '--force', '--json'], {
   env: process.env,
   encoding: 'utf8'
 });

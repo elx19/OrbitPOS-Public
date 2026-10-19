@@ -18,7 +18,7 @@ function printUsage() {
   console.log(`OrbitPOS license-generator
 
 Comandos:
-  generate  --machine-id ID --business "Nombre" --type monthly [opciones]
+  generate  --private-key-file clave-privada.pem --machine-id ID --business "Nombre" --type monthly [opciones]
   decode    --key ORB2....
   verify    --key ORB2.... [--key-file ruta.txt]
   fingerprint --public-key-file ruta.pem
@@ -31,8 +31,9 @@ Opciones de generate:
   --issued-at ISO          Emision exacta; util para migraciones o QA
   --serial JR-...         Serial manual opcional
   --out ruta.txt           Guarda la clave sin imprimir secretos adicionales
-  --private-key-file ruta  Firma una licencia ORB3 con una clave Ed25519 externa
+  --private-key-file ruta  Firma una licencia ORB3 con una clave Ed25519 externa (recomendado)
   --public-key-file ruta   Verifica que la publica corresponde a --private-key-file
+  --legacy-orb2             Permite emitir ORB2 solo para compatibilidad heredada
   --force                  Permite reemplazar --out si ya existe
   --json                   Devuelve respuesta JSON
 
@@ -51,7 +52,8 @@ Opciones generales:
   fingerprint devuelve SHA-256 de la clave publica en formato sha256:...
 
 Tipos admitidos: ${Object.keys(LICENSE_DAYS_BY_TYPE).join(', ')}
-ORB2 requiere ORBITPOS_LICENSE_SECRET. ORB3 usa Ed25519: el generador conserva la
+ORB3 usa Ed25519 y es el formato de emision predeterminado. ORB2 requiere la opcion
+explicita --legacy-orb2 y ORBITPOS_LICENSE_SECRET. ORB3 usa Ed25519: el generador conserva la
 clave privada y el POS solo necesita la clave publica incluida en shared/license-public-key.pem.
 `);
 }
@@ -263,6 +265,13 @@ function run(command, options) {
     const businessName = requiredOption(options, 'business');
     const licenseType = assertLicenseType(requiredOption(options, 'type'));
     const signingKey = options['private-key-file'] ? readPrivateSigningKey(options) : null;
+    const legacyOrb2 = Boolean(options['legacy-orb2']);
+    if (!signingKey && !legacyOrb2) {
+      throw new Error('La emision segura usa ORB3. Indica --private-key-file o usa --legacy-orb2 solo para compatibilidad heredada.');
+    }
+    if (signingKey && legacyOrb2) {
+      throw new Error('No combines --private-key-file con --legacy-orb2.');
+    }
     let publicKeyFingerprint = null;
     if (signingKey) {
       publicKeyFingerprint = getPrivateKeyPublicKeyFingerprint(signingKey);
