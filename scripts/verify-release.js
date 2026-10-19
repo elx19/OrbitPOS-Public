@@ -196,9 +196,19 @@ function checkBrandAndReferences() {
   }
 }
 
+function checkInstallerContract() {
+  const licensePath = packageJson.build?.nsis?.license;
+  if (typeof licensePath !== 'string' || !licensePath.trim()) {
+    failures.push('El instalador NSIS no declara una licencia EULA.');
+    return;
+  }
+  requireFile(licensePath);
+}
+
 checkVersionFiles();
 checkReleaseArtifacts();
 checkBrandAndReferences();
+checkInstallerContract();
 
 if (failures.length) {
   console.error('Release QA: FALLO');

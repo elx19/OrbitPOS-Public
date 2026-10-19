@@ -64,6 +64,14 @@ if (manifest) {
   if (!fs.readFileSync(absolute('frontend/src/components/Layout/AppShell.jsx'), 'utf8').includes('data-module={activeModule}')) {
     fail('AppShell no expone data-module para identificar la pantalla activa en QA visual.');
   }
+
+  const shellSource = fs.readFileSync(absolute('frontend/src/components/Layout/AppShell.jsx'), 'utf8');
+  ['DashboardHome', 'POSPanel', 'ProductsPanel', 'PurchasesPanel', 'ReportsPanel'].forEach((componentName) => {
+    const componentPattern = new RegExp(`<${componentName}\\s+key=\\{businessType\\}`);
+    if (!componentPattern.test(shellSource)) {
+      fail(`${componentName} no se reinicia al cambiar el tipo de negocio.`);
+    }
+  });
 }
 
 const profiles = readJson('shared/business-profiles.json');

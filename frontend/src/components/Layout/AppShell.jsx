@@ -25,7 +25,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.59';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.60';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -290,10 +290,11 @@ export default function AppShell({
   function renderContent() {
     switch (activeModule) {
       case 'dashboard':
-        return <DashboardHome token={token} refreshKey={activityVersion} onNavigate={selectModule} />;
+        return <DashboardHome key={businessType} token={token} refreshKey={activityVersion} onNavigate={selectModule} />;
       case 'pos':
         return (
           <POSPanel
+            key={businessType}
             token={token}
             taxRate={Number(config.tax_rate || 18)}
             businessName={businessName}
@@ -316,6 +317,7 @@ export default function AppShell({
       case 'products':
         return (
           <ProductsPanel
+            key={businessType}
             token={token}
             businessType={businessType}
             inventoryLabel={businessProfile.inventoryLabel}
@@ -325,7 +327,7 @@ export default function AppShell({
       case 'suppliers':
         return <SuppliersPanel token={token} onActivity={handleActivity} />;
       case 'purchases':
-        return <PurchasesPanel token={token} onActivity={handleActivity} />;
+        return <PurchasesPanel key={businessType} token={token} onActivity={handleActivity} />;
       case 'customers':
         return <CustomersPanel token={token} onActivity={handleActivity} />;
       case 'quotes':
@@ -341,7 +343,7 @@ export default function AppShell({
           />
         );
       case 'reports':
-        return <ReportsPanel token={token} />;
+        return <ReportsPanel key={businessType} token={token} />;
       case 'config':
         return (
           <ConfigPanel
