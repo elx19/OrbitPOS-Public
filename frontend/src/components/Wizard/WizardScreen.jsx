@@ -13,7 +13,7 @@ import embutidosIconUrl from '../../assets/business-types/embutidos.png';
 import mixtoIconUrl from '../../assets/business-types/mixto.png';
 import { readImageFileAsDataUrl } from '../../lib/logoPicker';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.54';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.55';
 
 function WizardIcon({ type }) {
   const paths = {
@@ -402,7 +402,7 @@ export default function WizardScreen({
                 <Field label="RNC (opcional)"><Input value={form.business.rnc} onChange={(event) => setForm((current) => ({ ...current, business: { ...current.business, rnc: event.target.value } }))} placeholder="000-000000-0" /></Field>
                 <Field label="Teléfono"><Input value={form.business.phone} onChange={(event) => setForm((current) => ({ ...current, business: { ...current.business, phone: event.target.value } }))} placeholder="809-000-0000" /></Field>
                 <Field label="Dirección"><TextArea rows={2} value={form.business.address} onChange={(event) => setForm((current) => ({ ...current, business: { ...current.business, address: event.target.value } }))} placeholder="Dirección del negocio" /></Field>
-                <Field label="Logo del negocio"><div className="flex flex-col gap-3 sm:flex-row"><Input value={form.business.logo} onChange={(event) => setForm((current) => ({ ...current, business: { ...current.business, logo: event.target.value } }))} placeholder="Selecciona una imagen PNG, JPG o WEBP" /><Button variant="secondary" onClick={pickLogoFile}>Seleccionar logo</Button><input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/bmp,image/x-icon" className="hidden" onChange={handleLogoInput} /></div><div className="mt-2 text-xs text-slate-500">El logo se mostrará en el login, sidebar, tickets y vista previa.</div></Field>
+                <Field label="Logo del negocio"><div className="flex flex-col gap-3 sm:flex-row"><Input value={form.business.logo} onChange={(event) => setForm((current) => ({ ...current, business: { ...current.business, logo: event.target.value } }))} placeholder="Selecciona una imagen PNG, JPG o WEBP" /><Button variant="secondary" onClick={pickLogoFile}>Seleccionar logo</Button><input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/bmp,image/x-icon" className="hidden" onChange={handleLogoInput} /></div><div className="mt-2 text-xs text-slate-500">El logo se mostrará en el login, el perfil del usuario, los tickets y la vista previa.</div></Field>
               </div>
             </details>
           </div>

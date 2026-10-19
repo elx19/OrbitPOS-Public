@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.54** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.55** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.54.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.55.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.54` mantiene la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes, refuerza el aislamiento por tipo de negocio y alinea Inicio, Ventas, Configuración, Ayuda y Licencia con las referencias visuales. Esta iteración agrega permisos por usuario persistidos, una matriz visual de acciones y controles de autorización en la API para que un usuario no pueda saltarse el sidebar mediante solicitudes directas; también conserva el workspace de Ventas sin scroll externo, el endurecimiento ORB3 y la adaptación de ventanas a monitores pequeños y secundarios. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
+La línea `v2.1.0-alpha.55` mantiene la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes, refuerza el aislamiento por tipo de negocio y alinea Inicio, Ventas, Configuración, Ayuda y Licencia con las referencias visuales. Esta iteración compacta la marca del sidebar, mantiene el logo del negocio en login/perfil/tickets y adapta la identidad del módulo de inventario al tipo seleccionado; también conserva los permisos por usuario y controles de autorización en la API, el workspace de Ventas sin scroll externo, el endurecimiento ORB3 y la adaptación de ventanas a monitores pequeños y secundarios. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
 
 ## Generador de licencias
 

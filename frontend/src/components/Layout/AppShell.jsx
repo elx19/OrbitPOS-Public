@@ -25,7 +25,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.54';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.55';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -59,17 +59,6 @@ const navigationOrder = [
   'dashboard', 'pos', 'products', 'purchases', 'customers', 'suppliers', 'reports',
   'cash', 'credits', 'returns', 'quotes', 'discounts', 'notifications', 'branches', 'users', 'config', 'help', 'license'
 ];
-
-const commonUserModules = new Set([
-  'dashboard',
-  'pos',
-  'cash',
-  'customers',
-  'credits',
-  'returns',
-  'notifications',
-  'help'
-]);
 
 // A common user keeps the four daily workflows visible. The rest remains
 // available from the compact secondary menu, so the sidebar does not become
@@ -189,8 +178,11 @@ export default function AppShell({
       .filter((module) => (businessProfile.modules || []).includes(module.key))
       .filter((module) => !module.adminOnly || user.role === 'admin')
       .filter((module) => hasModulePermission(user, module.key))
+      .map((module) => module.key === 'products'
+        ? { ...module, label: businessProfile.inventoryLabel || module.label }
+        : module)
       .sort((left, right) => navigationOrder.indexOf(left.key) - navigationOrder.indexOf(right.key)),
-    [businessProfile.modules, user]
+    [businessProfile.inventoryLabel, businessProfile.modules, user]
   );
 
   const activeModuleDefinition = useMemo(
@@ -321,7 +313,14 @@ export default function AppShell({
       case 'cash':
         return <CashPanel token={token} onActivity={handleActivity} />;
       case 'products':
-        return <ProductsPanel token={token} businessType={businessType} onActivity={handleActivity} />;
+        return (
+          <ProductsPanel
+            token={token}
+            businessType={businessType}
+            inventoryLabel={businessProfile.inventoryLabel}
+            onActivity={handleActivity}
+          />
+        );
       case 'suppliers':
         return <SuppliersPanel token={token} onActivity={handleActivity} />;
       case 'purchases':

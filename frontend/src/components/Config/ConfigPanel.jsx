@@ -11,7 +11,7 @@ import { readImageFileAsDataUrl } from '../../lib/logoPicker';
 const DEFAULT_UPDATE_PROVIDER = 'github';
 const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.54';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.55';
 
 const themeOptions = [
   {
@@ -667,7 +667,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
                   <div className="min-w-0">
                     <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Vista previa</div>
                     <div className="mt-2 truncate text-lg font-bold text-ink">{form.business_name || 'Mi Negocio'}</div>
-                    <div className="mt-1 text-sm text-slate-600">Este logo se mostrara en el acceso y en la barra lateral.</div>
+                    <div className="mt-1 text-sm text-slate-600">Este logo se mostrara en el acceso, el perfil del usuario, los tickets y la identidad del negocio.</div>
                   </div>
                 </div>
               </ConfigCard>

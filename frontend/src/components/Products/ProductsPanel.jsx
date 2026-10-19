@@ -40,7 +40,7 @@ function ProductImagePreview({ product, className = 'h-16 w-16 rounded-[18px]' }
   );
 }
 
-export default function ProductsPanel({ token, businessType = 'colmado', onActivity }) {
+export default function ProductsPanel({ token, businessType = 'colmado', inventoryLabel = 'Productos e inventario', onActivity }) {
   const [products, setProducts] = useState([]);
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todos');
@@ -153,7 +153,7 @@ export default function ProductsPanel({ token, businessType = 'colmado', onActiv
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="max-w-3xl">
             <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Inventario</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">Productos e inventario</h2>
+            <h2 className="mt-2 text-3xl font-bold text-ink">{inventoryLabel}</h2>
             <p className="mt-3 text-sm text-slate-600">
               Gestiona tu catalogo de productos, precios y existencias.
             </p>
