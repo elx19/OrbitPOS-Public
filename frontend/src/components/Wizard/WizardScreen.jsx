@@ -13,7 +13,7 @@ import embutidosIconUrl from '../../assets/business-types/embutidos.png';
 import mixtoIconUrl from '../../assets/business-types/mixto.png';
 import { readImageFileAsDataUrl } from '../../lib/logoPicker';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.52';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.53';
 
 function WizardIcon({ type }) {
   const paths = {

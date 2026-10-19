@@ -85,6 +85,7 @@ function initDatabase() {
       username TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       role TEXT DEFAULT 'cashier',
+      permissions TEXT,
       active INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -384,6 +385,10 @@ function ensureSchemaMigrations() {
 
   if (!tableHasColumn('users', 'security_answer')) {
     db.exec('ALTER TABLE users ADD COLUMN security_answer TEXT');
+  }
+
+  if (!tableHasColumn('users', 'permissions')) {
+    db.exec('ALTER TABLE users ADD COLUMN permissions TEXT');
   }
 
   if (!tableHasColumn('payments', 'receipt_number')) {

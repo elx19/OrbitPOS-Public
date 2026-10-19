@@ -1,0 +1,66 @@
+{
+  "groups": [
+    {
+      "key": "sales",
+      "label": "Ventas",
+      "icon": "cart",
+      "permissions": [
+        { "module": "pos", "action": "view", "label": "Realizar ventas" },
+        { "module": "pos", "action": "discount", "label": "Aplicar descuentos" },
+        { "module": "pos", "action": "void", "label": "Anular ventas" },
+        { "module": "pos", "action": "history", "label": "Ver historial de ventas" },
+        { "module": "returns", "action": "view", "label": "Devoluciones" }
+      ]
+    },
+    {
+      "key": "inventory",
+      "label": "Inventario",
+      "icon": "box",
+      "permissions": [
+        { "module": "products", "action": "view", "label": "Ver inventario" },
+        { "module": "products", "action": "adjust", "label": "Ajustar stock" },
+        { "module": "products", "action": "transfer", "label": "Transferencias" },
+        { "module": "products", "action": "count", "label": "Conteos físicos" },
+        { "module": "products", "action": "manage", "label": "Gestionar productos" },
+        { "module": "purchases", "action": "view", "label": "Compras y entradas" }
+      ]
+    },
+    {
+      "key": "reports",
+      "label": "Reportes",
+      "icon": "report",
+      "permissions": [
+        { "module": "reports", "action": "view", "label": "Ver reportes de ventas" },
+        { "module": "reports", "action": "inventory", "label": "Reportes de inventario" },
+        { "module": "reports", "action": "cash", "label": "Reportes de caja" },
+        { "module": "reports", "action": "customers", "label": "Reportes de clientes" },
+        { "module": "reports", "action": "export", "label": "Exportar datos" }
+      ]
+    },
+    {
+      "key": "settings",
+      "label": "Configuración",
+      "icon": "settings",
+      "permissions": [
+        { "module": "users", "action": "view", "label": "Gestionar usuarios" },
+        { "module": "branches", "action": "view", "label": "Configurar sucursales" },
+        { "module": "config", "action": "taxes", "label": "Configurar impuestos" },
+        { "module": "config", "action": "devices", "label": "Configurar impresoras" },
+        { "module": "config", "action": "view", "label": "Configuración general" }
+      ]
+    }
+  ],
+  "defaults": {
+    "admin": "all",
+    "cashier": {
+      "dashboard": ["view"],
+      "pos": ["view", "history"],
+      "cash": ["view", "open", "close"],
+      "customers": ["view"],
+      "credits": ["view"],
+      "returns": ["view"],
+      "notifications": ["view"],
+      "help": ["view"]
+    }
+  }
+}

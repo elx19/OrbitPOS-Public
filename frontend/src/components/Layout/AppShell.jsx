@@ -4,6 +4,7 @@ import { apiRequest } from '../../lib/api';
 import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import orbitposLogoUrl from '../../assets/orbitpos-logo.png';
 import { getBusinessProfile } from '../../lib/businessProfile';
+import { hasModulePermission } from '../../lib/userPermissions';
 
 const DashboardHome = lazy(() => import('../Dashboard/DashboardHome'));
 const ConfigPanel = lazy(() => import('../Config/ConfigPanel'));
@@ -24,7 +25,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.52';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.53';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -47,10 +48,10 @@ const moduleDefinitions = [
   { key: 'returns', label: 'Devoluciones', group: 'sales', icon: 'return', description: 'Registro de devoluciones totales o parciales.', keywords: ['reembolso', 'nota de devolucion'] },
   { key: 'quotes', label: 'Cotizaciones', group: 'sales', icon: 'quotes', description: 'Presupuestos, vigencia y conversion a venta.', keywords: ['presupuesto', 'propuesta'] },
   { key: 'customers', label: 'Clientes', group: 'sales', icon: 'customer', description: 'Ficha del cliente, historial y balance pendiente.', keywords: ['contactos', 'estado de cuenta'] },
-  { key: 'products', label: 'Productos e inventario', group: 'operations', icon: 'box', adminOnly: true, description: 'Gestiona catálogo, precios, existencias y categorías.', keywords: ['inventario', 'articulos', 'stock'] },
-  { key: 'suppliers', label: 'Proveedores', group: 'operations', icon: 'truck', adminOnly: true, description: 'Contactos de compra y relacion con inventario.', keywords: ['suplidores', 'compras'] },
-  { key: 'purchases', label: 'Compras', group: 'operations', icon: 'clipboard', adminOnly: true, description: 'Entradas de inventario e historial por proveedor.', keywords: ['entrada', 'recepcion', 'orden'] },
-  { key: 'discounts', label: 'Descuentos y promociones', group: 'operations', icon: 'tag', adminOnly: true, description: 'Crea promociones y reglas comerciales.', keywords: ['promociones', 'ofertas'] },
+  { key: 'products', label: 'Productos e inventario', group: 'operations', icon: 'box', description: 'Gestiona catálogo, precios, existencias y categorías.', keywords: ['inventario', 'articulos', 'stock'] },
+  { key: 'suppliers', label: 'Proveedores', group: 'operations', icon: 'truck', description: 'Contactos de compra y relacion con inventario.', keywords: ['suplidores', 'compras'] },
+  { key: 'purchases', label: 'Compras', group: 'operations', icon: 'clipboard', description: 'Entradas de inventario e historial por proveedor.', keywords: ['entrada', 'recepcion', 'orden'] },
+  { key: 'discounts', label: 'Descuentos y promociones', group: 'operations', icon: 'tag', description: 'Crea promociones y reglas comerciales.', keywords: ['promociones', 'ofertas'] },
   { key: 'reports', label: 'Reportes', group: 'operations', icon: 'report', description: 'Analisis de ventas, caja, inventario y creditos.', keywords: ['estadisticas', 'analitica', 'informes'] }
 ];
 
@@ -187,9 +188,9 @@ export default function AppShell({
     () => moduleDefinitions
       .filter((module) => (businessProfile.modules || []).includes(module.key))
       .filter((module) => !module.adminOnly || user.role === 'admin')
-      .filter((module) => user.role === 'admin' || commonUserModules.has(module.key))
+      .filter((module) => hasModulePermission(user, module.key))
       .sort((left, right) => navigationOrder.indexOf(left.key) - navigationOrder.indexOf(right.key)),
-    [businessProfile.modules, user.role]
+    [businessProfile.modules, user]
   );
 
   const activeModuleDefinition = useMemo(

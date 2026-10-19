@@ -370,6 +370,12 @@ async function runCommercialQa() {
         username: 'qa-cashier',
         password: 'qa1234',
         role: 'cashier',
+        permissions: {
+          dashboard: ['view'],
+          pos: ['view', 'history'],
+          cash: ['view', 'open', 'close'],
+          customers: ['view']
+        },
         branchId: branch.payload.id,
         securityQuestion: adminQuestion,
         securityAnswer: 'verde'
@@ -392,7 +398,15 @@ async function runCommercialQa() {
     });
     const users = await apiRequest(apiBaseUrl, '/api/users', { token });
     assertCondition(users.payload.some((item) => Number(item.id) === Number(qaUser.payload.id)), 'El usuario QA no aparecio en el listado.');
-    recordStep('Usuarios, roles y contrasena validados', { userId: qaUser.payload.id });
+    assertCondition(qaUser.payload.permissions?.pos?.includes('view'), 'Los permisos del cajero no se persistieron.');
+    const qaLogin = await apiRequest(apiBaseUrl, '/api/auth/login', {
+      method: 'POST',
+      body: { username: 'qa-cashier', password: 'qa5678' }
+    });
+    assertCondition(qaLogin.payload.user?.permissions?.pos?.includes('view'), 'El login no devolvio los permisos del cajero.');
+    const qaMe = await apiRequest(apiBaseUrl, '/api/auth/me', { token: qaLogin.payload.token });
+    assertCondition(qaMe.payload.user?.permissions?.customers?.includes('view'), 'La sesion no conserva los permisos efectivos.');
+    recordStep('Usuarios, roles, permisos y contrasena validados', { userId: qaUser.payload.id });
 
     const helpResources = await apiRequest(apiBaseUrl, '/api/help/resources', { token });
     assertCondition(helpResources.payload && typeof helpResources.payload.manualAvailable === 'boolean', 'Ayuda no devolvio recursos.');

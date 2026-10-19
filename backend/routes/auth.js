@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { getDb, getConfigValue, createAuditLog } = require('../database');
 const { authenticateToken, signToken } = require('../middleware/auth');
 const { refreshLicenseState } = require('../license');
+const { parseStoredPermissions } = require('../../shared/user-permissions');
 
 const router = express.Router();
 
@@ -43,6 +44,7 @@ router.post('/login', (request, response) => {
       name: user.name,
       username: user.username,
       role: user.role,
+      permissions: parseStoredPermissions(user.permissions),
       branch_id: user.branch_id || null,
       branch_name: user.branch_name || null
     },

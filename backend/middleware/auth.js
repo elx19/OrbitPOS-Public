@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { getDb } = require('../database');
+const { parseStoredPermissions } = require('../../shared/user-permissions');
 
 const JWT_SECRET = process.env.ORBITPOS_JWT_SECRET || 'orbitpos-local-jwt-secret';
 
@@ -35,6 +36,7 @@ function authenticateToken(request, response, next) {
         u.name,
         u.username,
         u.role,
+        u.permissions,
         u.active,
         u.branch_id,
         u.created_at,
@@ -58,7 +60,10 @@ function authenticateToken(request, response, next) {
       });
     }
 
-    request.user = user;
+    request.user = {
+      ...user,
+      permissions: parseStoredPermissions(user.permissions)
+    };
     next();
   } catch (error) {
     response.status(401).json({

@@ -4,6 +4,7 @@ import Button from '../ui/Button';
 import { Field, Input, Select } from '../ui/Field';
 import Panel from '../ui/Panel';
 import securityQuestions from '../../../../shared/security-questions.json';
+import { PERMISSION_GROUPS, getDefaultPermissions, getEffectivePermissions } from '../../lib/userPermissions';
 
 const emptyForm = {
   id: null,
@@ -14,7 +15,8 @@ const emptyForm = {
   branchId: '',
   active: true,
   securityQuestion: '',
-  securityAnswer: ''
+  securityAnswer: '',
+  permissions: getDefaultPermissions('cashier')
 };
 
 function mapUserToForm(user) {
@@ -27,7 +29,8 @@ function mapUserToForm(user) {
     branchId: user.branch_id ? String(user.branch_id) : '',
     active: Boolean(user.active),
     securityQuestion: user.security_question || '',
-    securityAnswer: ''
+    securityAnswer: '',
+    permissions: getEffectivePermissions(user)
   };
 }
 
@@ -36,6 +39,17 @@ function getSecurityQuestionOptions(currentQuestion = '') {
   return trimmedCurrent && !securityQuestions.includes(trimmedCurrent)
     ? [trimmedCurrent, ...securityQuestions]
     : securityQuestions;
+}
+
+function PermissionIcon({ name }) {
+  const paths = {
+    cart: 'M3 4h2l1.4 8.2a1 1 0 001 .8h8.8a1 1 0 001-.7L20 7H7.2M9 19a1.2 1.2 0 110 2.4A1.2 1.2 0 019 19zm8 0a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z',
+    box: 'M12 3l8 4.5-8 4.5-8-4.5L12 3zm-7 7.4l7 4v6.1l-7-4v-6.1zm9 10.1v-6.1l7-4v6.1l-7 4z',
+    report: 'M6 20V10M12 20V4M18 20v-7',
+    settings: 'M12 8.8a3.2 3.2 0 100 6.4 3.2 3.2 0 000-6.4zm8.2 3.2l-1.8.6a6.7 6.7 0 00-.4 1l.8 1.8-1.8 1.8-1.8-.8c-.3.2-.7.3-1 .4l-.6 1.8h-2.6l-.6-1.8a6.7 6.7 0 01-1-.4l-1.8.8-1.8-1.8.8-1.8c-.2-.3-.3-.7-.4-1l-1.8-.6V10l1.8-.6c.1-.3.2-.7.4-1l-.8-1.8 1.8-1.8 1.8.8c.3-.2.7-.3 1-.4l.6-1.8h2.6l.6 1.8c.3.1.7.2 1 .4l1.8-.8 1.8 1.8-.8 1.8c.2.3.3.7.4 1l1.8.6V12z'
+  };
+
+  return <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] || paths.settings} /></svg>;
 }
 
 export default function UsersPanel({ token, onActivity }) {
@@ -83,6 +97,23 @@ export default function UsersPanel({ token, onActivity }) {
     }));
   }
 
+  function isPermissionChecked(moduleKey, action) {
+    return form.permissions === '*' || Boolean(form.permissions?.[moduleKey]?.includes(action));
+  }
+
+  function togglePermission(moduleKey, action) {
+    if (form.role === 'admin') return;
+
+    setForm((current) => {
+      const nextPermissions = { ...(current.permissions || {}) };
+      const actions = new Set(nextPermissions[moduleKey] || []);
+      if (actions.has(action)) actions.delete(action);
+      else actions.add(action);
+      nextPermissions[moduleKey] = [...actions];
+      return { ...current, permissions: nextPermissions };
+    });
+  }
+
   function editUser(user) {
     setForm(mapUserToForm(user));
     setMessage('');
@@ -101,6 +132,7 @@ export default function UsersPanel({ token, onActivity }) {
           body: {
             name: form.name,
             role: form.role,
+            permissions: form.role === 'admin' ? null : form.permissions,
             active: form.active,
             branchId: form.branchId ? Number(form.branchId) : null,
             securityQuestion: form.securityQuestion,
@@ -128,6 +160,7 @@ export default function UsersPanel({ token, onActivity }) {
             username: form.username,
             password: form.password,
             role: form.role,
+            permissions: form.role === 'admin' ? null : form.permissions,
             branchId: form.branchId ? Number(form.branchId) : null,
             securityQuestion: form.securityQuestion,
             securityAnswer: form.securityAnswer
@@ -232,7 +265,14 @@ export default function UsersPanel({ token, onActivity }) {
                 />
               </Field>
               <Field label="Rol">
-                <Select value={form.role} onChange={(event) => updateField('role', event.target.value)}>
+                <Select value={form.role} onChange={(event) => {
+                  const nextRole = event.target.value;
+                  setForm((current) => ({
+                    ...current,
+                    role: nextRole,
+                    permissions: nextRole === 'admin' ? '*' : getDefaultPermissions('cashier')
+                  }));
+                }}>
                   <option value="cashier">Cajero</option>
                   <option value="admin">Admin</option>
                 </Select>
@@ -278,6 +318,37 @@ export default function UsersPanel({ token, onActivity }) {
                   placeholder={form.id ? 'Solo si deseas actualizarla' : 'Respuesta secreta'}
                 />
               </Field>
+            </div>
+
+            <div className="border-t border-slate-200/80 pt-5">
+              <div className="flex flex-col gap-1">
+                <h4 className="text-xl font-bold text-ink">Permisos del usuario</h4>
+                <p className="text-sm text-slate-600">Selecciona los módulos y acciones a los que tendrá acceso.</p>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {PERMISSION_GROUPS.map((group) => (
+                  <div key={group.key} className="rounded-2xl border border-slate-200/80 bg-white/78 p-4">
+                    <div className="flex items-center gap-2 font-bold text-ink">
+                      <span className="text-emerald-700"><PermissionIcon name={group.icon} /></span>
+                      {group.label}
+                    </div>
+                    <div className="mt-3 grid gap-2">
+                      {group.permissions.map((permission) => (
+                        <label key={`${permission.module}:${permission.action}`} className="flex items-center gap-2 text-sm text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={isPermissionChecked(permission.module, permission.action)}
+                            disabled={form.role === 'admin'}
+                            onChange={() => togglePermission(permission.module, permission.action)}
+                          />
+                          <span>{permission.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {form.role === 'admin' ? <div className="mt-3 text-xs text-slate-500">Los administradores conservan acceso total a todos los módulos.</div> : null}
             </div>
 
             {form.id ? (

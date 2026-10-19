@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { getDb, createAuditLog } = require('../database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const securityQuestions = require('../../shared/security-questions.json');
+const { parseStoredPermissions, serializePermissions } = require('../../shared/user-permissions');
 
 const router = express.Router();
 
@@ -46,12 +47,13 @@ function ensureBranchExists(branchId) {
 }
 
 function getUserById(id) {
-  return getDb().prepare(`
+  const user = getDb().prepare(`
     SELECT
       u.id,
       u.name,
       u.username,
       u.role,
+      u.permissions,
       u.active,
       u.branch_id,
       u.security_question,
@@ -65,6 +67,10 @@ function getUserById(id) {
     LEFT JOIN branches b ON b.id = u.branch_id
     WHERE u.id = ?
   `).get(id);
+
+  return user
+    ? { ...user, permissions: parseStoredPermissions(user.permissions) }
+    : user;
 }
 
 function countOtherActiveAdmins(excludedUserId) {
@@ -187,6 +193,7 @@ router.get('/', (request, response) => {
       u.name,
       u.username,
       u.role,
+      u.permissions,
       u.active,
       u.branch_id,
       u.security_question,
@@ -199,7 +206,10 @@ router.get('/', (request, response) => {
     FROM users u
     LEFT JOIN branches b ON b.id = u.branch_id
     ORDER BY u.created_at DESC
-  `).all();
+  `).all().map((user) => ({
+    ...user,
+    permissions: parseStoredPermissions(user.permissions)
+  }));
 
   response.json(users);
 });
@@ -210,6 +220,7 @@ router.post('/', (request, response) => {
     username,
     password,
     role = 'cashier',
+    permissions,
     branchId,
     securityQuestion,
     securityAnswer
@@ -231,13 +242,14 @@ router.post('/', (request, response) => {
     });
 
     const result = getDb().prepare(`
-      INSERT INTO users (name, username, password, role, active, branch_id, security_question, security_answer)
-      VALUES (?, ?, ?, ?, 1, ?, ?, ?)
+      INSERT INTO users (name, username, password, role, permissions, active, branch_id, security_question, security_answer)
+      VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
     `).run(
       name,
       username,
       bcrypt.hashSync(password, 12),
       role,
+      serializePermissions(permissions),
       resolvedBranchId,
       securityFields.securityQuestion,
       securityFields.securityAnswer
@@ -280,10 +292,13 @@ router.put('/:id', (request, response) => {
   }
 
   try {
-    const { name, role, active, branchId, securityQuestion, securityAnswer } = request.body || {};
+    const { name, role, active, branchId, securityQuestion, securityAnswer, permissions } = request.body || {};
     const nextRole = role || existingUser.role;
     const nextActive = active === undefined ? Boolean(existingUser.active) : Boolean(active);
     const resolvedBranchId = branchId === undefined ? existingUser.branch_id : parseBranchId(branchId);
+    const nextPermissions = permissions === undefined
+      ? existingUser.permissions
+      : serializePermissions(permissions);
     const securityFields = resolveSecurityFields({
       question: securityQuestion,
       answer: securityAnswer,
@@ -304,6 +319,7 @@ router.put('/:id', (request, response) => {
       UPDATE users
       SET name = ?,
           role = ?,
+          permissions = ?,
           active = ?,
           branch_id = ?,
           security_question = ?,
@@ -312,6 +328,7 @@ router.put('/:id', (request, response) => {
     `).run(
       name || existingUser.name,
       nextRole,
+      nextPermissions,
       nextActive ? 1 : 0,
       resolvedBranchId,
       securityFields.securityQuestion,
