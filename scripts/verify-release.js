@@ -171,6 +171,20 @@ function checkBrandAndReferences() {
     }
   }
 
+  const referenceManifest = requireFile('shared/ui-reference-manifest.json');
+  if (referenceManifest) {
+    try {
+      const manifest = JSON.parse(fs.readFileSync(referenceManifest, 'utf8'));
+      [
+        ...Object.values(manifest.flows || {}),
+        ...Object.values(manifest.modules || {}),
+        ...(manifest.alternateReferences || [])
+      ].forEach((relativePath) => requireFile(relativePath));
+    } catch (error) {
+      failures.push(`shared/ui-reference-manifest.json no es valido: ${error.message}`);
+    }
+  }
+
   const distAssets = fs.existsSync(absolute('frontend/dist/assets'))
     ? fs.readdirSync(absolute('frontend/dist/assets'))
     : [];

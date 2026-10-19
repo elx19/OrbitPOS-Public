@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "flows": {
+    "login": "docs/ui-reference/authoritative/login-reference.png",
+    "wizard": "docs/ui-reference/authoritative/wizard-reference.png"
+  },
+  "modules": {
+    "dashboard": "docs/ui-reference/dashboard-reference.png",
+    "pos": "docs/ui-reference/authoritative/pos-reference.png",
+    "products": "docs/ui-reference/authoritative/products-inventory-reference.png",
+    "purchases": "docs/ui-reference/authoritative/purchases-reference.png",
+    "customers": "docs/ui-reference/authoritative/customers-reference.png",
+    "suppliers": "docs/ui-reference/authoritative/suppliers-reference.png",
+    "reports": "docs/ui-reference/authoritative/reports-reference.png",
+    "cash": "docs/ui-reference/authoritative/cash-reference.png",
+    "credits": "docs/ui-reference/authoritative/credits-reference.png",
+    "returns": "docs/ui-reference/authoritative/returns-reference.png",
+    "quotes": "docs/ui-reference/authoritative/quotes-reference.png",
+    "discounts": "docs/ui-reference/authoritative/discounts-reference.png",
+    "notifications": "docs/ui-reference/authoritative/notifications-reference.png",
+    "branches": "docs/ui-reference/authoritative/config-reference.png",
+    "users": "docs/ui-reference/authoritative/users-reference.png",
+    "config": "docs/ui-reference/authoritative/config-reference.png",
+    "help": "docs/ui-reference/authoritative/help-reference.png",
+    "license": "docs/ui-reference/authoritative/license-reference.png"
+  },
+  "alternateReferences": [
+    "docs/ui-reference/authoritative/products-reference.png"
+  ]
+}

@@ -25,7 +25,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.56';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.57';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -110,7 +110,8 @@ const iconPaths = {
   truck: 'M3 7h10v7H3V7zm10 2h3l2 2v3h-5V9zm-6 7a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm9 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3z',
   clipboard: 'M9 4h6a1 1 0 011 1v1h2a1 1 0 011 1v12a1 1 0 01-1 1H6a1 1 0 01-1-1V7a1 1 0 011-1h2V5a1 1 0 011-1zm1 2v1h4V6h-4zm-1 5h6M9 15h6',
   tag: 'M11 3H5a2 2 0 00-2 2v6l8 8 8-8-8-8zm-4 4a1 1 0 110 2 1 1 0 010-2z',
-  report: 'M6 4h12a1 1 0 011 1v14l-4-3-4 3-4-3-4 3V5a1 1 0 011-1h2zm2 4h8M8 12h8'
+  report: 'M6 4h12a1 1 0 011 1v14l-4-3-4 3-4-3-4 3V5a1 1 0 011-1h2zm2 4h8M8 12h8',
+  logout: 'M10 5H6a2 2 0 00-2 2v10a2 2 0 002 2h4M14 8l4 4-4 4M9 12h9'
 };
 
 function NavIcon({ name, active = false, large = false }) {
@@ -523,7 +524,7 @@ export default function AppShell({
                       </button>
                     ) : null}
                     <button type="button" role="menuitem" onClick={() => { setShowProfileMenu(false); onLogout(); }}>
-                      <NavIcon name="return" />
+                      <NavIcon name="logout" />
                       <span>Cerrar sesión</span>
                     </button>
                   </div>

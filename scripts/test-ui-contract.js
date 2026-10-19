@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '..');
+const failures = [];
+
+function absolute(relativePath) {
+  return path.join(root, relativePath);
+}
+
+function fail(message) {
+  failures.push(message);
+}
+
+function readJson(relativePath) {
+  const filePath = absolute(relativePath);
+  if (!fs.existsSync(filePath)) {
+    fail(`Falta ${relativePath}.`);
+    return null;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (error) {
+    fail(`${relativePath} no es JSON valido: ${error.message}`);
+    return null;
+  }
+}
+
+function extractModuleKeys() {
+  const source = fs.readFileSync(absolute('frontend/src/components/Layout/AppShell.jsx'), 'utf8');
+  const section = source.match(/const moduleDefinitions = \[(.*?)\n\];/s)?.[1] || '';
+  return [...section.matchAll(/\{ key: '([^']+)'/g)].map((match) => match[1]);
+}
+
+function checkReference(relativePath, label) {
+  if (!relativePath) {
+    fail(`La referencia de ${label} esta vacia.`);
+    return;
+  }
+  const filePath = absolute(relativePath);
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    fail(`La referencia de ${label} no existe: ${relativePath}.`);
+  }
+}
+
+const manifest = readJson('shared/ui-reference-manifest.json');
+if (manifest) {
+  Object.entries(manifest.flows || {}).forEach(([key, reference]) => checkReference(reference, `flujo ${key}`));
+  Object.entries(manifest.modules || {}).forEach(([key, reference]) => checkReference(reference, `modulo ${key}`));
+  (manifest.alternateReferences || []).forEach((reference) => checkReference(reference, 'referencia alternativa'));
+
+  const moduleKeys = extractModuleKeys();
+  const manifestKeys = Object.keys(manifest.modules || {}).sort();
+  const missing = moduleKeys.filter((key) => !manifestKeys.includes(key));
+  const stale = manifestKeys.filter((key) => !moduleKeys.includes(key));
+  if (missing.length) fail(`Modulos sin referencia declarada: ${missing.join(', ')}.`);
+  if (stale.length) fail(`Referencias de modulos que no existen en AppShell: ${stale.join(', ')}.`);
+  if (moduleKeys.length !== manifestKeys.length) {
+    fail(`La cantidad de modulos de AppShell (${moduleKeys.length}) no coincide con el manifiesto (${manifestKeys.length}).`);
+  }
+
+  if (!fs.readFileSync(absolute('frontend/src/components/Layout/AppShell.jsx'), 'utf8').includes('data-module={activeModule}')) {
+    fail('AppShell no expone data-module para identificar la pantalla activa en QA visual.');
+  }
+}
+
+if (failures.length) {
+  console.error('UI contract QA: FALLO');
+  failures.forEach((failure) => console.error(`- ${failure}`));
+  process.exitCode = 1;
+} else {
+  console.log('UI contract QA: OK (login, wizard y todos los modulos declarados)');
+}
