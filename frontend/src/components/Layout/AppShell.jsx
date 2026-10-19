@@ -25,7 +25,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.58';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.59';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -356,7 +356,7 @@ export default function AppShell({
       case 'users':
         return <UsersPanel token={token} onActivity={handleActivity} />;
       case 'branches':
-        return <BranchesPanel token={token} onActivity={handleActivity} />;
+        return <BranchesPanel token={token} onActivity={handleActivity} onNavigate={selectModule} />;
       case 'help':
         return <HelpPanel license={license} machineId={machineId} token={token} onReconfigure={onReconfigure} />;
       case 'license':
