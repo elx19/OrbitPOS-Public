@@ -22,6 +22,7 @@ Comandos:
   decode    --key ORB2....
   verify    --key ORB2.... [--key-file ruta.txt]
   fingerprint --public-key-file ruta.pem
+  key-info  --public-key-file ruta.pem | --private-key-file ruta.pem
   machine-id              Muestra el identificador de esta maquina
 
 Opciones de generate:
@@ -57,6 +58,13 @@ ORB3 usa Ed25519 y es el formato de emision predeterminado. ORB2 requiere la opc
 explicita --legacy-orb2 y ORBITPOS_LICENSE_SECRET. ORB3 usa Ed25519: el generador conserva la
 clave privada y el POS solo necesita la clave publica incluida en shared/license-public-key.pem.
 `);
+}
+
+function assertEd25519Key(keyObject, label) {
+  if (!keyObject || keyObject.asymmetricKeyType !== 'ed25519') {
+    throw new Error(`La ${label} debe ser una clave Ed25519.`);
+  }
+  return keyObject;
 }
 
 function parseArguments(argv) {
@@ -173,7 +181,10 @@ function readPrivateSigningKey(options) {
     throw new Error('El archivo de clave privada excede el tamano maximo permitido de 16 KB.');
   }
   try {
-    return crypto.createPrivateKey(fs.readFileSync(privateKeyPath, 'utf8'));
+    return assertEd25519Key(
+      crypto.createPrivateKey(fs.readFileSync(privateKeyPath, 'utf8')),
+      'clave privada'
+    );
   } catch (error) {
     throw new Error(`La clave privada no es valida: ${error.message}`);
   }
@@ -191,7 +202,10 @@ function readPublicSigningKey(options) {
     throw new Error('El archivo de clave publica excede el tamano maximo permitido de 16 KB.');
   }
   try {
-    return crypto.createPublicKey(fs.readFileSync(publicKeyPath, 'utf8'));
+    return assertEd25519Key(
+      crypto.createPublicKey(fs.readFileSync(publicKeyPath, 'utf8')),
+      'clave publica'
+    );
   } catch (error) {
     throw new Error(`La clave publica no es valida: ${error.message}`);
   }
@@ -200,6 +214,9 @@ function readPublicSigningKey(options) {
 function generateKeyPair(options) {
   const privateOut = requiredOption(options, 'private-out');
   const publicOut = requiredOption(options, 'public-out');
+  if (path.resolve(privateOut) === path.resolve(publicOut)) {
+    throw new Error('La clave privada y la clave publica deben guardarse en rutas diferentes.');
+  }
   const { privateKey, publicKey } = crypto.generateKeyPairSync('ed25519');
   const privatePem = privateKey.export({ type: 'pkcs8', format: 'pem' });
   const publicPem = publicKey.export({ type: 'spki', format: 'pem' });
@@ -214,6 +231,37 @@ function generateKeyPair(options) {
     publicKeyFingerprint: getPublicKeyFingerprint(publicKey)
   };
   return options.json ? result : `Clave privada: ${privatePath}\nClave publica: ${publicPath}`;
+}
+
+function keyInfo(options) {
+  const privatePath = options['private-key-file'] ? path.resolve(String(options['private-key-file'])) : null;
+  const publicPath = options['public-key-file'] ? path.resolve(String(options['public-key-file'])) : null;
+  if (!privatePath && !publicPath) {
+    throw new Error('Indica --private-key-file o --public-key-file para inspeccionar la clave.');
+  }
+  if (privatePath && publicPath) {
+    throw new Error('Usa una sola clave con key-info; para validar el par usa generate con ambas rutas.');
+  }
+
+  const key = privatePath
+    ? readPrivateSigningKey({ 'private-key-file': privatePath })
+    : readPublicSigningKey({ 'public-key-file': publicPath });
+  const publicKey = key.type === 'private' ? crypto.createPublicKey(key) : key;
+  const result = {
+    ok: true,
+    command: 'key-info',
+    algorithm: 'ed25519',
+    keyType: key.type,
+    privateKey: key.type === 'private',
+    path: privatePath || publicPath,
+    publicKeyFingerprint: getPublicKeyFingerprint(publicKey)
+  };
+  return options.json ? result : [
+    `Algoritmo: ${result.algorithm}`,
+    `Tipo: ${result.keyType}`,
+    `Huella publica: ${result.publicKeyFingerprint}`,
+    `Ruta: ${result.path}`
+  ].join('\n');
 }
 
 function loadSecretFromOptions(options) {
@@ -259,6 +307,10 @@ function run(command, options) {
     const fingerprint = getPublicKeyFingerprint(publicKey);
     const result = { ok: true, command, algorithm: 'ed25519', fingerprint };
     return options.json ? result : fingerprint;
+  }
+
+  if (command === 'key-info') {
+    return keyInfo(options);
   }
 
   if (command === 'generate') {

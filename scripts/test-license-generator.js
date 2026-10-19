@@ -38,7 +38,7 @@ const modernKey = createLicenseKey({
   businessName: 'Tienda ORB3',
   licenseType: 'annual',
   edition: 'professional',
-  versionMinCompatible: '2.1.0-alpha.65',
+  versionMinCompatible: '2.1.0-alpha.66',
   serial: 'JR-ORB3-001',
   signingKey: modernPrivateKey
 });
@@ -104,6 +104,7 @@ const publicKeyFile = path.join(__dirname, '..', '.qa', 'license-generator-test-
 const keygenPrivateFile = path.join(__dirname, '..', '.qa', 'license-generator-keygen-private.pem');
 const keygenPublicFile = path.join(__dirname, '..', '.qa', 'license-generator-keygen-public.pem');
 const mismatchPublicKeyFile = path.join(__dirname, '..', '.qa', 'license-generator-mismatch-public.pem');
+const rsaPrivateKeyFile = path.join(__dirname, '..', '.qa', 'license-generator-rsa-private.pem');
 
 const secureDefault = spawnSync(process.execPath, [generatorPath, 'generate', '--machine-id', 'machine-secure-default', '--business', 'Tienda Segura', '--type', 'monthly', '--json'], {
   env: process.env,
@@ -126,10 +127,49 @@ const generatedFingerprint = spawnSync(process.execPath, [generatorPath, 'finger
 assert.equal(generatedFingerprint.status, 0, generatedFingerprint.stderr);
 assert.equal(JSON.parse(generatedFingerprint.stdout).fingerprint, generatedKeyPairResult.publicKeyFingerprint);
 
+const privateKeyInfo = spawnSync(process.execPath, [generatorPath, 'key-info', '--private-key-file', keygenPrivateFile, '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(privateKeyInfo.status, 0, privateKeyInfo.stderr);
+assert.equal(JSON.parse(privateKeyInfo.stdout).privateKey, true);
+assert.equal(JSON.parse(privateKeyInfo.stdout).publicKeyFingerprint, generatedKeyPairResult.publicKeyFingerprint);
+
+const publicKeyInfo = spawnSync(process.execPath, [generatorPath, 'key-info', '--public-key-file', keygenPublicFile, '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(publicKeyInfo.status, 0, publicKeyInfo.stderr);
+assert.equal(JSON.parse(publicKeyInfo.stdout).privateKey, false);
+assert.equal(JSON.parse(publicKeyInfo.stdout).publicKeyFingerprint, generatedKeyPairResult.publicKeyFingerprint);
+
+const sameKeyPath = spawnSync(process.execPath, [generatorPath, 'keygen', '--private-out', keygenPrivateFile, '--public-out', keygenPrivateFile, '--force', '--json'], {
+  env: process.env,
+  encoding: 'utf8'
+});
+assert.equal(sameKeyPath.status, 1);
+assert.match(JSON.parse(sameKeyPath.stdout).error, /rutas diferentes/i);
+
 fs.writeFileSync(privateKeyFile, modernPrivateKey.export({ type: 'pkcs8', format: 'pem' }), { encoding: 'utf8', mode: 0o600 });
 fs.writeFileSync(publicKeyFile, modernPublicPem, { encoding: 'utf8', mode: 0o644 });
 const { publicKey: mismatchPublicKey } = crypto.generateKeyPairSync('ed25519');
 fs.writeFileSync(mismatchPublicKeyFile, mismatchPublicKey.export({ type: 'spki', format: 'pem' }), { encoding: 'utf8', mode: 0o644 });
+const { privateKey: rsaPrivateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+fs.writeFileSync(rsaPrivateKeyFile, rsaPrivateKey.export({ type: 'pkcs8', format: 'pem' }), { encoding: 'utf8', mode: 0o600 });
+const rejectedRsaKey = spawnSync(process.execPath, [
+  generatorPath,
+  'generate',
+  '--private-key-file', rsaPrivateKeyFile,
+  '--machine-id', 'machine-rsa',
+  '--business', 'Tienda RSA',
+  '--type', 'annual',
+  '--json'
+], {
+  env: { ...process.env, ORBITPOS_LICENSE_SECRET: '' },
+  encoding: 'utf8'
+});
+assert.equal(rejectedRsaKey.status, 1);
+assert.match(JSON.parse(rejectedRsaKey.stdout).error, /Ed25519/i);
 const generated = spawnSync(process.execPath, [generatorPath, 'generate', '--legacy-orb2', '--machine-id', 'machine-cli-001', '--business', 'Tienda CLI', '--type', 'monthly', '--out', keyFile, '--force', '--json'], {
   env: process.env,
   encoding: 'utf8'
@@ -288,5 +328,6 @@ fs.unlinkSync(publicKeyFile);
 fs.unlinkSync(keygenPrivateFile);
 fs.unlinkSync(keygenPublicFile);
 fs.unlinkSync(mismatchPublicKeyFile);
+fs.unlinkSync(rsaPrivateKeyFile);
 
 console.log('License generator QA: OK');
