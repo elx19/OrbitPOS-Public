@@ -38,7 +38,7 @@ const modernKey = createLicenseKey({
   businessName: 'Tienda ORB3',
   licenseType: 'annual',
   edition: 'professional',
-  versionMinCompatible: '2.1.0-alpha.61',
+  versionMinCompatible: '2.1.0-alpha.62',
   serial: 'JR-ORB3-001',
   signingKey: modernPrivateKey
 });
@@ -112,7 +112,7 @@ const secureDefault = spawnSync(process.execPath, [generatorPath, 'generate', '-
 assert.equal(secureDefault.status, 1);
 assert.match(JSON.parse(secureDefault.stdout).error, /emision segura|private-key-file/i);
 
-const generatedKeyPair = spawnSync(process.execPath, [generatorPath, 'keygen', '--private-out', keygenPrivateFile, '--public-out', keygenPublicFile, '--json'], {
+const generatedKeyPair = spawnSync(process.execPath, [generatorPath, 'keygen', '--private-out', keygenPrivateFile, '--public-out', keygenPublicFile, '--force', '--json'], {
   env: process.env,
   encoding: 'utf8'
 });
@@ -130,7 +130,7 @@ fs.writeFileSync(privateKeyFile, modernPrivateKey.export({ type: 'pkcs8', format
 fs.writeFileSync(publicKeyFile, modernPublicPem, { encoding: 'utf8', mode: 0o644 });
 const { publicKey: mismatchPublicKey } = crypto.generateKeyPairSync('ed25519');
 fs.writeFileSync(mismatchPublicKeyFile, mismatchPublicKey.export({ type: 'spki', format: 'pem' }), { encoding: 'utf8', mode: 0o644 });
-const generated = spawnSync(process.execPath, [generatorPath, 'generate', '--legacy-orb2', '--machine-id', 'machine-cli-001', '--business', 'Tienda CLI', '--type', 'monthly', '--out', keyFile, '--json'], {
+const generated = spawnSync(process.execPath, [generatorPath, 'generate', '--legacy-orb2', '--machine-id', 'machine-cli-001', '--business', 'Tienda CLI', '--type', 'monthly', '--out', keyFile, '--force', '--json'], {
   env: process.env,
   encoding: 'utf8'
 });
@@ -160,6 +160,59 @@ assert.equal(generatedModern.status, 0, generatedModern.stderr);
 const generatedModernResult = JSON.parse(generatedModern.stdout);
 assert.match(generatedModernResult.key, /^ORB3\./);
 assert.equal(generatedModernResult.publicKeyFingerprint, getPublicKeyFingerprint(modernPublicKey));
+const missingModernPublicKey = spawnSync(process.execPath, [generatorPath, 'verify', '--key-file', keyFile, '--machine-id', 'machine-cli-orb3', '--json'], {
+  env: { ORBITPOS_LICENSE_SECRET: '', ORBITPOS_LICENSE_PUBLIC_KEY: '' },
+  encoding: 'utf8'
+});
+assert.equal(missingModernPublicKey.status, 2, 'ORB3 debe rechazar la verificacion sin una clave publica disponible.');
+assert.match(JSON.parse(missingModernPublicKey.stdout).error, /firma|valida/i);
+
+const verifiedModernExternalKey = spawnSync(process.execPath, [
+  generatorPath,
+  'verify',
+  '--key-file', keyFile,
+  '--public-key-file', publicKeyFile,
+  '--machine-id',
+  'machine-cli-orb3',
+  '--json'
+], {
+  env: { ORBITPOS_LICENSE_SECRET: '', ORBITPOS_LICENSE_PUBLIC_KEY: '' },
+  encoding: 'utf8'
+});
+assert.equal(verifiedModernExternalKey.status, 0, verifiedModernExternalKey.stderr);
+assert.equal(JSON.parse(verifiedModernExternalKey.stdout).valid, true);
+
+const decodedModernExternalKey = spawnSync(process.execPath, [
+  generatorPath,
+  'decode',
+  '--key-file',
+  keyFile,
+  '--public-key-file',
+  publicKeyFile,
+  '--json'
+], {
+  env: { ORBITPOS_LICENSE_SECRET: '', ORBITPOS_LICENSE_PUBLIC_KEY: '' },
+  encoding: 'utf8'
+});
+assert.equal(decodedModernExternalKey.status, 0, decodedModernExternalKey.stderr);
+assert.match(JSON.parse(decodedModernExternalKey.stdout).payload.serial, /^JR-/);
+
+const rejectedModernExternalKey = spawnSync(process.execPath, [
+  generatorPath,
+  'verify',
+  '--key-file',
+  keyFile,
+  '--public-key-file',
+  mismatchPublicKeyFile,
+  '--json'
+], {
+  env: { ORBITPOS_LICENSE_SECRET: '', ORBITPOS_LICENSE_PUBLIC_KEY: '' },
+  encoding: 'utf8'
+});
+assert.equal(rejectedModernExternalKey.status, 2);
+assert.match(JSON.parse(rejectedModernExternalKey.stdout).error, /firma|valida/i);
+
+// The bundled public key remains a valid verification source when configured.
 const verifiedModern = spawnSync(process.execPath, [generatorPath, 'verify', '--key-file', keyFile, '--machine-id', 'machine-cli-orb3', '--json'], {
   env: { ORBITPOS_LICENSE_SECRET: '', ORBITPOS_LICENSE_PUBLIC_KEY: modernPublicPem },
   encoding: 'utf8'

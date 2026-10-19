@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.61** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.62** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea es `release/OrbitPOS Setup 2.1.0-alpha.61.exe`. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea será `release/OrbitPOS Setup 2.1.0-alpha.62.exe` después de ejecutar la construcción. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,15 +71,15 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.61` mantiene la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes, refuerza el aislamiento por tipo de negocio y alinea Inicio, Ventas, Configuración, Ayuda y Licencia con las referencias visuales. Esta iteración recalcula inmediatamente la escala automática al cambiar de monitor o DPI y agrega una comprobación de que el logo del negocio y el cierre de sesión permanezcan dentro del perfil, fuera del sidebar. También conserva la emisión ORB3/Ed25519, los permisos por usuario, los controles de autorización en la API, el workspace de Ventas sin scroll externo, el endurecimiento de ventanas a monitores pequeños y secundarios, y la EULA declarada en el instalador NSIS. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
+La línea `v2.1.0-alpha.62` mantiene la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes, refuerza el aislamiento por tipo de negocio y alinea Inicio, Ventas, Configuración, Ayuda y Licencia con las referencias visuales. También conserva la emisión ORB3/Ed25519, los permisos por usuario, los controles de autorización en la API, el workspace de Ventas sin scroll externo, el endurecimiento de ventanas a monitores pequeños y secundarios, la identidad del negocio en el perfil fuera del sidebar y la EULA declarada en el instalador NSIS. Esta iteración permite validar ORB3 con una clave pública externa para soportar rotación segura de claves. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
 
 ## Generador de licencias
 
-El generador operativo vive en `scripts/license-generator.js`. La clave privada nunca se guarda en el repositorio; define `ORBITPOS_LICENSE_SECRET` solo en la máquina autorizada para emitir licencias.
+El generador operativo vive en `scripts/license-generator.js`. La clave privada nunca se guarda en el repositorio. La emisión recomendada es ORB3 con Ed25519; el POS solo distribuye la clave pública y la privada permanece fuera del repositorio.
 
 ```bash
-set ORBITPOS_LICENSE_SECRET=clave-privada-local
-node scripts/license-generator.js generate --machine-id ID --business "Tienda San Jose" --type monthly --json
+node scripts/license-generator.js keygen --private-out C:\\secure\\orbitpos-private.pem --public-out C:\\secure\\orbitpos-public.pem --json
+node scripts/license-generator.js generate --private-key-file C:\\secure\\orbitpos-private.pem --public-key-file C:\\secure\\orbitpos-public.pem --machine-id ID --business "Tienda San Jose" --type monthly --json
 node scripts/license-generator.js verify --key ORB3.... --json
 node scripts/license-generator.js decode --key ORB3.... --json
 node scripts/license-generator.js machine-id --json
@@ -88,7 +88,7 @@ node scripts/license-generator.js machine-id --json
 Para no exponer la clave privada en el historial de comandos, también se puede usar un archivo externo protegido:
 
 ```bash
-node scripts/license-generator.js generate --secret-file C:\\secure\\orbitpos-license.secret --machine-id ID --business "Tienda San Jose" --type monthly --out C:\\secure\\license.key
+node scripts/license-generator.js generate --legacy-orb2 --secret-file C:\\secure\\orbitpos-license.secret --machine-id ID --business "Tienda San Jose" --type monthly --out C:\\secure\\license.key
 node scripts/license-generator.js verify --secret-file C:\\secure\\orbitpos-license.secret --key-file C:\\secure\\license.key --machine-id ID
 ```
 
@@ -97,9 +97,9 @@ Por seguridad, `--out` no reemplaza una licencia existente salvo que se indique 
 Para ORB3, identifica la clave pública que debe instalarse en el POS y valida el par antes de emitir:
 
 ```bash
-node scripts/license-generator.js keygen --private-out C:\\secure\\orbitpos-private.pem --public-out C:\\secure\\orbitpos-public.pem --json
 node scripts/license-generator.js fingerprint --public-key-file C:\\secure\\orbitpos-public.pem --json
-node scripts/license-generator.js generate --private-key-file C:\\secure\\orbitpos-private.pem --public-key-file C:\\secure\\orbitpos-public.pem --machine-id ID --business "Tienda San Jose" --type annual --json
+node scripts/license-generator.js generate --private-key-file C:\\secure\\orbitpos-private.pem --public-key-file C:\\secure\\orbitpos-public.pem --machine-id ID --business "Tienda San Jose" --type annual --out C:\\secure\\orbitpos-license.key --json
+node scripts/license-generator.js verify --public-key-file C:\\secure\\orbitpos-public.pem --key-file C:\\secure\\orbitpos-license.key --machine-id ID --json
 ```
 
 La prueba aislada del generador se ejecuta con `npm run qa:license`. `npm run qa:packaged` arranca el ejecutable desempaquetado en un puerto temporal, comprueba `/api/health` y `/api/meta`, y limpia su base de datos de prueba. `npm run qa:production` agrupa la QA de licencia, comercial, runtime empaquetado y release. Las pruebas físicas de dispositivos siguen siendo gates obligatorios antes de producción.

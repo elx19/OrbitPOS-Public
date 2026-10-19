@@ -45,6 +45,7 @@ Opciones de verify:
   --machine-id ID          Comprueba que la licencia pertenece a la maquina
   --version 2.1.0          Comprueba la version minima compatible
   --key-file ruta.txt      Lee la clave desde un archivo
+  --public-key-file ruta   Verifica una ORB3 con una publica externa
 
 Opciones generales:
   --secret-file ruta.txt   Lee la clave privada desde un archivo fuera del repositorio
@@ -316,9 +317,12 @@ function run(command, options) {
 
   if (command === 'decode' || command === 'verify') {
     const key = readLicenseKey(options);
+    const verificationPublicKey = options['public-key-file']
+      ? readPublicSigningKey(options)
+      : null;
     let payload;
     try {
-      payload = decodeLicenseKey(key);
+      payload = decodeLicenseKey(key, { publicKey: verificationPublicKey });
     } catch (error) {
       if (command !== 'verify') {
         throw error;

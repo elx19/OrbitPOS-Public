@@ -41,7 +41,14 @@ function getHmacKey() {
   return crypto.createHash('sha256').update(`hmac:${getLicenseSecret()}`).digest();
 }
 
-function getLicensePublicKey() {
+function getLicensePublicKey(publicKeyInput = null) {
+  if (publicKeyInput) {
+    if (publicKeyInput?.type === 'public') {
+      return publicKeyInput.export({ type: 'spki', format: 'pem' }).toString().trim();
+    }
+    return String(publicKeyInput).replace(/\\n/g, '\n').trim();
+  }
+
   const configuredKey = String(process.env.ORBITPOS_LICENSE_PUBLIC_KEY || '').trim();
   if (configuredKey) {
     return configuredKey.replace(/\\n/g, '\n');
@@ -245,7 +252,7 @@ function createLicenseKey({
   return `${LICENSE_PREFIX}.${Buffer.from(JSON.stringify(envelope), 'utf8').toString('base64url')}`;
 }
 
-function decodeModernLicenseKey(licenseKey) {
+function decodeModernLicenseKey(licenseKey, { publicKey = null } = {}) {
   const parts = licenseKey.split('.');
   if (parts.length !== 2 || !parts[1]) {
     throw new Error('La licencia no tiene un formato valido.');
@@ -265,7 +272,7 @@ function decodeModernLicenseKey(licenseKey) {
   const validSignature = crypto.verify(
     null,
     payloadBuffer,
-    crypto.createPublicKey(getLicensePublicKey()),
+    crypto.createPublicKey(getLicensePublicKey(publicKey)),
     signature
   );
   if (!validSignature) {
@@ -275,7 +282,7 @@ function decodeModernLicenseKey(licenseKey) {
   return normalizeLicensePayload(JSON.parse(payloadBuffer.toString('utf8')));
 }
 
-function decodeLicenseKey(licenseKey) {
+function decodeLicenseKey(licenseKey, options = {}) {
   try {
     const normalizedLicenseKey = typeof licenseKey === 'string' ? licenseKey.trim() : '';
     if (!normalizedLicenseKey || normalizedLicenseKey.length > MAX_LICENSE_KEY_LENGTH || !isLicenseKey(normalizedLicenseKey)) {
@@ -283,7 +290,7 @@ function decodeLicenseKey(licenseKey) {
     }
 
     if (normalizedLicenseKey.startsWith(`${MODERN_LICENSE_PREFIX}.`)) {
-      return decodeModernLicenseKey(normalizedLicenseKey);
+      return decodeModernLicenseKey(normalizedLicenseKey, options);
     }
 
     const parts = normalizedLicenseKey.split('.');
