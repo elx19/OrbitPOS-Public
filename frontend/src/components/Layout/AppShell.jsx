@@ -25,7 +25,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.63';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.64';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -193,16 +193,16 @@ export default function AppShell({
 
   const primaryModules = useMemo(
     () => user.role === 'admin'
-      ? visibleModules.filter((module) => primaryAdminModules.has(module.key))
+      ? visibleModules.filter((module) => new Set(businessProfile.adminPrimaryModules || primaryAdminModules).has(module.key))
       : visibleModules.filter((module) => new Set(businessProfile.primaryModules || commonPrimaryModules).has(module.key)),
-    [businessProfile.primaryModules, user.role, visibleModules]
+    [businessProfile.adminPrimaryModules, businessProfile.primaryModules, user.role, visibleModules]
   );
 
   const advancedModules = useMemo(
     () => visibleModules.filter((module) => user.role === 'admin'
-      ? !primaryAdminModules.has(module.key)
+      ? !new Set(businessProfile.adminPrimaryModules || primaryAdminModules).has(module.key)
       : !new Set(businessProfile.primaryModules || commonPrimaryModules).has(module.key)),
-    [businessProfile.primaryModules, user.role, visibleModules]
+    [businessProfile.adminPrimaryModules, businessProfile.primaryModules, user.role, visibleModules]
   );
 
   const modulesToRender = primaryModules;

@@ -88,6 +88,7 @@ if (profiles) {
   Object.entries(profiles).forEach(([profileKey, profile]) => {
     const modules = new Set(profile.modules || []);
     const primaryModules = profile.primaryModules || [];
+    const adminPrimaryModules = profile.adminPrimaryModules || primaryModules;
     if (!primaryModules.length || primaryModules.length > 5) {
       fail(`El perfil ${profileKey} debe declarar entre 1 y 5 modulos primarios.`);
     }
@@ -97,6 +98,15 @@ if (profiles) {
     primaryModules.forEach((moduleKey) => {
       if (!modules.has(moduleKey)) {
         fail(`El perfil ${profileKey} expone ${moduleKey} como primario pero no lo permite en modules.`);
+      }
+    });
+
+    if (adminPrimaryModules.length > 18 || new Set(adminPrimaryModules).size !== adminPrimaryModules.length) {
+      fail(`El perfil ${profileKey} tiene modulos primarios administrativos invalidos.`);
+    }
+    adminPrimaryModules.forEach((moduleKey) => {
+      if (!modules.has(moduleKey)) {
+        fail(`El perfil ${profileKey} expone ${moduleKey} como primario administrativo pero no lo permite en modules.`);
       }
     });
   });
