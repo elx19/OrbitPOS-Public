@@ -1,10 +1,10 @@
 const express = require('express');
 const { getDb, createAuditLog } = require('../database');
-const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('suppliers'));
 
 router.get('/', (request, response) => {
   const { q = '', active = '1' } = request.query;

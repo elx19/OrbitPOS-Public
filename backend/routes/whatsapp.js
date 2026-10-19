@@ -1,11 +1,11 @@
 const express = require('express');
 const { getDb, getConfigValue } = require('../database');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 const { buildCustomerStatement } = require('../helpers/receipt');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('customers'));
 
 function businessPhone() {
   return (getConfigValue('whatsapp_phone', '') || '').replace(/\D/g, '') || '18094042070';

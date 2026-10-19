@@ -1,13 +1,13 @@
 const express = require('express');
 const { getDb, getConfigValue, createAuditLog } = require('../database');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 const { printText } = require('../helpers/printer');
 const { buildQuoteDocument } = require('../helpers/receipt');
 const { calculateSalePreview, createSale } = require('../services/sales');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('pos'));
 
 function nextQuoteNumber() {
   const row = getDb().prepare('SELECT id FROM quotes ORDER BY id DESC LIMIT 1').get();

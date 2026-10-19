@@ -1,7 +1,7 @@
 const express = require('express');
 const { getDb } = require('../database');
 const { withRuntimeCache } = require('../helpers/runtimeCache');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 const { getBusinessType, getBusinessCategories } = require('../helpers/businessProfile');
 
 const router = express.Router();
@@ -84,7 +84,7 @@ function getDashboardStatements() {
   return dashboardStatements;
 }
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('dashboard'));
 
 router.get('/summary', (request, response) => {
   const summary = withRuntimeCache('dashboard:summary', 6000, () => {

@@ -1,10 +1,10 @@
 const express = require('express');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 const { buildReportData, buildReportPdf } = require('../services/reports');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('reports'));
 
 router.get('/pdf', async (request, response) => {
   try {

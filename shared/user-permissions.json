@@ -22,7 +22,8 @@
         { "module": "products", "action": "transfer", "label": "Transferencias" },
         { "module": "products", "action": "count", "label": "Conteos físicos" },
         { "module": "products", "action": "manage", "label": "Gestionar productos" },
-        { "module": "purchases", "action": "view", "label": "Compras y entradas" }
+        { "module": "purchases", "action": "view", "label": "Compras y entradas" },
+        { "module": "suppliers", "action": "view", "label": "Ver proveedores" }
       ]
     },
     {

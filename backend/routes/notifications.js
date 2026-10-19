@@ -1,7 +1,7 @@
 const express = require('express');
 const { getDb } = require('../database');
 const { clearRuntimeCache, withRuntimeCache } = require('../helpers/runtimeCache');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -48,7 +48,7 @@ function getNotificationStatements() {
   return notificationStatements;
 }
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('notifications'));
 
 router.get('/', (request, response) => {
   const summaryOnly = request.query.summaryOnly === '1';

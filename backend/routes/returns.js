@@ -1,12 +1,12 @@
 const express = require('express');
 const { getDb, getConfigValue, createAuditLog } = require('../database');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 const { printText } = require('../helpers/printer');
 const { buildReturnNote } = require('../helpers/receipt');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('returns'));
 
 function nextReturnNumber() {
   const row = getDb().prepare('SELECT id FROM returns ORDER BY id DESC LIMIT 1').get();

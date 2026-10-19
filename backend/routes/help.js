@@ -1,12 +1,12 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 const MANUAL_PATH = path.join(__dirname, '..', '..', 'assets', 'manuals', 'OrbitPOS_Manual_Usuario.pdf');
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('help'));
 
 router.get('/manual', (request, response) => {
   if (!fs.existsSync(MANUAL_PATH)) {

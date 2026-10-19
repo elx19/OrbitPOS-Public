@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { getDb } = require('../database');
-const { parseStoredPermissions } = require('../../shared/user-permissions');
+const { hasPermission, parseStoredPermissions } = require('../../shared/user-permissions');
 
 const JWT_SECRET = process.env.ORBITPOS_JWT_SECRET || 'orbitpos-local-jwt-secret';
 
@@ -81,8 +81,32 @@ function requireAdmin(request, response, next) {
   next();
 }
 
+function requirePermission(moduleKey, action = 'view', fallbackModules = []) {
+  return (request, response, next) => {
+    const modules = [moduleKey, ...fallbackModules];
+    const allowed = modules.some((candidate) => hasPermission(
+      request.user?.role,
+      request.user?.permissions,
+      candidate,
+      action
+    ));
+
+    if (!allowed) {
+      return response.status(403).json({
+        message: 'No tienes permisos para acceder a este módulo.',
+        code: 'PERMISSION_DENIED',
+        module: moduleKey,
+        action
+      });
+    }
+
+    next();
+  };
+}
+
 module.exports = {
   authenticateToken,
   requireAdmin,
+  requirePermission,
   signToken
 };

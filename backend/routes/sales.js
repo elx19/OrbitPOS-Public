@@ -1,6 +1,6 @@
 const express = require('express');
 const { getDb, getConfigValue } = require('../database');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 const { printText } = require('../helpers/printer');
 const { buildSaleTicket } = require('../helpers/receipt');
 const { refreshLicenseState } = require('../license');
@@ -8,7 +8,7 @@ const { calculateSalePreview, createSale } = require('../services/sales');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('pos'));
 
 router.get('/', (request, response) => {
   const sales = getDb().prepare(`

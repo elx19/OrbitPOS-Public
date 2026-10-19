@@ -1,12 +1,12 @@
 const express = require('express');
 const { getDb, getConfigValue, createAuditLog } = require('../database');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 const { printText } = require('../helpers/printer');
 const { buildCashRegisterReceipt } = require('../helpers/receipt');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('cash'));
 
 function getOpenRegister(userId) {
   return getDb().prepare(`

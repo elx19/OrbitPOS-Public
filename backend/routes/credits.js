@@ -1,10 +1,10 @@
 const express = require('express');
 const { getDb } = require('../database');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('credits'));
 
 router.get('/', (request, response) => {
   const { q = '' } = request.query;

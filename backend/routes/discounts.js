@@ -1,11 +1,11 @@
 const express = require('express');
 const { getDb, createAuditLog } = require('../database');
-const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, requirePermission } = require('../middleware/auth');
 const { calculateSalePreview } = require('../services/sales');
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(authenticateToken, requirePermission('pos', 'discount'));
 
 router.get('/', (request, response) => {
   const discounts = getDb().prepare(`

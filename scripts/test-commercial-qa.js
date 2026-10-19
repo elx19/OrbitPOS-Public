@@ -406,6 +406,24 @@ async function runCommercialQa() {
     assertCondition(qaLogin.payload.user?.permissions?.pos?.includes('view'), 'El login no devolvio los permisos del cajero.');
     const qaMe = await apiRequest(apiBaseUrl, '/api/auth/me', { token: qaLogin.payload.token });
     assertCondition(qaMe.payload.user?.permissions?.customers?.includes('view'), 'La sesion no conserva los permisos efectivos.');
+    const qaProducts = await apiRequest(apiBaseUrl, '/api/products', { token: qaLogin.payload.token });
+    assertCondition(Array.isArray(qaProducts.payload), 'El cajero con permiso POS no pudo consultar el catalogo para vender.');
+    const qaReports = await fetch(`${apiBaseUrl}/api/reports?range=30d`, {
+      headers: { Authorization: `Bearer ${qaLogin.payload.token}` }
+    });
+    const qaReportsPayload = await qaReports.json();
+    assertCondition(
+      qaReports.status === 403 && qaReportsPayload.code === 'PERMISSION_DENIED',
+      'La API permitio reportes a un cajero sin permiso de reportes.'
+    );
+    const qaPurchases = await fetch(`${apiBaseUrl}/api/purchases`, {
+      headers: { Authorization: `Bearer ${qaLogin.payload.token}` }
+    });
+    const qaPurchasesPayload = await qaPurchases.json();
+    assertCondition(
+      qaPurchases.status === 403 && qaPurchasesPayload.code === 'PERMISSION_DENIED',
+      'La API permitio compras a un cajero sin permiso de inventario.'
+    );
     recordStep('Usuarios, roles, permisos y contrasena validados', { userId: qaUser.payload.id });
 
     const helpResources = await apiRequest(apiBaseUrl, '/api/help/resources', { token });
