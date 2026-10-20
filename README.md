@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.68** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.69** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea será `release/OrbitPOS Setup 2.1.0-alpha.68.exe` después de ejecutar la construcción. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
+El instalador generado localmente para esta línea será `release/OrbitPOS Setup 2.1.0-alpha.69.exe` después de ejecutar la construcción. La publicación en GitHub Releases debe hacerse después de completar las pruebas físicas y firmar el artefacto.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.68` conserva la protección del asistente y la adaptación responsive, compacta la navegación para usuarios comunes y muestra al administrador los módulos autorizados de su tipo de negocio como en las referencias. Esta iteración contiene el shell acotado al viewport dinámico, el ajuste inicial de Electron al área de trabajo y un selector de logos que convierte la imagen a un formato portable para login, perfil y backups. También conserva el menú de perfil, el generador ORB3/Ed25519, el catálogo inicial categorizado, los permisos por usuario, los controles de autorización en la API, el workspace de Ventas sin scroll externo, el autoajuste a monitores pequeños y secundarios, y la EULA declarada en el instalador NSIS. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
+La línea `v2.1.0-alpha.69` conserva la protección del asistente y la adaptación responsive, compacta la navegación de administradores y usuarios comunes según el perfil de negocio, y mantiene los módulos secundarios disponibles en “Más módulos” como en las referencias. Esta iteración contiene el shell acotado al viewport dinámico, el ajuste inicial de Electron al área de trabajo y un selector de logos que convierte la imagen a un formato portable para login, perfil y backups. También conserva el menú de perfil, el generador ORB3/Ed25519, el catálogo inicial categorizado, los permisos por usuario, los controles de autorización en la API, el workspace de Ventas sin scroll externo, el autoajuste a monitores pequeños y secundarios, y la EULA declarada en el instalador NSIS. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
 
 ## Generador de licencias
 

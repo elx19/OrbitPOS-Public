@@ -88,6 +88,9 @@ if (manifest) {
   if (/orbit-sidebar-footer[\s\S]*orbit-logout/.test(shellSource)) {
     fail('El sidebar no debe contener el control de cerrar sesión.');
   }
+  if (!shellSource.includes('businessProfile.adminPrimaryModules') || !shellSource.includes('Más módulos')) {
+    fail('La navegación no respeta los módulos primarios del administrador y su menú secundario.');
+  }
   ['DashboardHome', 'POSPanel', 'ProductsPanel', 'PurchasesPanel', 'ReportsPanel'].forEach((componentName) => {
     const componentPattern = new RegExp(`<${componentName}\\s+key=\\{businessType\\}`);
     if (!componentPattern.test(shellSource)) {
