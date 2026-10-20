@@ -105,6 +105,10 @@ if (manifest) {
   if (!dashboardSource.includes('businessType') || !dashboardSource.includes('orbit-dashboard-catalog-grid') || !dashboardSource.includes('orbit-dashboard-charge')) {
     fail('Inicio debe conservar el tablero operativo contextual por negocio de la referencia.');
   }
+  const productsSource = fs.readFileSync(absolute('frontend/src/components/Products/ProductsPanel.jsx'), 'utf8');
+  if (!productsSource.includes('orbit-products-table') || !productsSource.includes('orbit-low-stock-panel') || !productsSource.includes('orbit-inventory-summary')) {
+    fail('Productos e inventario debe conservar la tabla, alertas y resumen de la referencia.');
+  }
 }
 
 const profiles = readJson('shared/business-profiles.json');

@@ -2185,3 +2185,53 @@ select {
     padding: 12px 16px !important;
   }
 }
+
+/* Products and inventory: match the supplied reference while keeping the editor available below the operational view. */
+.orbit-products-page { min-width: 0; }
+.orbit-products-heading h2 { letter-spacing: -0.035em; }
+.orbit-products-toolbar > .theme-input,
+.orbit-products-toolbar > input { flex: 1; min-width: 0; }
+.orbit-products-category { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; border: 1px solid #e5ebf1; border-radius: 999px; padding: 0 18px; background: #f8fafc; color: #203653; font-size: .82rem; font-weight: 700; transition: .16s ease; }
+.orbit-products-category:hover { border-color: #79cbaa; background: #eefaf5; }
+.orbit-products-category.is-active { border-color: #b7e8d6; background: #dff6ed; color: #0b654b; }
+.orbit-products-table-wrap { max-height: min(590px, calc(100dvh - 350px)); }
+.orbit-products-table thead { background: #f7f9fb; color: #526782; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .025em; }
+.orbit-products-table th { padding: 13px 12px; white-space: nowrap; }
+.orbit-products-table td { border-top: 1px solid #edf1f5; padding: 12px; vertical-align: middle; }
+.orbit-products-table tbody tr { cursor: pointer; transition: background .16s ease; }
+.orbit-products-table tbody tr:hover,
+.orbit-products-table tbody tr.is-selected { background: #effbf6; }
+.orbit-products-table small { color: #647894; font-size: .72rem; }
+.orbit-products-pill { display: inline-flex; border-radius: 999px; padding: 7px 11px; background: #fff4d9; color: #926315; font-size: .75rem; font-weight: 700; white-space: nowrap; }
+.orbit-products-status { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 7px 11px; font-size: .74rem; font-weight: 700; white-space: nowrap; }
+.orbit-products-status i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.orbit-products-status.is-good { background: #e0f7ed; color: #087c55; }
+.orbit-products-status.is-low { background: #fff0e8; color: #d54d1d; }
+.orbit-products-more { width: 30px; height: 30px; border-radius: 8px; color: #516681; font-size: 1.3rem; line-height: 1; }
+.orbit-products-more:hover { background: #e9f0f5; color: #0b2644; }
+.orbit-products-side { min-width: 0; }
+.orbit-low-stock-panel { border-color: #ffdccc !important; }
+.orbit-low-stock-panel > div:first-child h3 { font-size: 1.2rem; }
+.orbit-inventory-summary > div { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; align-items: center; gap: 10px; min-height: 57px; color: #58708c; font-size: .86rem; }
+.orbit-inventory-summary > div strong { color: #162b49; font-size: 1.1rem; }
+.orbit-summary-icon { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border-radius: 9px; background: #f0f4f8; color: #536b85; font-weight: 800; }
+.orbit-summary-icon.is-good { background: #dcf6e9; color: #079568; }
+.orbit-summary-icon.is-warn { background: #fff1da; color: #e1770a; }
+.orbit-summary-icon.is-danger { background: #ffe5e5; color: #df3b3b; }
+.orbit-outline-action { min-height: 46px; border: 1px solid #0aa66c; border-radius: 10px; background: #fff; color: #087c55; font-size: .84rem; font-weight: 700; }
+.orbit-outline-action:hover { background: #eefaf5; }
+@media (min-width: 1100px) {
+  .orbit-products-side { display: contents; }
+  .orbit-products-table-card { grid-column: 1; grid-row: 1; }
+  .orbit-products-side #orbit-product-form { grid-column: 1; grid-row: 2; }
+  .orbit-products-side .orbit-low-stock-panel { grid-column: 2; grid-row: 1; }
+  .orbit-products-side .orbit-inventory-summary { grid-column: 2; grid-row: 2; align-self: start; }
+}
+@media (max-width: 1099px) {
+  .orbit-products-table-wrap { max-height: none; }
+}
+@media (max-width: 700px) {
+  .orbit-products-heading h2 { font-size: 2rem; }
+  .orbit-products-heading .orbit-primary-button { width: 100%; }
+  .orbit-products-category { min-height: 38px; padding: 0 12px; }
+}

@@ -62,6 +62,12 @@ export default function ProductsPanel({ token, businessType = 'colmado', invento
       .slice(0, 4),
     [products]
   );
+  const inventorySummary = useMemo(() => ({
+    total: products.length,
+    inStock: products.filter((product) => Number(product.stock || 0) > Number(product.min_stock || 0)).length,
+    lowStock: lowStockCount,
+    outOfStock: products.filter((product) => Number(product.stock || 0) <= 0).length
+  }), [lowStockCount, products]);
   const filteredProducts = useMemo(() => {
     if (categoryFilter === 'Todos') return products;
     const normalizedCategory = categoryFilter.toLowerCase();
@@ -147,69 +153,55 @@ export default function ProductsPanel({ token, businessType = 'colmado', invento
     }
   }
 
-  return (
-    <div className="space-y-6">
-      <Panel>
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-3xl">
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Inventario</div>
-            <h2 className="mt-2 text-3xl font-bold text-ink">{inventoryLabel}</h2>
-            <p className="mt-3 text-sm text-slate-600">
-              Gestiona tu catalogo de productos, precios y existencias.
-            </p>
-          </div>
-          <div className="flex w-full flex-col gap-3 xl:w-auto xl:min-w-[560px] xl:flex-row xl:items-stretch">
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Productos</div>
-              <div className="mt-2 text-2xl font-bold text-ink">{products.length}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Stock bajo</div>
-              <div className="mt-2 text-2xl font-bold text-rosewood">{lowStockCount}</div>
-            </div>
-            <div className="rounded-[24px] bg-white/78 px-5 py-4">
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Seleccionado</div>
-              <div className="mt-2 truncate text-lg font-bold text-ink">{selectedProduct?.name || 'Ninguno'}</div>
-            </div>
-            <Button
-              className="orbit-primary-button shrink-0"
-              onClick={() => {
-                setForm(emptyForm);
-                document.getElementById('orbit-product-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-            >
-              + Nuevo producto
-            </Button>
-          </div>
-        </div>
-      </Panel>
+  const selectProduct = (product) => setForm({
+    ...product,
+    image_path: product.image_path || '',
+    cost_price: String(product.cost_price),
+    sale_price: String(product.sale_price),
+    stock: String(product.stock),
+    min_stock: String(product.min_stock),
+    weighed: Boolean(product.weighed),
+    active: Boolean(product.active)
+  });
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr),minmax(340px,0.92fr)]">
-        <Panel className="overflow-hidden">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Catalogo</div>
-              <h3 className="mt-2 text-2xl font-bold text-ink">Listado de productos</h3>
-              <div className="mt-2 text-sm text-slate-500">Busca por nombre o codigo y selecciona para editar.</div>
-            </div>
+  return (
+    <div className="orbit-products-page space-y-6">
+      <div className="orbit-products-heading flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <h2 className="text-4xl font-bold text-ink">Productos e inventario</h2>
+          <p className="mt-2 text-base text-slate-600">Gestiona tu catálogo de productos, precios y existencias.</p>
+        </div>
+        <Button
+          className="orbit-primary-button shrink-0"
+          onClick={() => {
+            setForm(emptyForm);
+            document.getElementById('orbit-product-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
+        >
+          + Nuevo producto
+        </Button>
+      </div>
+
+      <div className="orbit-products-layout grid gap-6 xl:grid-cols-[minmax(0,1fr),320px]">
+        <Panel className="orbit-products-table-card overflow-hidden">
+          <div className="orbit-products-toolbar flex flex-col gap-4 lg:flex-row lg:items-center">
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  loadProducts(event.currentTarget.value);
-                }
+                if (event.key === 'Enter') loadProducts(event.currentTarget.value);
               }}
-              placeholder="Buscar por nombre o codigo"
+              placeholder="Buscar por nombre, código o categoría..."
             />
+            <div className="text-sm text-slate-500">{filteredProducts.length} producto(s)</div>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="orbit-products-category-row mt-5 flex flex-wrap gap-2">
             {categoryFilters.map((category) => (
               <button
                 key={category}
                 type="button"
-                className={`orbit-category-chip ${categoryFilter === category ? 'is-active' : ''}`}
+                className={`orbit-products-category ${categoryFilter === category ? 'is-active' : ''}`}
                 onClick={() => {
                   setCategoryFilter(category);
                   setVisibleProductCount(40);
@@ -219,75 +211,51 @@ export default function ProductsPanel({ token, businessType = 'colmado', invento
               </button>
             ))}
           </div>
-          <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
-            <span className="rounded-full bg-white/75 px-3 py-2">Resultados: {filteredProducts.length}</span>
-            <span className="rounded-full bg-white/75 px-3 py-2">Stock critico: {lowStockCount}</span>
-          </div>
 
-          <div className="soft-scrollbar mt-6 max-h-[calc(100vh-21rem)] space-y-3 overflow-auto pr-1">
-            {visibleProducts.length ? visibleProducts.map((product) => {
-              const isSelected = selectedProduct?.id === product.id;
-              return (
-                <button
-                  key={product.id}
-                  type="button"
-                  onClick={() => setForm({
-                    ...product,
-                    image_path: product.image_path || '',
-                    cost_price: String(product.cost_price),
-                    sale_price: String(product.sale_price),
-                    stock: String(product.stock),
-                    min_stock: String(product.min_stock),
-                    weighed: Boolean(product.weighed),
-                    active: Boolean(product.active)
-                  })}
-                  className={`w-full rounded-[24px] p-4 text-left transition ${
-                    isSelected ? 'bg-ink text-white shadow-soft' : 'bg-white/78 hover:bg-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <ProductImagePreview
-                      product={product}
-                      className={`h-16 w-16 rounded-[18px] ${isSelected ? 'border-white/20 bg-white/10 text-white' : ''}`}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="truncate font-semibold">{product.name}</div>
-                          <div className={`mt-1 text-xs ${isSelected ? 'text-white/75' : 'text-slate-500'}`}>
-                            {product.category || 'Sin categoria'} | {product.barcode || 'Sin codigo'}
+          <div className="orbit-products-table-wrap soft-scrollbar mt-5 overflow-auto">
+            <table className="orbit-products-table w-full min-w-[780px] text-left text-sm">
+              <thead>
+                <tr>
+                  <th>Producto</th><th>Categoría</th><th>Stock</th><th>Mínimo</th><th>Costo</th><th>Precio</th><th>Estado</th><th aria-label="Acciones" />
+                </tr>
+              </thead>
+              <tbody>
+                {visibleProducts.length ? visibleProducts.map((product) => {
+                  const isLowStock = Number(product.stock || 0) <= Number(product.min_stock || 0);
+                  const isSelected = selectedProduct?.id === product.id;
+                  return (
+                    <tr key={product.id} className={isSelected ? 'is-selected' : ''} onClick={() => selectProduct(product)}>
+                      <td>
+                        <div className="flex min-w-[190px] items-center gap-3">
+                          <ProductImagePreview product={product} className="h-12 w-12 rounded-[10px]" />
+                          <div className="min-w-0">
+                            <div className="truncate font-semibold text-ink">{product.name}</div>
+                            <div className="mt-1 text-xs text-slate-500">{product.barcode || 'Sin código'}</div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm font-semibold">RD$ {Number(product.sale_price).toFixed(2)}</div>
-                          <div className={`mt-1 text-xs ${isSelected ? 'text-white/75' : Number(product.stock) <= Number(product.min_stock) ? 'text-red-600' : 'text-slate-500'}`}>
-                            Stock: {product.stock}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              );
-            }) : (
-              <div className="rounded-[24px] bg-white/78 px-4 py-5 text-sm text-slate-500">
-                No se encontraron productos con ese criterio.
-              </div>
-            )}
+                      </td>
+                      <td><span className="orbit-products-pill">{product.category || 'Sin categoría'}</span></td>
+                      <td className={isLowStock ? 'font-bold text-rosewood' : 'font-semibold text-ink'}>{product.stock} <small>{product.unit || 'un'}</small></td>
+                      <td className="text-slate-700">{product.min_stock} <small>{product.unit || 'un'}</small></td>
+                      <td className="whitespace-nowrap text-slate-700">RD$ {Number(product.cost_price || 0).toFixed(2)}</td>
+                      <td className="whitespace-nowrap font-medium text-slate-700">RD$ {Number(product.sale_price || 0).toFixed(2)}</td>
+                      <td><span className={`orbit-products-status ${isLowStock ? 'is-low' : 'is-good'}`}><i />{isLowStock ? 'Bajo stock' : 'En stock'}</span></td>
+                      <td><button type="button" className="orbit-products-more" aria-label={`Editar ${product.name}`} onClick={(event) => { event.stopPropagation(); selectProduct(product); }}>⋮</button></td>
+                    </tr>
+                  );
+                }) : (
+                  <tr><td colSpan="8" className="py-10 text-center text-slate-500">No se encontraron productos con ese criterio.</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
-          {filteredProducts.length > visibleProductCount ? (
-            <div className="mt-4 flex items-center justify-between gap-3 rounded-[22px] bg-white/72 px-4 py-3">
-              <div className="text-sm text-slate-600">
-                Mostrando {visibleProductCount} de {filteredProducts.length} producto(s).
-              </div>
-              <Button variant="secondary" onClick={() => setVisibleProductCount((current) => current + 30)}>
-                Mostrar mas
-              </Button>
-            </div>
-          ) : null}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 text-sm text-slate-500">
+            <span>Mostrando {Math.min(visibleProductCount, filteredProducts.length)} de {filteredProducts.length} productos</span>
+            {filteredProducts.length > visibleProductCount ? <Button variant="secondary" onClick={() => setVisibleProductCount((current) => current + 30)}>Mostrar más</Button> : null}
+          </div>
         </Panel>
 
-        <div className="grid content-start gap-6">
+        <div className="orbit-products-side grid content-start gap-6">
         <Panel id="orbit-product-form">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div>
@@ -413,16 +381,7 @@ export default function ProductsPanel({ token, businessType = 'colmado', invento
                 key={product.id}
                 type="button"
                 className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50"
-                onClick={() => setForm({
-                  ...product,
-                  image_path: product.image_path || '',
-                  cost_price: String(product.cost_price),
-                  sale_price: String(product.sale_price),
-                  stock: String(product.stock),
-                  min_stock: String(product.min_stock),
-                  weighed: Boolean(product.weighed),
-                  active: Boolean(product.active)
-                })}
+                onClick={() => selectProduct(product)}
               >
                 <ProductImagePreview product={product} className="h-12 w-12 rounded-[12px]" />
                 <span className="min-w-0 flex-1">
@@ -439,8 +398,19 @@ export default function ProductsPanel({ token, businessType = 'colmado', invento
             {lowStockCount ? `${lowStockCount} producto(s) necesitan reposicion.` : 'Todo el inventario esta en orden.'}
           </div>
         </Panel>
+        <Panel className="orbit-inventory-summary">
+          <h3 className="text-xl font-bold text-ink">Resumen de inventario</h3>
+          <div className="mt-4 divide-y divide-slate-100">
+            <div><span className="orbit-summary-icon">▣</span><span>Total de productos</span><strong>{inventorySummary.total}</strong></div>
+            <div><span className="orbit-summary-icon is-good">✓</span><span>Con stock</span><strong>{inventorySummary.inStock}</strong></div>
+            <div><span className="orbit-summary-icon is-warn">!</span><span>Con bajo stock</span><strong className="text-orange-600">{inventorySummary.lowStock}</strong></div>
+            <div><span className="orbit-summary-icon is-danger">×</span><span>Sin stock</span><strong className="text-red-600">{inventorySummary.outOfStock}</strong></div>
+          </div>
+          <button type="button" className="orbit-outline-action mt-5 w-full" onClick={() => setCategoryFilter('Todos')}>▥ Ver reporte de inventario</button>
+        </Panel>
         </div>
       </div>
+      <div className="sr-only">{inventoryLabel}</div>
     </div>
   );
 }
