@@ -25,7 +25,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.70';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.71';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -153,17 +153,23 @@ export default function AppShell({
   const compactSidebar = String(config.sidebar_compact || '0') === '1';
   const businessLogoUrl = resolveAssetUrl(config.business_logo);
   const businessInitials = getInitials(businessName);
+  const allowedModuleKeys = useMemo(
+    () => user.role === 'admin'
+      ? (businessProfile.modules || [])
+      : (businessProfile.commonModules || businessProfile.primaryModules || businessProfile.modules || []),
+    [businessProfile.commonModules, businessProfile.modules, businessProfile.primaryModules, user.role]
+  );
 
   const visibleModules = useMemo(
     () => moduleDefinitions
-      .filter((module) => (businessProfile.modules || []).includes(module.key))
+      .filter((module) => allowedModuleKeys.includes(module.key))
       .filter((module) => !module.adminOnly || user.role === 'admin')
       .filter((module) => hasModulePermission(user, module.key))
       .map((module) => module.key === 'products'
         ? { ...module, label: businessProfile.inventoryLabel || module.label }
         : module)
       .sort((left, right) => navigationOrder.indexOf(left.key) - navigationOrder.indexOf(right.key)),
-    [businessProfile.inventoryLabel, businessProfile.modules, user]
+    [allowedModuleKeys, businessProfile.inventoryLabel, user]
   );
 
   const activeModuleDefinition = useMemo(
@@ -295,7 +301,7 @@ export default function AppShell({
   function renderContent() {
     switch (activeModule) {
       case 'dashboard':
-        return <DashboardHome key={businessType} token={token} refreshKey={activityVersion} onNavigate={selectModule} />;
+        return <DashboardHome key={businessType} token={token} businessType={businessType} refreshKey={activityVersion} onNavigate={selectModule} />;
       case 'pos':
         return (
           <POSPanel

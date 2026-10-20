@@ -88,8 +88,8 @@ if (manifest) {
   if (/orbit-sidebar-footer[\s\S]*orbit-logout/.test(shellSource)) {
     fail('El sidebar no debe contener el control de cerrar sesión.');
   }
-  if (!shellSource.includes('businessProfile.adminPrimaryModules') || !shellSource.includes('Más módulos')) {
-    fail('La navegación no respeta los módulos primarios del administrador y su menú secundario.');
+  if (!shellSource.includes('businessProfile.adminPrimaryModules') || !shellSource.includes('businessProfile.commonModules') || !shellSource.includes('Más módulos')) {
+    fail('La navegación no separa los módulos administrativos, comunes y secundarios.');
   }
   ['DashboardHome', 'POSPanel', 'ProductsPanel', 'PurchasesPanel', 'ReportsPanel'].forEach((componentName) => {
     const componentPattern = new RegExp(`<${componentName}\\s+key=\\{businessType\\}`);
@@ -101,6 +101,10 @@ if (manifest) {
   if (!posSource.includes('handleBarcodeSubmit') || !posSource.includes('Escanear código de barras') || !posSource.includes('orbit-pos-charge-button')) {
     fail('Ventas debe conservar el flujo de escaneo, cliente y accion Cobrar de la referencia.');
   }
+  const dashboardSource = fs.readFileSync(absolute('frontend/src/components/Dashboard/DashboardHome.jsx'), 'utf8');
+  if (!dashboardSource.includes('businessType') || !dashboardSource.includes('orbit-dashboard-catalog-grid') || !dashboardSource.includes('orbit-dashboard-charge')) {
+    fail('Inicio debe conservar el tablero operativo contextual por negocio de la referencia.');
+  }
 }
 
 const profiles = readJson('shared/business-profiles.json');
@@ -109,6 +113,7 @@ if (profiles) {
     const modules = new Set(profile.modules || []);
     const primaryModules = profile.primaryModules || [];
     const adminPrimaryModules = profile.adminPrimaryModules || primaryModules;
+    const commonModules = profile.commonModules || primaryModules;
     if (!primaryModules.length || primaryModules.length > 5) {
       fail(`El perfil ${profileKey} debe declarar entre 1 y 5 modulos primarios.`);
     }
@@ -127,6 +132,14 @@ if (profiles) {
     adminPrimaryModules.forEach((moduleKey) => {
       if (!modules.has(moduleKey)) {
         fail(`El perfil ${profileKey} expone ${moduleKey} como primario administrativo pero no lo permite en modules.`);
+      }
+    });
+    if (commonModules.length > 6 || new Set(commonModules).size !== commonModules.length) {
+      fail(`El perfil ${profileKey} tiene demasiados módulos comunes o repetidos.`);
+    }
+    commonModules.forEach((moduleKey) => {
+      if (!modules.has(moduleKey)) {
+        fail(`El perfil ${profileKey} expone ${moduleKey} como común pero no lo permite en modules.`);
       }
     });
   });

@@ -6,6 +6,7 @@
     "categories": ["Abarrotes", "Bebidas", "Lácteos", "Limpieza", "Panaderia"],
     "modules": ["dashboard", "pos", "cash", "customers", "credits", "returns", "quotes", "products", "purchases", "suppliers", "discounts", "reports", "notifications", "config", "users", "branches", "help", "license"],
     "primaryModules": ["dashboard", "pos", "products", "cash", "customers"],
+    "commonModules": ["dashboard", "pos", "products", "cash", "customers"],
     "adminPrimaryModules": ["dashboard", "pos", "products", "cash", "customers"]
   },
   "carniceria": {
@@ -15,6 +16,7 @@
     "categories": ["Carnes", "Lácteos"],
     "modules": ["dashboard", "pos", "cash", "customers", "credits", "returns", "quotes", "products", "purchases", "suppliers", "discounts", "reports", "notifications", "config", "users", "branches", "help", "license"],
     "primaryModules": ["dashboard", "pos", "products", "cash", "returns"],
+    "commonModules": ["dashboard", "pos", "products", "cash", "returns"],
     "adminPrimaryModules": ["dashboard", "pos", "products", "cash", "returns"]
   },
   "embutidos": {
@@ -24,6 +26,7 @@
     "categories": ["Embutidos", "Lácteos"],
     "modules": ["dashboard", "pos", "cash", "customers", "credits", "returns", "quotes", "products", "purchases", "suppliers", "discounts", "reports", "notifications", "config", "users", "branches", "help", "license"],
     "primaryModules": ["dashboard", "pos", "products", "cash", "returns"],
+    "commonModules": ["dashboard", "pos", "products", "cash", "returns"],
     "adminPrimaryModules": ["dashboard", "pos", "products", "cash", "returns"]
   },
   "mixto": {
@@ -33,6 +36,7 @@
     "categories": ["Abarrotes", "Bebidas", "Carnes", "Embutidos", "Lácteos", "Limpieza", "Panaderia"],
     "modules": ["dashboard", "pos", "cash", "customers", "credits", "returns", "quotes", "products", "purchases", "suppliers", "discounts", "reports", "notifications", "config", "users", "branches", "help", "license"],
     "primaryModules": ["dashboard", "pos", "products", "cash", "customers"],
+    "commonModules": ["dashboard", "pos", "products", "cash", "customers"],
     "adminPrimaryModules": ["dashboard", "pos", "products", "cash", "customers", "purchases", "reports", "suppliers", "credits", "returns", "quotes", "discounts", "notifications", "branches", "users", "config", "help", "license"]
   }
 }
