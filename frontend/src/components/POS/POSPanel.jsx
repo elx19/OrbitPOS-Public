@@ -38,6 +38,7 @@ export default function POSPanel({
   const [customers, setCustomers] = useState([]);
   const [register, setRegister] = useState(null);
   const [query, setQuery] = useState('');
+  const [barcodeQuery, setBarcodeQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todos');
   const [cart, setCart] = useState([]);
   const [saleType, setSaleType] = useState('cash');
@@ -185,6 +186,25 @@ export default function POSPanel({
     });
   }
 
+  function handleBarcodeSubmit(event) {
+    event.preventDefault();
+    const normalizedQuery = barcodeQuery.trim().toLowerCase();
+    if (!normalizedQuery) return;
+
+    const product = products.find((candidate) => [candidate.barcode, candidate.name]
+      .some((value) => String(value || '').trim().toLowerCase() === normalizedQuery));
+
+    if (!product) {
+      setQuery(barcodeQuery.trim());
+      setMessage(`No encontramos un producto con el codigo ${barcodeQuery.trim()}.`);
+      return;
+    }
+
+    addProduct(product);
+    setBarcodeQuery('');
+    setMessage(`Producto agregado: ${product.name}.`);
+  }
+
   function updateCartItem(productId, patch) {
     setCart((current) => current.map((item) => {
       if (item.id !== productId) return item;
@@ -327,11 +347,6 @@ export default function POSPanel({
             <div><div className="text-xs uppercase tracking-[0.24em] text-slate-500">Punto de venta</div><h2 className="mt-2 text-3xl font-bold text-ink">Productos</h2><div className="mt-2 text-sm text-slate-600">Haz clic en un producto para agregarlo al carrito.</div></div>
             <div className="flex w-full gap-2 md:max-w-lg">
               <div className="min-w-0 flex-1"><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nombre, codigo o categoria" /></div>
-              {scannerPort ? (
-                <Button variant="secondary" disabled={readingScanner} onClick={readBarcodeFromScanner}>
-                  {readingScanner ? 'Leyendo...' : 'Leer lector'}
-                </Button>
-              ) : null}
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2" aria-label="Filtrar productos por categoría">
@@ -379,6 +394,18 @@ export default function POSPanel({
 
         <Panel className="orbit-pos-panel flex h-full min-h-0 flex-col overflow-hidden xl:col-start-1 xl:row-start-1">
           <div className="flex items-center justify-between gap-3"><div><div className="text-xs uppercase tracking-[0.24em] text-slate-500">Carrito</div><h3 className="mt-2 text-2xl font-bold text-ink">{cart.length} item(s)</h3></div><Button variant="ghost" onClick={() => setCart([])}>Vaciar</Button></div>
+          <div className="orbit-pos-entry-toolbar mt-4">
+            <form className="grid gap-3 md:grid-cols-[minmax(0,1.4fr),minmax(190px,.8fr)]" onSubmit={handleBarcodeSubmit}>
+              <div className="flex min-w-0 gap-2">
+                <Input aria-label="Escanear código de barras" value={barcodeQuery} onChange={(event) => setBarcodeQuery(event.target.value)} placeholder="Escanear código de barras o buscar producto..." />
+                {scannerPort ? <Button type="button" variant="secondary" disabled={readingScanner} onClick={readBarcodeFromScanner}>{readingScanner ? 'Leyendo...' : 'Leer'}</Button> : null}
+              </div>
+              <Select aria-label="Cliente de la venta" value={customerId} onChange={(event) => setCustomerId(event.target.value)}>
+                <option value="">Cliente general</option>
+                {customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}
+              </Select>
+            </form>
+          </div>
           <div className="soft-scrollbar mt-5 min-h-0 flex-1 space-y-3 overflow-auto pr-1">
             {cart.length ? cart.map((item) => (
               <div key={item.id} className="rounded-[24px] bg-white/78 p-4">
@@ -428,7 +455,6 @@ export default function POSPanel({
             )}
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="Tipo de venta"><Select value={saleType} onChange={(event) => setSaleType(event.target.value)}><option value="cash">Contado</option><option value="credit">Credito</option></Select></Field>
-              <Field label="Cliente"><Select value={customerId} onChange={(event) => setCustomerId(event.target.value)}><option value="">Seleccionar cliente</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name}</option>)}</Select></Field>
               <Field label="Descuento global"><Input type="number" step="0.01" value={discount} onChange={(event) => setDiscount(event.target.value)} /></Field>
               <Field label="Notas"><TextArea rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} /></Field>
             </div>
@@ -450,7 +476,7 @@ export default function POSPanel({
             <PaymentSplitEditor splits={payments} onChange={setPayments} title={saleType === 'credit' ? 'Abono inicial' : 'Pago mixto'} />
             {window.orbit?.customerDisplay ? <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Pantalla cliente: {customerDisplayOpen ? 'activa' : 'inactiva'}</div> : <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Pantalla cliente disponible en la app de escritorio.</div>}
           </div>
-          <div className="mt-4 rounded-[24px] bg-ink p-5 text-white"><div className="flex flex-wrap items-center justify-between gap-4"><div><div className="text-xs uppercase tracking-[0.2em] text-white/58">Accion principal</div><div className="mt-2 text-lg font-semibold">Registrar venta y emitir ticket</div></div><Button disabled={submitting || !canSubmitSale} onClick={submitSale}>{submitting ? 'Procesando...' : 'Registrar venta'}</Button></div></div>
+          <div className="mt-4 rounded-[24px] bg-ink p-5 text-white"><div className="flex flex-wrap items-center justify-between gap-4"><div><div className="text-xs uppercase tracking-[0.2em] text-white/58">Accion principal</div><div className="mt-2 text-lg font-semibold">Cobrar y emitir ticket</div></div><Button className="orbit-pos-charge-button" disabled={submitting || !canSubmitSale} onClick={submitSale}>{submitting ? 'Procesando...' : 'Cobrar'}</Button></div></div>
         </Panel>
       </div>
 

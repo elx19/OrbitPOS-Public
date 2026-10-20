@@ -1466,6 +1466,18 @@ select {
 .orbit-shell main[data-module="pos"] .orbit-content [class*="grid-cols-3"] {
   min-height: 0;
 }
+.orbit-shell main[data-module="pos"] .orbit-pos-entry-toolbar {
+  padding: 10px;
+  border: 1px solid #dfe7ef;
+  border-radius: 10px;
+  background: #f7fafc;
+}
+.orbit-shell main[data-module="pos"] .orbit-pos-charge-button {
+  min-width: 180px;
+  min-height: 48px;
+  font-size: 1rem;
+  font-weight: 800;
+}
 
 @media (min-width: 1200px) {
   .orbit-shell main[data-module="pos"] .orbit-content {

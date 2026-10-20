@@ -97,6 +97,10 @@ if (manifest) {
       fail(`${componentName} no se reinicia al cambiar el tipo de negocio.`);
     }
   });
+  const posSource = fs.readFileSync(absolute('frontend/src/components/POS/POSPanel.jsx'), 'utf8');
+  if (!posSource.includes('handleBarcodeSubmit') || !posSource.includes('Escanear código de barras') || !posSource.includes('orbit-pos-charge-button')) {
+    fail('Ventas debe conservar el flujo de escaneo, cliente y accion Cobrar de la referencia.');
+  }
 }
 
 const profiles = readJson('shared/business-profiles.json');
