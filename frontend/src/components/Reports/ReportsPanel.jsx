@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiRequest } from '../../lib/api';
 import { formatCurrency, formatDate, formatDateTime } from '../../lib/format';
+import { getInitials, resolveAssetUrl } from '../../lib/assets';
 import Button from '../ui/Button';
 import { Field, Input, Select } from '../ui/Field';
 import Panel from '../ui/Panel';
@@ -49,6 +50,27 @@ function buildCsv(report) {
   ];
 
   return lines.map((line) => line.map((value) => `"${String(value ?? '').replaceAll('"', '""')}"`).join(',')).join('\n');
+}
+
+function paymentLabel(method) {
+  const labels = {
+    cash: 'Efectivo',
+    card: 'Tarjeta de crédito',
+    debit: 'Tarjeta de débito',
+    transfer: 'Transferencia',
+    mobile: 'Pago móvil',
+    other: 'Vale / Otros'
+  };
+  return labels[String(method || '').toLowerCase()] || String(method || 'Otros');
+}
+
+function categoryTone(category) {
+  const value = String(category || '').toLowerCase();
+  if (value.includes('carne')) return 'bg-rose-100 text-rose-700';
+  if (value.includes('embut')) return 'bg-orange-100 text-orange-700';
+  if (value.includes('beb')) return 'bg-blue-100 text-blue-700';
+  if (value.includes('láct') || value.includes('lact')) return 'bg-sky-100 text-sky-700';
+  return 'bg-amber-100 text-amber-700';
 }
 
 export default function ReportsPanel({ token }) {
@@ -115,6 +137,26 @@ export default function ReportsPanel({ token }) {
     }));
   }, [report]);
 
+  const categoryRows = useMemo(() => {
+    const rows = report?.salesByCategory || [];
+    const total = rows.reduce((sum, item) => sum + Number(item.total_amount || 0), 0) || 1;
+    return rows.map((item) => ({
+      ...item,
+      amount: Number(item.total_amount || 0),
+      share: Math.round((Number(item.total_amount || 0) / total) * 100)
+    }));
+  }, [report]);
+
+  const paymentRows = useMemo(() => {
+    const rows = report?.paymentMethods || [];
+    const total = rows.reduce((sum, item) => sum + Number(item.total_amount || 0), 0) || 1;
+    return rows.map((item) => ({
+      ...item,
+      amount: Number(item.total_amount || 0),
+      share: Math.round((Number(item.total_amount || 0) / total) * 100)
+    }));
+  }, [report]);
+
   function exportCsv() {
     if (!report) {
       return;
@@ -166,53 +208,45 @@ export default function ReportsPanel({ token }) {
   }
 
   return (
-    <div className="space-y-6">
-      <Panel>
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+    <div className="space-y-6 orbit-reports-page">
+      <Panel className="orbit-reports-toolbar">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="max-w-3xl">
             <h2 className="text-4xl font-bold text-ink">Reportes</h2>
-            <div className="mt-3 text-sm text-slate-600">
+            <div className="mt-2 text-sm text-slate-600">
               Analiza el desempeño de tu supermercado, carnicería y deli.
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="orbit-report-range-control">
+              <span aria-hidden="true">▣</span>
+              <Select value={filters.range} onChange={(event) => setFilters((current) => ({ ...current, range: event.target.value }))}>
+                <option value="today">Hoy</option>
+                <option value="7d">Últimos 7 días</option>
+                <option value="30d">Últimos 30 días</option>
+                <option value="custom">Personalizado</option>
+              </Select>
+            </div>
             <Button onClick={exportCsv} disabled={!report}>
               ↓ Exportar
             </Button>
             <Button variant="secondary" onClick={exportPdf} disabled={!report || exportingPdf}>
               {exportingPdf ? 'Exportando PDF...' : 'PDF'}
             </Button>
-            <Button variant="secondary" onClick={() => loadReport(filters, { forceFresh: true })}>
-              Actualizar
-            </Button>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr),260px]">
-          <div className="grid gap-4 md:grid-cols-3">
-            <Field label="Periodo">
-              <Select value={filters.range} onChange={(event) => setFilters((current) => ({ ...current, range: event.target.value }))}>
-                <option value="today">Hoy</option>
-                <option value="7d">Ultimos 7 dias</option>
-                <option value="30d">Ultimos 30 dias</option>
-                <option value="custom">Personalizado</option>
-              </Select>
-            </Field>
-            <Field label="Desde">
-              <Input type="date" value={filters.dateFrom} onChange={(event) => setFilters((current) => ({ ...current, dateFrom: event.target.value }))} />
-            </Field>
-            <Field label="Hasta">
-              <Input type="date" value={filters.dateTo} onChange={(event) => setFilters((current) => ({ ...current, dateTo: event.target.value }))} />
-            </Field>
-          </div>
-          <div className="rounded-[24px] border border-slate-200 bg-white/80 p-4 text-sm text-slate-600">
-            <div className="text-xs uppercase tracking-[0.22em] text-slate-500">Rango activo</div>
-            <div className="mt-2 font-semibold text-ink">
-              {report?.range?.label || (filters.dateFrom || filters.dateTo ? `${formatDate(filters.dateFrom)} - ${formatDate(filters.dateTo)}` : 'Define un periodo')}
-            </div>
-            <div className="mt-2 text-xs text-slate-500">
-              {loading ? 'Actualizando indicadores...' : 'Indicadores listos para exportar'}
-            </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr),minmax(0,1fr),auto]">
+          <Field label="Desde">
+            <Input type="date" value={filters.dateFrom} onChange={(event) => setFilters((current) => ({ ...current, dateFrom: event.target.value, range: 'custom' }))} />
+          </Field>
+          <Field label="Hasta">
+            <Input type="date" value={filters.dateTo} onChange={(event) => setFilters((current) => ({ ...current, dateTo: event.target.value, range: 'custom' }))} />
+          </Field>
+          <div className="flex items-end">
+            <Button variant="secondary" className="w-full" onClick={() => loadReport(filters, { forceFresh: true })}>
+              Actualizar datos
+            </Button>
           </div>
         </div>
       </Panel>
@@ -223,7 +257,7 @@ export default function ReportsPanel({ token }) {
         </div>
       ) : null}
 
-      <Panel>
+      <Panel className="orbit-reports-metrics">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {metricCards.map((card) => (
             <div key={card.label} className="rounded-[24px] border border-slate-200 bg-white/80 p-5">
@@ -235,25 +269,29 @@ export default function ReportsPanel({ token }) {
               }`}>{card.icon}</div>
               <div className="mt-4 text-sm font-medium text-slate-600">{card.label}</div>
               <div className="mt-2 text-2xl font-bold text-ink">{loading ? '...' : card.value}</div>
-              <div className="mt-2 text-xs text-emerald-600">{loading ? 'Actualizando...' : 'Periodo seleccionado'}</div>
+              <div className="mt-2 text-xs font-semibold text-emerald-600">↗ &nbsp;Periodo seleccionado</div>
+              <div className="mt-1 text-xs text-slate-500">vs. periodo anterior</div>
             </div>
           ))}
         </div>
       </Panel>
 
       {report ? (
-        <Panel className="overflow-hidden">
+        <Panel className="overflow-hidden orbit-reports-chart-card">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-2xl font-bold text-ink">Ventas netas</div>
               <div className="mt-1 text-sm text-slate-500">Comportamiento diario del periodo seleccionado</div>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">Por día⌄</div>
+            <div className="flex items-center gap-5 text-sm text-slate-600">
+              <span className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-emerald-500" />Ventas netas (RD$)</span>
+              <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">Por día⌄</div>
+            </div>
           </div>
-          <div className="mt-7 flex h-64 items-end gap-2 border-b border-slate-200 px-2 pb-8 sm:gap-4">
+          <div className="orbit-reports-chart mt-7 flex h-64 items-end gap-2 border-b border-slate-200 px-2 pb-8 sm:gap-4">
             {salesByDay.length ? salesByDay.map((point) => (
               <div key={point.day} className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
-                <div className="text-[10px] font-semibold text-slate-600 opacity-0 transition group-hover:opacity-100">{formatCurrency(point.amount)}</div>
+                <div className="text-[10px] font-semibold text-slate-700">{formatCurrency(point.amount)}</div>
                 <div className="w-full max-w-16 rounded-t-lg bg-emerald-500 transition group-hover:bg-emerald-600" style={{ height: `${point.height}%` }} title={formatCurrency(point.amount)} />
                 <div className="text-xs capitalize text-slate-500">{point.label}</div>
               </div>
@@ -265,7 +303,77 @@ export default function ReportsPanel({ token }) {
       ) : null}
 
       {report ? (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.04fr),minmax(340px,0.96fr)]">
+        <>
+          <div className="grid gap-6 xl:grid-cols-3">
+            <Panel className="overflow-hidden orbit-report-table-card">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-xl font-bold text-ink">Top productos</h3>
+                <button type="button" className="text-sm font-semibold text-sky-600">Ver todas</button>
+              </div>
+              <div className="orbit-report-table-head mt-4 grid grid-cols-[1.5rem,minmax(0,1fr),4.5rem,5rem] gap-2 text-[11px] font-semibold text-slate-500">
+                <span>#</span><span>Producto</span><span>Cant.</span><span>Ventas (RD$)</span>
+              </div>
+              <div className="mt-2 divide-y divide-slate-100">
+                {report.topProducts.slice(0, 5).map((item, index) => {
+                  const imageUrl = resolveAssetUrl(item.image_path);
+                  return (
+                    <div key={item.product_name} className="grid grid-cols-[1.5rem,minmax(0,1fr),4.5rem,5rem] items-center gap-2 py-3 text-xs">
+                      <span className="text-slate-500">{index + 1}</span>
+                      <span className="flex min-w-0 items-center gap-2 font-medium text-slate-700">
+                        {imageUrl ? <img src={imageUrl} alt="" className="h-8 w-8 rounded-lg object-cover" /> : <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-[10px] font-bold text-slate-500">{getInitials(item.product_name)}</span>}
+                        <span className="truncate">{item.product_name}</span>
+                      </span>
+                      <span className="text-slate-600">{item.quantity}</span>
+                      <span className="text-right font-semibold text-slate-700">{formatCurrency(item.revenue).replace('RD$ ', '')}</span>
+                    </div>
+                  );
+                })}
+                {!report.topProducts.length ? <div className="py-5 text-sm text-slate-500">Sin productos en el periodo.</div> : null}
+              </div>
+            </Panel>
+
+            <Panel className="overflow-hidden orbit-report-table-card">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-xl font-bold text-ink">Ventas por categoría</h3>
+                <button type="button" className="text-sm font-semibold text-sky-600">Ver todas</button>
+              </div>
+              <div className="orbit-report-table-head mt-4 grid grid-cols-[minmax(0,1fr),5rem,5.5rem] gap-2 text-[11px] font-semibold text-slate-500">
+                <span>Categoría</span><span>Ventas (RD$)</span><span>Participación</span>
+              </div>
+              <div className="mt-2 divide-y divide-slate-100">
+                {categoryRows.map((item) => (
+                  <div key={item.category} className="grid grid-cols-[minmax(0,1fr),5rem,5.5rem] items-center gap-2 py-3 text-xs">
+                    <span className="flex min-w-0 items-center gap-2 font-medium text-slate-700"><span className={`flex h-7 w-7 items-center justify-center rounded-lg ${categoryTone(item.category)}`}>◆</span><span className="truncate">{item.category}</span></span>
+                    <span className="text-slate-600">{formatCurrency(item.amount).replace('RD$ ', '')}</span>
+                    <span className="flex items-center gap-2 text-slate-600"><span>{item.share}%</span><span className="h-2 w-12 overflow-hidden rounded-full bg-slate-100"><span className="block h-full rounded-full bg-emerald-500" style={{ width: `${Math.max(item.share, 4)}%` }} /></span></span>
+                  </div>
+                ))}
+                {!categoryRows.length ? <div className="py-5 text-sm text-slate-500">Sin categorías en el periodo.</div> : null}
+              </div>
+            </Panel>
+
+            <Panel className="overflow-hidden orbit-report-table-card">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-xl font-bold text-ink">Métodos de pago</h3>
+                <button type="button" className="text-sm font-semibold text-sky-600">Ver todas</button>
+              </div>
+              <div className="orbit-report-table-head mt-4 grid grid-cols-[minmax(0,1fr),5rem,5.5rem] gap-2 text-[11px] font-semibold text-slate-500">
+                <span>Método</span><span>Ventas (RD$)</span><span>Participación</span>
+              </div>
+              <div className="mt-2 divide-y divide-slate-100">
+                {paymentRows.map((item) => (
+                  <div key={item.method} className="grid grid-cols-[minmax(0,1fr),5rem,5.5rem] items-center gap-2 py-3 text-xs">
+                    <span className="flex min-w-0 items-center gap-2 font-medium text-slate-700"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">▣</span><span className="truncate">{paymentLabel(item.method)}</span></span>
+                    <span className="text-slate-600">{formatCurrency(item.amount).replace('RD$ ', '')}</span>
+                    <span className="flex items-center gap-2 text-slate-600"><span>{item.share}%</span><span className="h-2 w-12 overflow-hidden rounded-full bg-slate-100"><span className="block h-full rounded-full bg-emerald-500" style={{ width: `${Math.max(item.share, 4)}%` }} /></span></span>
+                  </div>
+                ))}
+                {!paymentRows.length ? <div className="py-5 text-sm text-slate-500">Sin pagos en el periodo.</div> : null}
+              </div>
+            </Panel>
+          </div>
+
+          <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.04fr),minmax(340px,0.96fr)]">
           <div className="space-y-6">
             <Panel className="overflow-hidden">
               <div className="flex items-center justify-between gap-3">
@@ -389,7 +497,8 @@ export default function ReportsPanel({ token }) {
               </div>
             </Panel>
           </div>
-        </div>
+          </div>
+        </>
       ) : null}
     </div>
   );

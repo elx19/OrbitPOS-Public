@@ -1445,6 +1445,46 @@ select {
 .orbit-shell main[data-module="reports"] .orbit-content .recharts-wrapper {
   font-size: 12px;
 }
+.orbit-shell main[data-module="reports"] .orbit-reports-toolbar {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.orbit-shell main[data-module="reports"] .orbit-reports-toolbar .orbit-card-body { padding: 0; }
+.orbit-shell main[data-module="reports"] .orbit-report-range-control {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #dbe4ed;
+  border-radius: 9px;
+  background: #fff;
+  padding: 0 12px;
+  color: #233b59;
+}
+.orbit-shell main[data-module="reports"] .orbit-report-range-control select {
+  min-height: 40px;
+  border: 0;
+  padding: 0 20px 0 0;
+  box-shadow: none;
+  font-weight: 600;
+}
+.orbit-shell main[data-module="reports"] .orbit-reports-metrics { padding: 0; border: 0; background: transparent; box-shadow: none; }
+.orbit-shell main[data-module="reports"] .orbit-reports-metrics .orbit-card-body { padding: 0; }
+.orbit-shell main[data-module="reports"] .orbit-reports-metrics [class*="rounded-[24px]"] { min-height: 142px; padding: 18px; }
+.orbit-shell main[data-module="reports"] .orbit-reports-chart-card { padding: 18px; }
+.orbit-shell main[data-module="reports"] .orbit-reports-chart {
+  background-image: linear-gradient(to bottom, rgba(218, 227, 235, .7) 1px, transparent 1px);
+  background-size: 100% 25%;
+}
+.orbit-shell main[data-module="reports"] .orbit-report-table-card { padding: 18px; }
+.orbit-shell main[data-module="reports"] .orbit-report-table-head { padding-bottom: 8px; border-bottom: 1px solid #e7edf2; }
+@media (max-width: 860px) {
+  .orbit-shell main[data-module="reports"] .orbit-reports-toolbar .flex.items-center { align-items: flex-start; }
+  .orbit-shell main[data-module="reports"] .orbit-report-table-card { overflow-x: auto; }
+  .orbit-shell main[data-module="reports"] .orbit-report-table-card > div { min-width: 330px; }
+}
 
 /* POS, inventory and operations need denser working surfaces than settings screens. */
 .orbit-shell main[data-module="pos"] .orbit-content,

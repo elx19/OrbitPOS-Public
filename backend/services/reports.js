@@ -123,6 +123,7 @@ function getReportStatements() {
     topProducts: db.prepare(`
       SELECT
         si.product_name,
+        p.image_path,
         COALESCE(SUM(si.quantity), 0) AS quantity,
         COALESCE(SUM(si.subtotal), 0) AS revenue
       FROM sale_items si
@@ -131,7 +132,7 @@ function getReportStatements() {
       WHERE s.status != 'cancelled'
         AND s.created_at BETWEEN ? AND ?
         AND p.category IN (${categoryPlaceholders})
-      GROUP BY si.product_name
+      GROUP BY si.product_name, p.image_path
       ORDER BY quantity DESC, revenue DESC
       LIMIT 8
     `),
@@ -147,6 +148,31 @@ function getReportStatements() {
         AND p.category IN (${categoryPlaceholders})
       GROUP BY substr(s.created_at, 1, 10)
       ORDER BY day ASC
+    `),
+    salesByCategory: db.prepare(`
+      SELECT
+        COALESCE(p.category, 'Sin categoría') AS category,
+        COALESCE(SUM(si.subtotal), 0) AS total_amount
+      FROM sales s
+      INNER JOIN sale_items si ON si.sale_id = s.id
+      INNER JOIN products p ON p.id = si.product_id
+      WHERE s.status != 'cancelled'
+        AND s.created_at BETWEEN ? AND ?
+        AND p.category IN (${categoryPlaceholders})
+      GROUP BY p.category
+      ORDER BY total_amount DESC, category ASC
+      LIMIT 8
+    `),
+    paymentMethods: db.prepare(`
+      SELECT
+        sp.method,
+        COALESCE(SUM(sp.amount), 0) AS total_amount
+      FROM sale_payments sp
+      INNER JOIN sales s ON s.id = sp.sale_id
+      WHERE s.status != 'cancelled'
+        AND s.created_at BETWEEN ? AND ?
+      GROUP BY sp.method
+      ORDER BY total_amount DESC, sp.method ASC
     `),
     itemsSold: db.prepare(`
       SELECT COALESCE(SUM(si.quantity), 0) AS items_sold
@@ -239,6 +265,8 @@ function buildReportData(query = {}) {
       },
       topProducts: statements.topProducts.all(range.sqlStart, range.sqlEnd, ...getBusinessCategories()),
       salesByDay: statements.salesByDay.all(range.sqlStart, range.sqlEnd, ...getBusinessCategories()),
+      salesByCategory: statements.salesByCategory.all(range.sqlStart, range.sqlEnd, ...getBusinessCategories()),
+      paymentMethods: statements.paymentMethods.all(range.sqlStart, range.sqlEnd),
       itemsSold: Number(statements.itemsSold.get(range.sqlStart, range.sqlEnd, ...getBusinessCategories()).items_sold || 0),
       salesByUser: statements.salesByUser.all(range.sqlStart, range.sqlEnd),
       recentSales: statements.recentSales.all(range.sqlStart, range.sqlEnd),
