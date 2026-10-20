@@ -2,6 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const AdmZip = require('adm-zip');
+const { parseImageDataUrl } = require('../../shared/image-data-url');
 const packageJson = require('../../package.json');
 const {
   DATA_DIR,
@@ -113,6 +114,20 @@ function bundleBusinessLogo(zip) {
   const rawLogoPath = String(getConfigValue('business_logo', '') || '').trim();
   if (!rawLogoPath) {
     return null;
+  }
+
+  if (/^data:image\//i.test(rawLogoPath)) {
+    try {
+      const parsed = parseImageDataUrl(rawLogoPath);
+      const archivePath = `extras/business-logo${parsed.extension}`;
+      zip.addFile(archivePath, parsed.buffer);
+      return {
+        archivePath,
+        originalPath: 'data-url'
+      };
+    } catch (error) {
+      return null;
+    }
   }
 
   const resolvedLogoPath = path.resolve(rawLogoPath);

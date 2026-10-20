@@ -525,6 +525,7 @@ select {
 
 .orbit-sidebar-nav {
   display: flex;
+  min-height: 0;
   flex-direction: column;
   gap: 4px;
   margin-top: 28px;
@@ -688,6 +689,7 @@ select {
 
 .orbit-app-header {
   position: sticky;
+  flex: 0 0 auto;
   top: 0;
   z-index: 10;
   display: flex;
@@ -1000,7 +1002,11 @@ select {
 }
 
 .orbit-content {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 0 32px 32px;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .orbit-content .orbit-card,
@@ -1160,14 +1166,16 @@ select {
    grow beyond the window and force the user to chase the header/sidebar. */
 @media (min-width: 641px) {
   .orbit-shell {
-    height: 100vh;
+    height: 100dvh;
     min-height: 0;
+    max-height: 100dvh;
     overflow: hidden;
   }
 
   .orbit-shell .app-frame {
-    height: 100vh;
+    height: 100dvh;
     min-height: 0 !important;
+    max-height: 100dvh;
   }
 
   .orbit-shell .orbit-sidebar {
@@ -1178,6 +1186,7 @@ select {
   .orbit-shell main {
     height: 100%;
     min-height: 0 !important;
+    max-height: 100%;
     overflow: hidden;
   }
 
@@ -1202,6 +1211,8 @@ select {
 
   .orbit-shell .app-frame {
     display: block !important;
+    height: auto;
+    max-height: none;
     min-height: var(--viewport-height);
     padding: 0 !important;
   }
@@ -1243,6 +1254,8 @@ select {
   }
 
   .orbit-shell main {
+    height: auto;
+    max-height: none;
     min-height: var(--viewport-height);
     padding-bottom: 76px;
   }

@@ -73,6 +73,15 @@ if (manifest) {
   if (!styleSource.includes('height: 100dvh !important') || !styleSource.includes('height: min(800px, calc(100dvh - 40px)) !important')) {
     fail('El login debe calcular su altura con el viewport dinamico en pantallas de escritorio.');
   }
+  if (!styleSource.includes('max-height: 100dvh') || !styleSource.includes('overscroll-behavior: contain')) {
+    fail('El shell autenticado debe contenerse en el viewport dinamico y reservar el scroll para el modulo activo.');
+  }
+  if (!fs.readFileSync(absolute('frontend/src/components/Config/ConfigPanel.jsx'), 'utf8').includes('window.orbit.files.pickLogo')) {
+    fail('Configuracion debe conservar el selector de logo de escritorio.');
+  }
+  if (!fs.readFileSync(absolute('electron/main.js'), 'utf8').includes('imageFileToDataUrl')) {
+    fail('Electron debe convertir el logo elegido a un asset portable.');
+  }
   if (!shellSource.includes('Cerrar sesión') || !shellSource.includes('onLogout()')) {
     fail('Cerrar sesión debe permanecer disponible desde el perfil del usuario.');
   }

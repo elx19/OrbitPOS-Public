@@ -11,6 +11,7 @@ const {
   onUpdaterEvent
 } = require('./updater');
 const { fitBoundsToWorkArea } = require('../shared/display-layout');
+const { imageFileToDataUrl } = require('../shared/image-data-url');
 
 let mainWindow;
 let customerDisplayWindow;
@@ -445,8 +446,12 @@ function createMainWindow() {
   screen.on('display-removed', () => notifyDisplayMetrics({ fit: true }));
 
   mainWindow.once('ready-to-show', () => {
+    // Fit the restored bounds before maximizing so a monitor change or a
+    // saved window position never leaves the first frame outside its work area.
+    fitMainWindowToDisplay();
     mainWindow.maximize();
-    appendStartupLog(`Ventana adaptada a pantalla. scaleFactor=${primaryDisplay.scaleFactor || 1} workArea=${workArea.width}x${workArea.height}`);
+    const activeDisplay = screen.getDisplayMatching(mainWindow.getBounds());
+    appendStartupLog(`Ventana adaptada a pantalla. scaleFactor=${activeDisplay.scaleFactor || primaryDisplay.scaleFactor || 1} workArea=${activeDisplay.workAreaSize?.width || workArea.width}x${activeDisplay.workAreaSize?.height || workArea.height}`);
     mainWindow.show();
     broadcastDisplayMetrics();
     scheduleStartupUpdateCheck();
@@ -536,7 +541,7 @@ ipcMain.handle('dialog:pick-logo', async () => {
     return null;
   }
 
-  return result.filePaths[0];
+  return imageFileToDataUrl(result.filePaths[0]);
 });
 
 ipcMain.handle('dialog:pick-product-image', async () => {
