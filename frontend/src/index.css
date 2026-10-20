@@ -1624,6 +1624,31 @@ select {
   .orbit-dashboard-table-head span:nth-child(4), .orbit-dashboard-table-head span:nth-child(5), .orbit-dashboard-sale-row > :nth-child(4), .orbit-dashboard-sale-row > :nth-child(5) { display: none; }
 }
 
+/* License screen: visual contract for the supplied activation reference. */
+.orbit-license-page { min-width: 0; }
+.orbit-license-heading { position: relative; }
+.orbit-license-breadcrumb { align-self: flex-end; margin-top: -34px; color: #60748c; font-size: .82rem; }
+.orbit-license-breadcrumb span { padding: 0 9px; color: #a7b4c2; }
+.orbit-license-status-card { background: linear-gradient(135deg, #effff6 0%, #dff8e9 100%) !important; }
+.orbit-license-check { box-shadow: 0 12px 20px -12px rgba(8, 124, 85, .7); }
+.orbit-license-facts > div { min-width: 0; }
+.orbit-license-facts .text-xs { font-size: .72rem; }
+.orbit-license-machine { border: 1px solid #e5ebf1; }
+.orbit-license-copy { display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; border: 1px solid #d6e0e8; border-radius: 8px; background: #fff; color: #60748c; font-size: .9rem; }
+.orbit-license-copy:hover { border-color: #11a96d; color: #087c55; }
+.orbit-license-submit { min-height: 48px; }
+.orbit-license-history-table th { white-space: nowrap; }
+.orbit-license-history-table td { border-top: 1px solid #edf1f5; }
+.orbit-license-history-status { display: inline-flex; border-radius: 999px; padding: 6px 10px; background: #dcf6e9; color: #087c55; font-size: .72rem; font-weight: 700; }
+.orbit-license-history-status.is-rejected { background: #ffe6e1; color: #bd3d27; }
+.orbit-license-diagnostic-row { border: 1px solid transparent; }
+.orbit-license-diagnostic-row.is-warning { border-color: #f3d49a; background: #fff9eb; }
+@media (max-width: 700px) {
+  .orbit-license-breadcrumb { align-self: flex-start; margin-top: 6px; }
+  .orbit-license-status-card .flex.items-start { flex-direction: column; }
+  .orbit-license-history-table { min-width: 660px; }
+}
+
 @media (min-width: 1200px) {
   .orbit-shell main[data-module="pos"] .orbit-content {
     min-height: 0;

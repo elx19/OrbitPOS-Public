@@ -109,6 +109,10 @@ if (manifest) {
   if (!productsSource.includes('orbit-products-table') || !productsSource.includes('orbit-low-stock-panel') || !productsSource.includes('orbit-inventory-summary')) {
     fail('Productos e inventario debe conservar la tabla, alertas y resumen de la referencia.');
   }
+  const licenseSource = fs.readFileSync(absolute('frontend/src/components/License/LicensePanel.jsx'), 'utf8');
+  if (!licenseSource.includes('orbit-license-status-card') || !licenseSource.includes('orbit-license-history-table') || !licenseSource.includes('diagnosticRows')) {
+    fail('Licencia debe conservar el estado, historial y diagnóstico visual de la referencia.');
+  }
 }
 
 const profiles = readJson('shared/business-profiles.json');
