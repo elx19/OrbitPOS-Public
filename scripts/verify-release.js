@@ -203,6 +203,17 @@ function checkInstallerContract() {
     return;
   }
   requireFile(licensePath);
+
+  const iconPath = packageJson.build?.win?.icon;
+  if (typeof iconPath !== 'string' || !iconPath.trim()) {
+    failures.push('El instalador Windows no declara un icono .ico.');
+  } else {
+    const resolvedIcon = absolute(packageJson.build?.directories?.buildResources || 'assets', iconPath);
+    if (!resolvedIcon.toLowerCase().endsWith('.ico')) {
+      failures.push(`El icono del instalador debe ser .ico: ${iconPath}.`);
+    }
+    requireFile(path.relative(root, resolvedIcon));
+  }
 }
 
 checkVersionFiles();

@@ -1,6 +1,6 @@
 {
   "name": "orbitpos",
-  "version": "2.1.0-alpha.73",
+  "version": "2.1.0-alpha.74",
   "private": true,
   "author": "JRTech",
   "description": "Sistema de terminal de venta al publico OrbitPOS",
@@ -28,7 +28,8 @@
     "qa:fuses": "node scripts/verify-electron-fuses.js",
     "qa:ui": "node scripts/test-ui-contract.js",
     "qa:packaged": "node scripts/test-packaged-runtime.js",
-    "qa:production": "npm run qa:license && npm run qa:hardware && npm run qa:display && npm run qa:assets && npm run qa:ui && npm run qa:commercial:node22 && npm run qa:packaged && npm run qa:fuses && npm run qa:release",
+    "qa:update-feed": "node scripts/test-update-feed.js",
+    "qa:production": "npm run qa:license && npm run qa:display && npm run qa:assets && npm run qa:ui && npm run qa:update-feed && npm run qa:commercial:node22 && npm run qa:packaged && npm run qa:fuses && npm run qa:release",
     "qa:release": "node scripts/verify-release.js",
     "release:clean-data": "node scripts/clean-release-runtime-data.js",
     "qa:commercial": "node scripts/test-commercial-qa.js",

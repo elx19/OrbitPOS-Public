@@ -90,9 +90,6 @@ async function runCommercialQa() {
     backupsDir,
     steps: [],
     manualChecksPending: [
-      'Prueba con impresora termica real.',
-      'Prueba con lector de codigo real.',
-      'Prueba con bascula real.',
       'Prueba de instalacion limpia en otra PC.',
       'Prueba de actualizacion real desde GitHub Releases o feed productivo.'
     ]

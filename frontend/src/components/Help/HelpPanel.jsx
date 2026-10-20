@@ -4,7 +4,7 @@ import Button from '../ui/Button';
 import Panel from '../ui/Panel';
 import wizardStorefrontUrl from '../../assets/wizard-storefront.png';
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.73';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.74';
 
 export default function HelpPanel({ license, machineId, token, onReconfigure }) {
   const [query, setQuery] = useState('');
