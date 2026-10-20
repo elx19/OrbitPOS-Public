@@ -25,7 +25,7 @@ const ReportsPanel = lazy(() => import('../Reports/ReportsPanel'));
 const UsersPanel = lazy(() => import('../Users/UsersPanel'));
 const BranchesPanel = lazy(() => import('../Branches/BranchesPanel'));
 
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.74';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.75';
 
 const moduleGroups = [
   { key: 'overview', label: 'Resumen', icon: 'spark' },
@@ -191,7 +191,11 @@ export default function AppShell({
     return visibleModules.filter((module) => !primaryKeys.has(module.key));
   }, [primaryModules, visibleModules]);
 
-  const modulesToRender = primaryModules;
+  // Administrators need the complete authorized workspace visible like the
+  // reference screens. Common users keep the shorter daily-workflow menu and
+  // never inherit modules from another business profile.
+  const modulesToRender = user.role === 'admin' ? visibleModules : primaryModules;
+  const canExpandAdvancedModules = user.role !== 'admin' && advancedModules.length > 0;
 
   const activeGroupDefinition = useMemo(
     () => moduleGroups.find((group) => group.key === activeModuleDefinition?.group) || null,
@@ -422,7 +426,7 @@ export default function AppShell({
                 </button>
               );
             })}
-            {advancedModules.length ? (
+            {canExpandAdvancedModules ? (
               <button
                 type="button"
                 className="orbit-nav-more"

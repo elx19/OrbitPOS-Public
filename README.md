@@ -1,6 +1,6 @@
 # OrbitPOS
 
-OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.74** para Windows.
+OrbitPOS es un punto de venta de escritorio para pequeños y medianos comercios. Este checkout contiene la línea funcional **2.1.0-alpha.75** para Windows.
 
 ## Lenguaje y tecnología
 
@@ -18,7 +18,7 @@ El frontend está escrito con React/JSX y el backend y proceso principal de Elec
 
 ## Release actual
 
-El instalador generado localmente para esta línea será `release/OrbitPOS Setup 2.1.0-alpha.74.exe` después de ejecutar la construcción. La publicación en GitHub Releases se valida con el feed estable y el instalador publicado; la firma digital no forma parte de este flujo.
+El instalador generado localmente para esta línea será `release/OrbitPOS Setup 2.1.0-alpha.75.exe` después de ejecutar la construcción. La publicación en GitHub Releases se valida con el feed estable y el instalador publicado; la firma digital no forma parte de este flujo.
 
 La release contiene los artefactos de Windows y su manifiesto de actualización. Authenticode no está incluido en esta versión; el instalador no debe considerarse firmado digitalmente.
 
@@ -71,7 +71,7 @@ npm run build:unpacked
 
 ## Rediseño OrbitPOS 2.1
 
-La línea `v2.1.0-alpha.74` conserva la protección del asistente y la adaptación responsive, limita los módulos de usuarios comunes al flujo autorizado por cada negocio y mantiene los módulos administrativos disponibles en “Más módulos” como en las referencias. Alpha.70 ajustó Ventas, Alpha.71 alineó Inicio, Alpha.72 alineó Productos e inventario y Alpha.73 alineó Licencia; esta iteración agrega una prueba real del feed `latest/stable`, exige el `.ico` de OrbitPOS en cada release y deja fuera del gate automático la firma digital y las pruebas físicas, que serán realizadas por el operador. También conserva el shell acotado al viewport dinámico, el ajuste inicial de Electron al área de trabajo, el selector de logos portable, el generador ORB3/Ed25519, el catálogo categorizado, los permisos por usuario, los controles de autorización en la API y la EULA declarada en el instalador NSIS. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
+La línea `v2.1.0-alpha.75` conserva la protección del asistente y la adaptación responsive, limita los módulos de usuarios comunes al flujo autorizado por cada negocio y deja todos los módulos autorizados visibles para administradores, como en las referencias. Alpha.70 ajustó Ventas, Alpha.71 alineó Inicio, Alpha.72 alineó Productos e inventario, Alpha.73 alineó Licencia y Alpha.74 publicó el feed de actualización y fijó el `.ico` de OrbitPOS; esta iteración separa Operación de la vista inicial de Configuración y acerca el lateral administrativo a las referencias. La firma digital y las pruebas físicas quedan fuera del gate automático y serán realizadas por el operador. También conserva el shell acotado al viewport dinámico, el ajuste inicial de Electron al área de trabajo, el selector de logos portable, el generador ORB3/Ed25519, el catálogo categorizado, los permisos por usuario, los controles de autorización en la API y la EULA declarada en el instalador NSIS. La carpeta [`docs/ui-reference/authoritative`](docs/ui-reference/authoritative) queda versionada junto con cada hito funcional.
 
 ## Generador de licencias
 

@@ -11,7 +11,7 @@ import { readImageFileAsDataUrl } from '../../lib/logoPicker';
 const DEFAULT_UPDATE_PROVIDER = 'github';
 const DEFAULT_UPDATE_GITHUB_OWNER = 'elx19';
 const DEFAULT_UPDATE_GITHUB_REPO = 'OrbitPOS-Public';
-const APP_VERSION = window.orbit?.version || '2.1.0-alpha.74';
+const APP_VERSION = window.orbit?.version || '2.1.0-alpha.75';
 
 const themeOptions = [
   {
@@ -64,6 +64,7 @@ const configSections = [
   ['general', 'Negocio', 'Datos comerciales, fiscales y ticket'],
   ['devices', 'Dispositivos', 'Impresora, lector y bascula'],
   ['tickets', 'Tickets', 'Plantillas editables y tipos de impresion'],
+  ['operations', 'Operacion', 'Impuestos, tickets y actualizaciones'],
   ['appearance', 'Apariencia', 'Tema, ancho y distribucion'],
   ['backups', 'Backups', 'Copias locales y nube'],
   ['updates', 'Actualizaciones', 'Canal, servidor y update local'],
@@ -144,9 +145,10 @@ function ConfigSectionButton({ label, helper, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
+      data-section={label.toLowerCase()}
       className={active
-        ? 'w-full rounded-[22px] border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-left text-emerald-800 shadow-soft transition'
-        : 'w-full rounded-[22px] border border-slate-200/80 bg-white/72 px-4 py-3 text-left text-slate-700 transition hover:bg-white'}
+        ? 'orbit-config-section orbit-config-section-active w-full rounded-[22px] border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-left text-emerald-800 shadow-soft transition'
+        : 'orbit-config-section w-full rounded-[22px] border border-slate-200/80 bg-white/72 px-4 py-3 text-left text-slate-700 transition hover:bg-white'}
     >
       <div className="text-sm font-semibold">{label}</div>
       <div className={`mt-1 text-xs ${active ? 'text-white/72' : 'text-slate-500'}`}>{helper}</div>
@@ -559,7 +561,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
   }
 
   return (
-    <div className="space-y-6">
+    <div className="orbit-config-page space-y-6">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <h2 className="text-3xl font-bold text-ink">Configuración</h2>
@@ -568,8 +570,8 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
         <div className="rounded-2xl bg-white/80 px-4 py-3 text-sm text-slate-600">Versión {meta?.version || APP_VERSION}</div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[280px,minmax(0,1fr),320px]">
-        <Panel className="p-4">
+      <div className="orbit-config-grid grid gap-6 xl:grid-cols-[280px,minmax(0,1fr),320px]">
+        <Panel className="orbit-config-sidebar p-4">
           <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Modulos de configuracion</div>
           <div className="mt-4 space-y-2">
             {configSections.map(([key, label, helper]) => (
@@ -584,7 +586,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
           </div>
         </Panel>
 
-        <div className="min-w-0 space-y-6">
+        <div className="orbit-config-main min-w-0 space-y-6">
           <Panel className="p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -851,7 +853,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
         </div>
 
         <div className="space-y-6">
-          {activeSection === 'general' ? (
+          {activeSection === 'operations' ? (
           <Panel className="p-5 md:p-6">
             <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Operacion</div>
             <div className="mt-5 grid gap-4">
@@ -1088,7 +1090,7 @@ export default function ConfigPanel({ token, meta, config, onReconfigure, onConf
       </form>
       </div>
 
-      <aside className="space-y-6">
+      <aside className="orbit-config-side space-y-6">
         <Panel>
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-xl text-blue-600">◉</div>

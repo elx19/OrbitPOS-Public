@@ -2260,3 +2260,24 @@ select {
   .orbit-products-heading .orbit-primary-button { width: 100%; }
   .orbit-products-category { min-height: 38px; padding: 0 12px; }
 }
+
+/* Configuration: keep the business identity view close to the supplied
+   reference and move operational settings into their own section. */
+.orbit-config-page { min-width: 0; }
+.orbit-config-grid { align-items: start; }
+.orbit-config-sidebar,
+.orbit-config-main > .orbit-card,
+.orbit-config-main form > .space-y-6 > .orbit-card,
+.orbit-config-side > .orbit-card { border-radius: 14px; }
+.orbit-config-section { min-height: 62px; border-radius: 12px !important; }
+.orbit-config-section-active > div:last-child { color: #58718b; }
+.orbit-config-side { min-width: 0; }
+.orbit-config-side img { max-height: 180px; }
+@media (min-width: 1200px) {
+  .orbit-config-sidebar,
+  .orbit-config-side { position: sticky; top: 18px; }
+}
+@media (max-width: 1199px) {
+  .orbit-config-sidebar,
+  .orbit-config-side { position: static; }
+}
